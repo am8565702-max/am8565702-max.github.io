@@ -2235,6 +2235,94 @@ window.addEventListener("load", function () {
     finishLocalizedOrder(items, totals, orderNo, localRecord.customerNo, localRecord);
   };
 
+  var CLOUD_WHATSAPP_MARKER = "__MENU_WHATSAPP__";
+  var cloudWhatsAppRecordId = 0;
+  var baseCloudProductsLoader = loadCloudProducts;
+
+  loadCloudProducts = function () {
+    var pending = baseCloudProductsLoader();
+    if (!pending || typeof pending.then !== "function") return pending;
+    return pending.then(function () {
+      var marker = null;
+      products.forEach(function (product) {
+        if (String(product.name || "").trim() === CLOUD_WHATSAPP_MARKER && !marker) marker = product;
+      });
+      products = products.filter(function (product) {
+        return String(product.name || "").trim() !== CLOUD_WHATSAPP_MARKER;
+      });
+      if (marker) {
+        cloudWhatsAppRecordId = Number(marker.id || 0);
+        var cloudPhone = String(marker.desc || "").replace(/\D/g, "");
+        if (cloudPhone.length >= 10) {
+          settings.phone = cloudPhone;
+          settings.webAppUrl = CURRENT_WEB_APP_URL;
+          localStorage.setItem(SETKEY, JSON.stringify(settings));
+          if (document.getElementById("settingPhone") && adminModal.classList.contains("open")) {
+            settingPhone.value = cloudPhone;
+          }
+        }
+      }
+      render();
+      renderAdmin();
+      renderCart();
+    });
+  };
+
+  saveSettings = function () {
+    var phone = String(settingPhone.value || "").replace(/\D/g, "");
+    var pin = String(settingPin.value || "").trim();
+    if (phone.length < 10 || pin.length < 4) {
+      alert("راجع رقم واتساب وكلمة المرور");
+      return;
+    }
+    var previousPin = settings.pin;
+    settings = {
+      phone: phone,
+      pin: pin,
+      deliveryFee: Number(settingDelivery.value || 0),
+      minOrder: Number(settingMinOrder.value || 0),
+      discountThreshold: Number(settingDiscountThreshold.value || 0),
+      discountPercent: Number(settingDiscountPercent.value || 0),
+      webAppUrl: CURRENT_WEB_APP_URL
+    };
+    localStorage.setItem(SETKEY, JSON.stringify(settings));
+    render();
+    renderCart();
+    var saveButton = document.querySelector('button[onclick="saveSettings()"]');
+    var oldText = saveButton ? saveButton.textContent : "";
+    if (saveButton) {
+      saveButton.disabled = true;
+      saveButton.textContent = "جاري الحفظ للجميع...";
+    }
+    gsPost({
+      action: "saveProduct",
+      pin: previousPin,
+      id: cloudWhatsAppRecordId || 0,
+      name: CLOUD_WHATSAPP_MARKER,
+      desc: phone,
+      price: "",
+      cat: "labneh",
+      visible: false,
+      imageData: "",
+      existingImage: ""
+    }).then(function (data) {
+      if (!data.ok) throw new Error(data.error || "FAILED");
+      return loadCloudProducts();
+    }).then(function () {
+      if (saveButton) {
+        saveButton.disabled = false;
+        saveButton.textContent = oldText || "حفظ الإعدادات";
+      }
+      alert("تم حفظ رقم واتساب للجميع. سيظهر على الأجهزة المفتوحة خلال دقيقة.");
+    }).catch(function (error) {
+      if (saveButton) {
+        saveButton.disabled = false;
+        saveButton.textContent = oldText || "حفظ الإعدادات";
+      }
+      alert("تعذر حفظ رقم واتساب للجميع: " + error.message);
+    });
+  };
+
   var AUTO_REFRESH_MS = 60000;
   var lastAutoRefresh = Date.now();
 
