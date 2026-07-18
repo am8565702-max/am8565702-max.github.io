@@ -2169,6 +2169,45 @@ window.addEventListener("load", function () {
     finishLocalizedOrder(items, totals, orderNo, localRecord.customerNo, localRecord, popup);
   };
 
+  var AUTO_REFRESH_MS = 60000;
+  var lastAutoRefresh = Date.now();
+
+  function syncOpenCartWithCloudProducts() {
+    var changed = false;
+    Object.keys(cart).forEach(function (id) {
+      var fresh = products.find(function (product) {
+        return String(product.id) === String(id);
+      });
+      if (!fresh || fresh.visible === false) {
+        delete cart[id];
+        changed = true;
+        return;
+      }
+      var savedQty = Number(cart[id].qty || 0);
+      cart[id] = Object.assign({}, fresh, { qty: savedQty });
+      changed = true;
+    });
+    if (changed) saveCart();
+    renderCart();
+  }
+
+  function refreshCloudMenuSilently() {
+    if (document.visibilityState && document.visibilityState !== "visible") return;
+    if (!gsUrl()) return;
+    lastAutoRefresh = Date.now();
+    var pending = loadCloudProducts();
+    if (pending && typeof pending.then === "function") {
+      pending.then(syncOpenCartWithCloudProducts);
+    }
+  }
+
+  setInterval(refreshCloudMenuSilently, AUTO_REFRESH_MS);
+  document.addEventListener("visibilitychange", function () {
+    if ((!document.visibilityState || document.visibilityState === "visible") && Date.now() - lastAutoRefresh >= AUTO_REFRESH_MS) {
+      refreshCloudMenuSilently();
+    }
+  });
+
   applyStaticLanguage();
   renderCats();
   render();
