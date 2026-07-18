@@ -1,0 +1,1771 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=yes">
+<meta name="theme-color" content="#285b35">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>منيو غصن الزيتون</title>
+<style>
+:root{--green:#285b35;--green2:#1f4a2c;--gold:#caa56a;--cream:#f7f1e7;--card:#fff;--text:#223126;--muted:#6b746d;--danger:#b42318}
+*{box-sizing:border-box}body{margin:0;font-family:Tahoma,Arial,sans-serif;background:linear-gradient(180deg,#faf7f0,#f2eadb);color:var(--text)}button,input,textarea,select{font:inherit}
+header{position:-webkit-sticky;position:sticky;top:0;z-index:10;background:rgba(255,255,255,.96);backdrop-filter:blur(10px);border-bottom:1px solid #e8dcc7;padding:12px 16px;display:grid;grid-template-columns:auto 1fr auto auto;gap:10px;align-items:center}.brand h1{font-size:22px;margin:0;color:var(--green)}.brand small{color:var(--muted)}
+.search{width:100%;padding:13px 16px;border:1px solid #decdb1;border-radius:14px;font-size:15px;outline:none}.topBtn{border:0;border-radius:14px;padding:12px 15px;font-weight:700;cursor:pointer}.cartBtn{background:var(--green);color:#fff;position:relative}.adminBtn{background:#f3eadb;color:var(--green);border:1px solid #decdb1}.badge{position:absolute;top:-8px;left:-8px;background:#d62828;color:#fff;border-radius:50%;min-width:24px;height:24px;display:grid;place-items:center;font-size:12px}
+.hero{margin:18px auto;max-width:1200px;padding:22px;border-radius:24px;background:linear-gradient(135deg,#2e6840,#1f4a2c);color:#fff;display:flex;justify-content:space-between;gap:20px;align-items:center}.hero h2{margin:0 0 8px;font-size:28px}.hero p{margin:0;opacity:.9}.hero .wa{background:#25D366;color:#073b1b;padding:12px 18px;border-radius:14px;font-weight:700}
+.categories{max-width:1200px;margin:auto;padding:0 16px 14px;display:flex;gap:10px;overflow:auto}.cat{white-space:nowrap;border:1px solid #dfd2bd;background:#fff;padding:10px 15px;border-radius:999px;cursor:pointer}.cat.active{background:var(--green);color:#fff;border-color:var(--green)}
+main{max-width:1200px;margin:auto;padding:0 16px 80px}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}.card{background:var(--card);border-radius:20px;overflow:hidden;box-shadow:0 10px 28px rgba(59,45,24,.10);border:1px solid #eadfcd;display:flex;flex-direction:column}.pic{height:175px;background:#eee;overflow:hidden;position:relative}.pic img{width:100%;height:100%;object-fit:cover}.tag{position:absolute;top:10px;right:10px;background:rgba(255,255,255,.92);padding:6px 9px;border-radius:10px;font-size:12px;color:var(--green);font-weight:700}.body{padding:14px;display:flex;flex-direction:column;gap:8px;flex:1}.name{font-size:18px;font-weight:800}.desc{color:var(--muted);font-size:13px;line-height:1.6;min-height:40px}.price{font-size:20px;color:var(--green);font-weight:900}.actions{display:flex;gap:8px;align-items:center;margin-top:auto}.pick{flex:1;border:0;background:var(--green);color:#fff;padding:11px;border-radius:12px;font-weight:700;cursor:pointer}.qty{display:flex;align-items:center;border:1px solid #decdb1;border-radius:12px;overflow:hidden}.qty button{width:34px;height:38px;border:0;background:#f6efe3;font-size:20px;cursor:pointer}.qty span{min-width:34px;text-align:center;font-weight:700}
+.drawer,.modal{position:fixed;top:0;right:0;bottom:0;left:0;inset:0;z-index:30;pointer-events:none}.drawer.open,.modal.open{pointer-events:auto}.shade{position:absolute;top:0;right:0;bottom:0;left:0;inset:0;background:rgba(0,0,0,.48);opacity:0;transition:.2s}.open .shade{opacity:1}.panel{position:absolute;top:0;bottom:0;left:0;width:min(440px,94vw);background:#fff;transform:translateX(-105%);transition:.25s;padding:18px;overflow:auto}.drawer.open .panel{transform:none}.panel h3{margin:0 0 14px;color:var(--green)}.cartItem{display:grid;grid-template-columns:1fr auto;gap:8px;padding:12px 0;border-bottom:1px solid #eee}.itemTotal{color:var(--green);font-weight:800;margin-top:4px}.orderOptions{margin:14px 0;padding:12px;border:1px solid #eadfcd;border-radius:14px;background:#faf7f1}.orderOptions label{display:flex;align-items:center;gap:8px;margin:7px 0}.summary{margin:14px 0;border-radius:16px;background:#f4efe5;padding:14px}.sumRow{display:flex;justify-content:space-between;gap:12px;padding:6px 0}.sumRow.final{border-top:2px solid #d6c29e;margin-top:7px;padding-top:12px;font-size:20px;font-weight:900;color:var(--green)}.discountRow{color:#b42318}.miniNote{font-size:12px;color:var(--muted);margin-top:5px}.form input{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;margin:5px 0}.gps{width:100%;padding:11px;border:1px solid var(--green);background:#eef7f0;color:var(--green);border-radius:10px;font-weight:700}.send{width:100%;padding:14px;border:0;background:#25D366;color:#fff;border-radius:12px;font-size:16px;font-weight:800;margin-top:10px}.empty{text-align:center;color:#777;padding:30px}.close{float:left;border:0;background:#eee;width:34px;height:34px;border-radius:10px;cursor:pointer}
+.dialog{position:absolute;top:4vh;right:3vw;bottom:4vh;left:3vw;inset:4vh 3vw;background:#fff;border-radius:22px;opacity:0;transform:scale(.97);transition:.2s;overflow:hidden;display:flex;flex-direction:column}.modal.open .dialog{opacity:1;transform:none}.adminHead{padding:14px 18px;background:var(--green);color:#fff;display:flex;align-items:center;gap:12px}.adminHead h2{margin:0;flex:1}.adminBody{display:grid;grid-template-columns:380px 1fr;gap:16px;padding:16px;overflow:auto}.adminSide,.adminList{border:1px solid #eadfcd;border-radius:16px;padding:14px;background:#fff}.adminSide h3,.adminList h3{margin:0 0 12px;color:var(--green)}.field{display:grid;gap:5px;margin-bottom:10px}.field label{font-size:13px;font-weight:700}.field input,.field textarea,.field select{width:100%;padding:10px;border:1px solid #d8ccb8;border-radius:9px}.field textarea{min-height:72px;resize:vertical}.row{display:flex;gap:8px}.row>*{flex:1}.primary,.secondary,.danger{border:0;border-radius:10px;padding:10px 12px;font-weight:700;cursor:pointer}.primary{background:var(--green);color:#fff}.secondary{background:#f1eadf;color:var(--green)}.danger{background:#fee4e2;color:var(--danger)}.adminTools{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}.adminProducts{display:grid;gap:10px}.adminItem{display:grid;grid-template-columns:72px 1fr auto;gap:10px;align-items:center;border:1px solid #eee;border-radius:12px;padding:8px}.adminItem img{width:72px;height:60px;object-fit:cover;border-radius:8px}.muted{color:var(--muted);font-size:12px}.hiddenP{opacity:.5}.loginBox{position:absolute;width:min(360px,90vw);top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;padding:22px;border-radius:18px;opacity:0;transition:.2s}.modal.open .loginBox{opacity:1}.loginBox input{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;margin:10px 0}.preview{width:100%;height:150px;object-fit:cover;border:1px dashed #cbb99b;border-radius:12px;background:#f8f3ea}.notice{background:#fff7df;border:1px solid #f1d58a;padding:10px;border-radius:10px;font-size:12px;margin-top:10px}
+@media(max-width:800px){header{grid-template-columns:1fr auto auto}.brand{grid-column:1/-1}.hero{margin:12px;border-radius:18px;display:block}.hero .wa{display:inline-block;margin-top:14px}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.pic{height:130px}.name{font-size:15px}.desc{font-size:12px;min-height:52px}.price{font-size:17px}.actions{flex-direction:column}.qty{width:100%;justify-content:space-between}.qty button{flex:1}.pick{width:100%}.adminBody{grid-template-columns:1fr}.dialog{inset:1vh 1vw}.adminItem{grid-template-columns:58px 1fr}.adminItem img{width:58px;height:52px}.adminItem .row{grid-column:1/-1}}
+@media(max-width:800px){body{padding-bottom:env(safe-area-inset-bottom);-webkit-text-size-adjust:100%;touch-action:manipulation}header{grid-template-columns:1fr auto auto;padding:10px 12px;padding-top:max(10px,env(safe-area-inset-top));gap:8px}.brand{grid-column:1/-1}.brand h1{font-size:19px}.brand small{font-size:12px}.search{min-width:0;padding:12px;font-size:16px}.topBtn{min-height:44px;padding:10px 12px}.hero{margin:10px 12px 14px;padding:18px;border-radius:18px;display:block}.hero h2{font-size:22px}.hero p{font-size:14px;line-height:1.7}.hero .wa{display:inline-block;margin-top:12px}.categories{padding:0 12px 12px}.cat{min-height:44px;padding:10px 16px}main{padding:0 10px 90px}.card{border-radius:16px}.body{padding:11px;gap:7px}.qty button,.pick{min-height:44px}.panel{width:100vw;max-width:none;padding:16px 14px calc(18px + env(safe-area-inset-bottom))}.close{width:44px;height:44px}.form input,.gps,.send{min-height:48px;font-size:16px}.adminBody{grid-template-columns:1fr;padding:10px;display:block}.dialog{top:0;right:0;bottom:0;left:0;inset:0;border-radius:0;padding-top:env(safe-area-inset-top)}.field input,.field textarea,.field select{font-size:16px;min-height:44px}.primary,.secondary,.danger{min-height:44px}}
+@media(max-width:430px){header{grid-template-columns:1fr 1fr}.brand,.search{grid-column:1/-1}.adminBtn,.cartBtn{width:100%}.grid{grid-template-columns:1fr}.pic{height:210px}.desc{min-height:0}.actions{flex-direction:row}.pick{width:auto}.qty{width:132px}.row{flex-wrap:wrap}.row>*{flex:1 1 140px}}
+
+.adminTabs{display:flex;gap:8px;padding:10px 16px 0;background:#f8f4ec}.adminTab{border:1px solid #d8ccb8;background:#fff;color:var(--green);padding:10px 16px;border-radius:10px 10px 0 0;font-weight:800;cursor:pointer}.adminTab.active{background:var(--green);color:#fff}.tabPage{display:none}.tabPage.active{display:grid}.ordersPage{display:none;padding:16px;overflow:auto}.ordersPage.active{display:block}.stats{display:grid;grid-template-columns:repeat(4,minmax(130px,1fr));gap:10px;margin-bottom:14px}.stat{background:#fff;border:1px solid #eadfcd;border-radius:14px;padding:14px}.stat b{display:block;font-size:24px;color:var(--green);margin-top:5px}.ordersTools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.ordersTableWrap{overflow:auto;border:1px solid #eadfcd;border-radius:14px;background:#fff}.ordersTable{width:100%;border-collapse:collapse;min-width:980px}.ordersTable th,.ordersTable td{padding:10px;border-bottom:1px solid #eee;text-align:right;vertical-align:top}.ordersTable th{background:#f4efe5;color:var(--green);position:sticky;top:0}.orderProducts{max-width:300px;white-space:pre-line;line-height:1.7}.statusSelect{padding:7px;border:1px solid #d8ccb8;border-radius:8px}.orderNo{font-size:17px;font-weight:900;color:var(--green)}.customerNo{font-size:12px;color:var(--muted)}
+@media(max-width:800px){.stats{grid-template-columns:repeat(2,1fr)}.adminTabs{overflow:auto}.adminTab{white-space:nowrap}}
+
+.gsStatus{font-size:12px;padding:6px 10px;border-radius:999px;background:#fff3cd;color:#6b4d00;border:1px solid #ead28b}
+.gsStatus.ok{background:#e8f6eb;color:#1f5a30;border-color:#add0b6}
+.gsStatus.bad{background:#fee4e2;color:#9b1c15;border-color:#efb2ad}
+
+
+.categoryAdminBox{margin-top:18px;padding-top:16px;border-top:2px solid #eee}
+.categoryForm{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end}
+.categoryList{margin-top:10px;display:flex;flex-direction:column;gap:8px}
+.categoryRow{display:grid;grid-template-columns:1fr 1.4fr 80px auto;gap:8px;align-items:center;background:#faf7f1;border:1px solid #eadfcd;border-radius:12px;padding:8px}
+.categoryRow input{margin:0}
+.categoryRow .danger{padding:9px 10px}
+@media(max-width:700px){
+ .categoryForm{grid-template-columns:1fr}
+ .categoryRow{grid-template-columns:1fr 1fr}
+ .categoryRow .categoryActions{grid-column:1/-1}
+}
+
+</style>
+</head>
+<body>
+<header><div class="brand"><h1>منيو غصن الزيتون</h1><small>اختر المنتج وحدد الكمية ثم أرسل الطلب</small></div><input id="search" class="search" placeholder="ابحث عن منتج..."><button class="topBtn adminBtn" onclick="requestAdmin()">⚙️ الإدارة</button><button class="topBtn cartBtn" onclick="openCart()">🛒 السلة <span id="badge" class="badge">0</span></button></header>
+<section class="hero"><div><h2>منتجات فلسطينية مختارة بعناية</h2><p>اطلب مباشرة عبر واتساب مع تحديد موقعك GPS</p></div><div id="heroPhone" class="wa">واتساب 0505660791</div></section>
+<div id="cats" class="categories"></div><main><div id="pageError" style="display:none;margin:12px auto;max-width:900px;padding:12px;border-radius:12px;background:#fee4e2;color:#9b1c15;text-align:center"></div>
+<div id="grid" class="grid"></div></main>
+<div id="drawer" class="drawer"><div class="shade" onclick="closeCart()"></div><aside class="panel"><button class="close" onclick="closeCart()">✕</button><h3>سلة الطلب</h3><div id="cart"></div><div class="orderOptions"><b>طريقة الاستلام</b><label><input type="radio" name="deliveryType" value="pickup" checked onchange="renderCart()"> استلام من الفرع</label><label><input type="radio" name="deliveryType" value="delivery" onchange="renderCart()"> توصيل</label><div class="miniNote" id="deliveryHint"></div></div><div id="summary" class="summary"></div><div class="form"><div class="notice">سيتم إنشاء رقم طلب تلقائي يبدأ من 1000 عند الإرسال.</div><input id="customer" placeholder="اسم العميل"><input id="customerPhone" placeholder="رقم هاتف العميل"><input id="area" placeholder="المنطقة / العنوان"><button class="gps" onclick="getGPS()">📍 تحديد موقعي GPS</button><input id="location" placeholder="رابط الموقع" readonly><button class="send" onclick="sendWA()">إرسال الطلب على واتساب</button></div></aside></div>
+<div id="loginModal" class="modal"><div class="shade" onclick="closeLogin()"></div><div class="loginBox"><button class="close" onclick="closeLogin()">✕</button><h3>دخول لوحة التحكم</h3><input id="pinInput" type="password" inputmode="numeric" placeholder="كلمة المرور"><button class="primary" style="width:100%" onclick="loginAdmin()">دخول</button><div class="notice">كلمة المرور الافتراضية: <b>1234</b>. غيّرها من إعدادات لوحة التحكم.</div></div></div>
+<div id="adminModal" class="modal"><div class="shade"></div><div class="dialog"><div class="adminHead"><h2>لوحة تحكم المنيو والعملاء</h2><button class="secondary" onclick="closeAdmin()">إغلاق</button></div><div class="adminTabs"><button id="productsTabBtn" class="adminTab active" onclick="showAdminTab('products')">المنتجات والإعدادات</button><button id="ordersTabBtn" class="adminTab" onclick="showAdminTab('orders')">الطلبات والعملاء <span id="ordersCountBadge"></span></button></div><div id="productsTab" class="adminBody tabPage active"><section class="adminSide"><h3 id="formTitle">إضافة منتج</h3><input type="hidden" id="editId"><div class="field"><label>اسم المنتج</label><input id="pName"></div><div class="field"><label>المكونات / الوصف</label><textarea id="pDesc"></textarea></div><div class="row"><div class="field"><label>السعر</label><input id="pPrice" type="number" step="0.01"></div><div class="field"><label>الجروب</label><select id="pCat"></select></div></div><div class="field"><label>صورة المنتج</label><input id="pImage" type="file" accept="image/*" onchange="loadImage(event)"><img id="preview" class="preview" alt="معاينة الصورة"></div><div class="field"><label><input id="pVisible" type="checkbox" checked> المنتج ظاهر للزبائن</label></div><div class="row"><button class="primary" onclick="saveProduct()">حفظ المنتج</button><button class="secondary" onclick="clearForm()">جديد</button></div><hr style="border:0;border-top:1px solid #eee;margin:16px 0"><h3>إعدادات</h3><div class="field"><label>رقم واتساب بصيغة دولية</label><input id="settingPhone" placeholder="971505660791"></div><div class="field"><label>كلمة مرور الإدارة</label><input id="settingPin" type="password"></div><div class="row"><div class="field"><label>رسوم التوصيل</label><input id="settingDelivery" type="number" min="0" step="0.01"></div><div class="field"><label>الحد الأدنى للطلب</label><input id="settingMinOrder" type="number" min="0" step="0.01"></div></div><div class="row"><div class="field"><label>خصم عند طلب بقيمة</label><input id="settingDiscountThreshold" type="number" min="0" step="0.01"></div><div class="field"><label>نسبة الخصم %</label><input id="settingDiscountPercent" type="number" min="0" max="100" step="0.01"></div></div><div class="field"><label>رابط Google Apps Script Web App</label><input id="settingWebApp" placeholder="https://script.google.com/macros/s/.../exec"></div><div class="notice">ضع رابط النشر هنا مرة واحدة، وبعدها ستُحفظ الطلبات والعملاء في Google Sheets.</div><button class="primary" style="width:100%" onclick="saveSettings()">حفظ الإعدادات</button>
+<div class="categoryAdminBox">
+  <h3>إدارة الجروبات</h3>
+  <div class="notice">يمكنك تغيير اسم الجروب أو إضافة جروب جديد. التعديل يُحفظ في Google Sheets ويظهر لكل الزبائن.</div>
+  <div class="categoryForm">
+    <div class="field"><label>كود الجروب بالإنجليزي</label><input id="newCatCode" placeholder="مثال: oils"></div>
+    <div class="field"><label>اسم الجروب</label><input id="newCatName" placeholder="مثال: الزيوت"></div>
+    <div class="field"><label>الترتيب</label><input id="newCatSort" type="number" value="99" min="1"></div>
+    <button id="addCategoryBtn" type="button" class="primary" onclick="addCategory(event)">إضافة جروب</button>
+  </div>
+  <div style="margin-top:8px">
+      <button type="button" class="secondary" onclick="testCategoryConnection()">اختبار اتصال الجروبات</button>
+    </div>
+    <div id="categoryAdminList" class="categoryList"></div>
+</div>
+<div class="notice">التعديلات المحلية للمنتجات تبقى على نفس الجهاز، أما الجروبات فتُحفظ مركزيًا في شيت CATEGORIES.</div></section><section class="adminList"><h3>إدارة المنتجات</h3><div class="adminTools"><button class="secondary" onclick="exportData()">⬇️ نسخة احتياطية</button><label class="secondary" style="cursor:pointer">⬆️ استرجاع<input id="importFile" type="file" accept="application/json" hidden onchange="importData(event)"></label><button class="danger" onclick="resetData()">إعادة الافتراضي</button></div><input id="adminSearch" class="search" placeholder="بحث داخل المنتجات..." oninput="renderAdmin()"><div id="adminProducts" class="adminProducts"></div></section></div><section id="ordersTab" class="ordersPage tabPage"><div class="stats"><div class="stat">إجمالي الطلبات<b id="statOrders">0</b></div><div class="stat">إجمالي العملاء<b id="statCustomers">0</b></div><div class="stat">إجمالي المبيعات<b id="statSales">0</b></div><div class="stat">طلبات اليوم<b id="statToday">0</b></div></div><div class="ordersTools"><input id="ordersSearch" class="search" style="max-width:420px" placeholder="ابحث بالاسم أو الهاتف أو رقم الطلب..." oninput="renderOrders()"><button class="secondary" onclick="exportOrdersCSV()">⬇️ تصدير الطلبات Excel/CSV</button><button class="danger" onclick="clearOrders()">حذف سجل الطلبات</button></div><div class="ordersTableWrap"><table class="ordersTable"><thead><tr><th>رقم الطلب</th><th>التاريخ والوقت</th><th>العميل والهاتف</th><th>المنطقة والموقع</th><th>المنتجات</th><th>الإجمالي</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody id="ordersBody"></tbody></table></div></section></div></div>
+<script>
+function _regenerator() { var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i.return) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
+function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); } r ? i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n : (o("next", 0), o("throw", 1), o("return", 2)); }, _regeneratorDefine2(e, r, n, t); }
+function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
+function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
+function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t.return && (u = t.return(), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t.return || t.return(); } finally { if (u) throw o; } } }; }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+(function (w) {
+  if (!Object.assign) {
+    Object.assign = function (target) {
+      if (target == null) throw new TypeError('Cannot convert undefined or null to object');
+      var to = Object(target);
+      for (var i = 1; i < arguments.length; i++) {
+        var next = arguments[i];
+        if (next != null) {
+          for (var key in next) {
+            if (Object.prototype.hasOwnProperty.call(next, key)) to[key] = next[key];
+          }
+        }
+      }
+      return to;
+    };
+  }
+  if (!Object.entries) {
+    Object.entries = function (obj) {
+      var out = [];
+      for (var key in Object(obj)) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) out.push([key, obj[key]]);
+      }
+      return out;
+    };
+  }
+  if (!Object.values) {
+    Object.values = function (obj) {
+      var out = [];
+      for (var key in Object(obj)) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) out.push(obj[key]);
+      }
+      return out;
+    };
+  }
+  if (!Object.getOwnPropertyDescriptors) {
+    Object.getOwnPropertyDescriptors = function (obj) {
+      var out = {};
+      Object.getOwnPropertyNames(obj).forEach(function (key) {
+        out[key] = Object.getOwnPropertyDescriptor(obj, key);
+      });
+      return out;
+    };
+  }
+  if (!Array.prototype.includes) {
+    Array.prototype.includes = function (value) {
+      return this.indexOf(value) !== -1;
+    };
+  }
+  if (!Array.prototype.find) {
+    Array.prototype.find = function (fn, that) {
+      for (var i = 0; i < this.length; i++) {
+        if (fn.call(that, this[i], i, this)) return this[i];
+      }
+    };
+  }
+  if (!String.prototype.includes) {
+    String.prototype.includes = function (value, start) {
+      return this.indexOf(value, start || 0) !== -1;
+    };
+  }
+  if (!String.prototype.startsWith) {
+    String.prototype.startsWith = function (value, start) {
+      start = start || 0;
+      return this.substr(start, value.length) === value;
+    };
+  }
+  if (!w.URLSearchParams) {
+    w.URLSearchParams = function (init) {
+      this.items = [];
+      init = init || {};
+      for (var key in init) {
+        if (Object.prototype.hasOwnProperty.call(init, key)) this.append(key, init[key]);
+      }
+    };
+    w.URLSearchParams.prototype.append = function (key, value) {
+      this.items.push(encodeURIComponent(key) + '=' + encodeURIComponent(value == null ? '' : value));
+    };
+    w.URLSearchParams.prototype.toString = function () {
+      return this.items.join('&');
+    };
+  }
+  if (w.Element && Element.prototype && !Element.prototype.remove) {
+    Element.prototype.remove = function () {
+      if (this.parentNode) this.parentNode.removeChild(this);
+    };
+  }
+  if (!w.fetch && w.Promise) {
+    w.fetch = function (url, options) {
+      options = options || {};
+      return new Promise(function (resolve, reject) {
+        var xhr = new XMLHttpRequest();
+        xhr.open(options.method || 'GET', url, true);
+        var headers = options.headers || {};
+        for (var key in headers) {
+          if (Object.prototype.hasOwnProperty.call(headers, key)) xhr.setRequestHeader(key, headers[key]);
+        }
+        xhr.onload = function () {
+          resolve({
+            ok: xhr.status >= 200 && xhr.status < 300,
+            status: xhr.status,
+            text: function text() {
+              return Promise.resolve(xhr.responseText);
+            }
+          });
+        };
+        xhr.onerror = function () {
+          reject(new TypeError('Network request failed'));
+        };
+        xhr.send(options.body || null);
+      });
+    };
+  }
+})(window);
+var __defProp = Object.defineProperty;
+var __defProps = Object.defineProperties;
+var __getOwnPropDescs = Object.getOwnPropertyDescriptors;
+var __getOwnPropSymbols = Object.getOwnPropertySymbols;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __propIsEnum = Object.prototype.propertyIsEnumerable;
+var __defNormalProp = function __defNormalProp(obj, key, value) {
+  return key in obj ? __defProp(obj, key, {
+    enumerable: true,
+    configurable: true,
+    writable: true,
+    value: value
+  }) : obj[key] = value;
+};
+var __spreadValues = function __spreadValues(a, b) {
+  for (var prop in b || (b = {})) if (__hasOwnProp.call(b, prop)) __defNormalProp(a, prop, b[prop]);
+  if (__getOwnPropSymbols) {
+    var _iterator = _createForOfIteratorHelper(__getOwnPropSymbols(b)),
+      _step;
+    try {
+      for (_iterator.s(); !(_step = _iterator.n()).done;) {
+        var prop = _step.value;
+        if (__propIsEnum.call(b, prop)) __defNormalProp(a, prop, b[prop]);
+      }
+    } catch (err) {
+      _iterator.e(err);
+    } finally {
+      _iterator.f();
+    }
+  }
+  return a;
+};
+var __spreadProps = function __spreadProps(a, b) {
+  return __defProps(a, __getOwnPropDescs(b));
+};
+if (typeof window.structuredClone !== "function") {
+  window.structuredClone = function (value) {
+    return JSON.parse(JSON.stringify(value));
+  };
+}
+window.addEventListener("error", function (event) {
+  console.error("Menu error:", event.error || event.message);
+  var box = document.getElementById("pageError");
+  if (box) {
+    box.style.display = "block";
+    box.textContent = "حدث خطأ في تحميل المنيو: " + String(event.message || "خطأ غير معروف") + " — اضغط Ctrl+F5 لإعادة التحميل.";
+  }
+});
+window.addEventListener("unhandledrejection", function (event) {
+  console.error("Unhandled promise:", event.reason);
+});
+var legacyDefaultProducts = [["labneh", "لبنة خلطة بيتزا", "لبنة وزيت زيتون وسلطة زيتون", "35", "2"], ["labneh", "لبنة خلطة فلسطينية", "لبنة وزيت زيتون وسلطة زيتون ومكدوس", "35", "2"], ["labneh", "لبنة خلطة خليجية", "لبنة وزيت زيتون وسلطة زيتون وزعتر", "35", "2"], ["labneh", "لبنة مكدوس بالشطة", "لبنة وزيت زيتون وشطة ومكدوس", "35", "2"], ["labneh", "لبنة خلطة غزاوية", "لبنة وزيت زيتون وسلطة زيتون ودقة", "35", "2"], ["labneh", "لبنة مكدوس", "لبنة وزيت زيتون ومكدوس", "35", "2"], ["labneh", "لبنة بالزيتون", "لبنة وزيت زيتون وزيتون", "35", "2"], ["labneh", "لبنة بالرمان", "لبنة وزيت زيتون ورمان وزعتر بري وذرة", "35", "2"], ["labneh", "لبنة بالزيتون بالشطة", "لبنة وزيت زيتون وزيتون وشطة", "35", "3"], ["labneh", "لبنة بالزعتر", "لبنة وزيت زيتون وزعتر", "35", "3"], ["labneh", "لبنة حبة البركة حار", "لبنة وزيت زيتون وحبة بركة وشطة", "35", "3"], ["labneh", "لبنة حبة البركة", "لبنة وزيت زيتون وحبة البركة", "35", "3"], ["labneh", "لبنة مدعبلة سادة", "لبنة وزيت زيتون", "35", "3"], ["labneh", "لبنة طازج", "لبنة وزيت زيتون", "35", "3"], ["labneh", "لبنة ملكية", "لبنة وزيت زيتون ومكدوس وجبنة ودقة", "35", "4"], ["labneh", "لبنة روح الاتحاد", "لبنة وزيت زيتون ودقة وشطة", "35", "4"], ["jam", "مربى تين بالمكسرات", "", "30", "5"], ["jam", "مربى تين ناعم", "", "30", "5"], ["jam", "مربى توت طبيعي", "", "30", "5"], ["jam", "مربى مشمش طبيعي", "", "30", "5"], ["jam", "مربى فراولة طبيعي", "", "30", "5"], ["jam", "مربى كرز طبيعي", "", "30", "5"], ["jam", "مربى ورد طبيعي", "", "30", "5"], ["jam", "مربى برتقال طبيعي", "", "30", "5"], ["cheese", "جبنة نابلسية فلسطينية", "", "", "6"], ["ghee", "سمن الغزال 1 كغم", "", "30", "11"], ["ghee", "سمن الغزال 1.7 كغم", "", "45", "11"], ["ghee", "سمن الغزالين 1 كغم", "", "30", "11"], ["ghee", "سمن حيواني فلسطيني 1 كغم", "", "70", "11"], ["jameed", "جميد 1 قطعة", "", "15", "12"], ["jameed", "جميد كبير 1 قطعة", "", "35", "12"], ["jameed", "جميد 1 كغم", "", "70", "12"], ["canned", "ماء زهر 650 مل", "", "15", "13"], ["canned", "ماء ورد 650 مل", "", "15", "13"], ["canned", "طحينة بيضاء 500 جم", "", "20", "13"], ["canned", "طحينة حمراء 500 جم", "", "20", "13"], ["canned", "دبس الرمان 670 مل", "", "30", "13"], ["canned", "خل التفاح 800 مل", "", "30", "13"], ["hot", "قهوة محمد أفندي 250 جم", "", "35", "23"], ["hot", "قهوة محمد أفندي 500 جم", "", "50", "23"], ["hot", "بن العميد 3×1 عدد 30", "", "50", "23"], ["hot", "بن العميد 2×1 عدد 30", "", "45", "23"], ["hot", "قهوة السعيدة 450 جم", "", "30", "23"], ["hot", "بن العميد وسط مع الهيل 250 جم", "", "25", "23"], ["hot", "عرقسوس رمزي الأصيل 200 جم", "", "20", "23"], ["cake", "كعك أصابع جوز الهند", "", "20", "26"], ["cake", "كعك أساور تمر شوفان", "", "20", "26"], ["cake", "معمول تمر حبة البركة", "", "20", "26"], ["cake", "كعك أصابع يانسون", "", "20", "26"], ["cake", "كعك برازق", "", "20", "26"], ["sweet", "حلاوة طحينية فانيلا 36 قطعة", "", "65", "27"], ["sweet", "حلاوة طحينية شوكوفانيل 36 قطعة", "", "65", "27"], ["sweet", "حلاوة أبو حربي 450 جم", "", "25", "27"], ["sweet", "برافو سمسمية 24 حبة", "", "30", "27"], ["sweet", "برافو فستقية 24 حبة", "", "30", "27"], ["drinks", "عصير الإجاص والكيوي والصبار", "", "15", "29"], ["drinks", "عصير عنب", "", "15", "29"], ["drinks", "عصير مانجا", "", "15", "29"], ["drinks", "عصير فراولة وموز", "", "15", "29"], ["gum", "علكة فراولة", "", "10", "30"], ["gum", "علكة مستكة", "", "10", "30"], ["gum", "علكة قرفة", "", "10", "30"], ["gum", "علكة نعنع", "", "10", "30"], ["soap", "صابون نابلسي", "", "10", "31"], ["soap", "صابون غار طبيعي", "", "15", "31"], ["soap", "صابون بلوم", "", "10", "31"]].map(function (x, i) {
+  return {
+    id: i + 1,
+    cat: x[0],
+    name: x[1],
+    desc: x[2],
+    price: x[3],
+    image: "slides/slide-".concat(String(x[4]).padStart(2, "0"), ".jpg"),
+    visible: true
+  };
+});
+var defaultProducts = [];
+var categoryNames = {
+  all: "الكل",
+  labneh: "اللبنة",
+  jam: "المربى",
+  cheese: "الجبنة",
+  ghee: "السمن",
+  jameed: "الجميد",
+  canned: "المعلبات",
+  hot: "المشروبات الساخنة",
+  cake: "الكعك",
+  sweet: "الحلويات",
+  drinks: "العصائر",
+  gum: "العلكة",
+  soap: "الصابون"
+};
+var categoryRows = [];
+var KEY = "oliveMenuProductsCloudV7",
+  SETKEY = "oliveMenuSettingsV2",
+  ORDERSKEY = "oliveMenuOrdersV1",
+  ORDERSEQKEY = "oliveMenuOrderSeqV1";
+var CURRENT_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbya0T5Pfk_XZRyAzb3ivvVURivI7BgEJ_fRbw4TY9ccHqtZWh-Zq409BYlIoLB1FHhz/exec";
+var LEGACY_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz-9uHwBH_hCu2ZqsIC5xhnl6Ky5Lfk9888sp-eRVvccmUUr_MzwPtecRTQy5RC9TU/exec";
+function safeStorageJSON(key, fallback) {
+  try {
+    var raw = localStorage.getItem(key);
+    if (!raw) return fallback;
+    var parsed = JSON.parse(raw);
+    return parsed === null || parsed === void 0 ? fallback : parsed;
+  } catch (error) {
+    console.warn("تم تجاهل بيانات متصفح تالفة:", key, error);
+    localStorage.removeItem(key);
+    return fallback;
+  }
+}
+var orders = safeStorageJSON(ORDERSKEY, []);
+var products = loadProducts();
+var settings = Object.assign({
+  phone: "971505660791",
+  pin: "1234",
+  deliveryFee: 0,
+  minOrder: 0,
+  discountThreshold: 0,
+  discountPercent: 0,
+  webAppUrl: CURRENT_WEB_APP_URL
+}, safeStorageJSON(SETKEY, {}));
+settings.webAppUrl = CURRENT_WEB_APP_URL;
+localStorage.setItem(SETKEY, JSON.stringify(settings));
+var current = "all",
+  cart = safeStorageJSON("cartDemo", {}),
+  pendingImage = "";
+function loadProducts() {
+  try {
+    var saved = safeStorageJSON(KEY, null);
+    return Array.isArray(saved) ? saved : structuredClone(defaultProducts);
+  } catch (error) {
+    console.warn("تحميل المنتجات الافتراضية:", error);
+    return structuredClone(defaultProducts);
+  }
+}
+function persist() {
+  localStorage.setItem(KEY, JSON.stringify(products));
+  render();
+  renderAdmin();
+}
+function renderCats() {
+  cats.innerHTML = Object.entries(categoryNames).map(function (_ref) {
+    var _ref2 = _slicedToArray(_ref, 2),
+      k = _ref2[0],
+      v = _ref2[1];
+    return "<button class=\"cat ".concat(k === current ? "active" : "", "\" onclick=\"setCat('").concat(k, "')\">").concat(v, "</button>");
+  }).join("");
+}
+function setCat(c) {
+  current = c;
+  renderCats();
+  render();
+}
+function qty(id) {
+  var _a;
+  return ((_a = cart[id]) == null ? void 0 : _a.qty) || 0;
+}
+function esc() {
+  var s = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "";
+  return String(s).replace(/[&<>'"]/g, function (c) {
+    return {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      "'": "&#39;",
+      '"': "&quot;"
+    }[c];
+  });
+}
+function render() {
+  heroPhone.textContent = "\u0648\u0627\u062A\u0633\u0627\u0628 ".concat(formatPhone(settings.phone));
+  var q = search.value.trim();
+  var list = products.filter(function (p) {
+    return p.visible !== false && (current === "all" || p.cat === current) && (!q || "".concat(p.name, " ").concat(p.desc).includes(q));
+  });
+  grid.innerHTML = list.map(function (p) {
+    return "<article class=\"card\"><div class=\"pic\"><img src=\"".concat(p.image, "\" onerror=\"this.src='slides/slide-01.jpg'\"><span class=\"tag\">").concat(categoryNames[p.cat] || p.cat, "</span></div><div class=\"body\"><div class=\"name\">").concat(esc(p.name), "</div><div class=\"desc\">").concat(esc(p.desc || "منتج أصلي من منيو غصن الزيتون"), "</div><div class=\"price\">").concat(p.price ? "".concat(p.price, " \u062F\u0631\u0647\u0645") : "حسب العبوة", "</div><div class=\"actions\"><button class=\"pick\" onclick=\"add(").concat(p.id, ")\">\u0627\u062E\u062A\u0631</button><div class=\"qty\"><button onclick=\"change(").concat(p.id, ",-1)\">\u2212</button><span>").concat(qty(p.id), "</span><button onclick=\"change(").concat(p.id, ",1)\">+</button></div></div></div></article>");
+  }).join("") || '<div class="empty">لا توجد نتائج</div>';
+  updateBadge();
+}
+function add(id) {
+  change(id, 1);
+}
+function change(id, d) {
+  var p = products.find(function (x) {
+    return x.id === id;
+  });
+  if (!p) return;
+  var n = Math.max(0, qty(id) + d);
+  if (n) cart[id] = __spreadProps(__spreadValues({}, p), {
+    qty: n
+  });else delete cart[id];
+  saveCart();
+  render();
+  renderCart();
+}
+function saveCart() {
+  localStorage.setItem("cartDemo", JSON.stringify(cart));
+  updateBadge();
+}
+function updateBadge() {
+  badge.textContent = Object.values(cart).reduce(function (s, x) {
+    return s + x.qty;
+  }, 0);
+}
+function openCart() {
+  drawer.classList.add("open");
+  renderCart();
+}
+function closeCart() {
+  drawer.classList.remove("open");
+}
+function money(n) {
+  return Number(n || 0).toFixed(2).replace(/\.00$/, "");
+}
+function getOrderTotals() {
+  var _a;
+  var arr = Object.values(cart);
+  var itemCount = arr.length;
+  var qtyCount = arr.reduce(function (s, x) {
+    return s + Number(x.qty || 0);
+  }, 0);
+  var subtotal = arr.reduce(function (s, x) {
+    return s + (Number(x.price) || 0) * Number(x.qty || 0);
+  }, 0);
+  var deliveryType = ((_a = document.querySelector('input[name="deliveryType"]:checked')) == null ? void 0 : _a.value) || "pickup";
+  var delivery = deliveryType === "delivery" ? Number(settings.deliveryFee || 0) : 0;
+  var discount = subtotal >= Number(settings.discountThreshold || 0) && Number(settings.discountThreshold || 0) > 0 ? subtotal * (Number(settings.discountPercent || 0) / 100) : 0;
+  var total = Math.max(0, subtotal + delivery - discount);
+  return {
+    itemCount: itemCount,
+    qtyCount: qtyCount,
+    subtotal: subtotal,
+    delivery: delivery,
+    discount: discount,
+    total: total,
+    deliveryType: deliveryType
+  };
+}
+function renderCart() {
+  var arr = Object.values(cart);
+  document.getElementById("cart").innerHTML = arr.length ? arr.map(function (x) {
+    var line = (Number(x.price) || 0) * x.qty;
+    return "<div class=\"cartItem\"><div><b>".concat(esc(x.name), "</b><br><small>").concat(x.price ? money(x.price) + " درهم للوحدة" : "حسب العبوة", "</small>").concat(x.price ? "<div class=\"itemTotal\">".concat(money(line), " \u062F\u0631\u0647\u0645</div>") : "", "</div><div class=\"qty\"><button onclick=\"change(").concat(x.id, ",-1)\">\u2212</button><span>").concat(x.qty, "</span><button onclick=\"change(").concat(x.id, ",1)\">+</button></div></div>");
+  }).join("") : '<div class="empty">السلة فارغة</div>';
+  var t = getOrderTotals();
+  deliveryHint.textContent = t.deliveryType === "delivery" ? "\u0631\u0633\u0648\u0645 \u0627\u0644\u062A\u0648\u0635\u064A\u0644: ".concat(money(t.delivery), " \u062F\u0631\u0647\u0645") : "لا توجد رسوم توصيل عند الاستلام من الفرع";
+  summary.innerHTML = "<div class=\"sumRow\"><span>\u0639\u062F\u062F \u0627\u0644\u0623\u0635\u0646\u0627\u0641</span><b>".concat(t.itemCount, "</b></div><div class=\"sumRow\"><span>\u0625\u062C\u0645\u0627\u0644\u064A \u0627\u0644\u0642\u0637\u0639</span><b>").concat(t.qtyCount, "</b></div><div class=\"sumRow\"><span>\u0627\u0644\u0625\u062C\u0645\u0627\u0644\u064A \u0642\u0628\u0644 \u0627\u0644\u062A\u0648\u0635\u064A\u0644</span><b>").concat(money(t.subtotal), " \u062F\u0631\u0647\u0645</b></div>").concat(t.delivery ? "<div class=\"sumRow\"><span>\u0631\u0633\u0648\u0645 \u0627\u0644\u062A\u0648\u0635\u064A\u0644</span><b>".concat(money(t.delivery), " \u062F\u0631\u0647\u0645</b></div>") : "").concat(t.discount ? "<div class=\"sumRow discountRow\"><span>\u0627\u0644\u062E\u0635\u0645 (".concat(money(settings.discountPercent), "%)</span><b>\u2212 ").concat(money(t.discount), " \u062F\u0631\u0647\u0645</b></div>") : "", "<div class=\"sumRow final\"><span>\u0627\u0644\u0625\u062C\u0645\u0627\u0644\u064A \u0627\u0644\u0646\u0647\u0627\u0626\u064A</span><span>").concat(money(t.total), " \u062F\u0631\u0647\u0645</span></div>").concat(settings.minOrder && t.subtotal < settings.minOrder ? "<div class=\"notice\">\u0627\u0644\u062D\u062F \u0627\u0644\u0623\u062F\u0646\u0649 \u0644\u0644\u0637\u0644\u0628 ".concat(money(settings.minOrder), " \u062F\u0631\u0647\u0645\u060C \u0648\u0627\u0644\u0645\u062A\u0628\u0642\u064A ").concat(money(settings.minOrder - t.subtotal), " \u062F\u0631\u0647\u0645.</div>") : "");
+}
+function getGPS() {
+  if (!navigator.geolocation) {
+    alert("GPS غير مدعوم");
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(function (p) {
+    location.value = "https://maps.google.com/?q=".concat(p.coords.latitude, ",").concat(p.coords.longitude);
+  }, function () {
+    return alert("تعذر تحديد الموقع. افتح الصفحة عبر HTTPS واسمح للموقع.");
+  });
+}
+function nextOrderNumber() {
+  var n = Number(localStorage.getItem(ORDERSEQKEY) || 999) + 1;
+  localStorage.setItem(ORDERSEQKEY, String(n));
+  return n;
+}
+function saveOrderRecord(arr, t, orderNo) {
+  var now = new Date();
+  var phone = (customerPhone.value || "").trim();
+  var existing = orders.find(function (o) {
+    return o.phone === phone && phone;
+  });
+  var customerNo = existing ? existing.customerNo : orderNo;
+  var record = {
+    orderNo: orderNo,
+    customerNo: customerNo,
+    dateISO: now.toISOString(),
+    dateText: now.toLocaleString("ar-AE"),
+    name: (customer.value || "-").trim(),
+    phone: phone || "-",
+    area: (area.value || "-").trim(),
+    location: (location.value || "-").trim(),
+    deliveryType: t.deliveryType,
+    items: arr.map(function (x) {
+      return {
+        id: x.id,
+        name: x.name,
+        price: Number(x.price) || 0,
+        qty: Number(x.qty) || 0,
+        lineTotal: (Number(x.price) || 0) * Number(x.qty || 0)
+      };
+    }),
+    itemCount: t.itemCount,
+    qtyCount: t.qtyCount,
+    subtotal: t.subtotal,
+    delivery: t.delivery,
+    discount: t.discount,
+    total: t.total,
+    status: "جديد"
+  };
+  orders.unshift(record);
+  localStorage.setItem(ORDERSKEY, JSON.stringify(orders));
+  return record;
+}
+function sendWA() {
+  var arr = Object.values(cart);
+  if (!arr.length) {
+    alert("اختر منتجًا أولًا");
+    return;
+  }
+  var t = getOrderTotals();
+  if (Number(settings.minOrder || 0) > 0 && t.subtotal < Number(settings.minOrder)) {
+    alert("\u0627\u0644\u062D\u062F \u0627\u0644\u0623\u062F\u0646\u0649 \u0644\u0644\u0637\u0644\u0628 ".concat(money(settings.minOrder), " \u062F\u0631\u0647\u0645"));
+    return;
+  }
+  if (!customer.value.trim()) {
+    alert("اكتب اسم العميل");
+    customer.focus();
+    return;
+  }
+  if (!customerPhone.value.trim()) {
+    alert("اكتب رقم هاتف العميل");
+    customerPhone.focus();
+    return;
+  }
+  var orderNo = nextOrderNumber();
+  var record = saveOrderRecord(arr, t, orderNo);
+  var lines = ["\uD83D\uDED2 \u0637\u0644\u0628 \u062C\u062F\u064A\u062F \u0631\u0642\u0645 #".concat(orderNo, " \u0645\u0646 \u0645\u0646\u064A\u0648 \u063A\u0635\u0646 \u0627\u0644\u0632\u064A\u062A\u0648\u0646"), "", "\u0631\u0642\u0645 \u0627\u0644\u0639\u0645\u064A\u0644: ".concat(record.customerNo), "\u0627\u0644\u0627\u0633\u0645: ".concat(record.name), "\u0631\u0642\u0645 \u0627\u0644\u0647\u0627\u062A\u0641: ".concat(record.phone), "\u0627\u0644\u062A\u0627\u0631\u064A\u062E: ".concat(record.dateText), "\u0627\u0644\u0645\u0646\u0637\u0642\u0629: ".concat(record.area), "\u0637\u0631\u064A\u0642\u0629 \u0627\u0644\u0627\u0633\u062A\u0644\u0627\u0645: ".concat(t.deliveryType === "delivery" ? "توصيل" : "استلام من الفرع"), "\u0627\u0644\u0645\u0648\u0642\u0639: ".concat(record.location), "", "الطلبات:"];
+  arr.forEach(function (x, i) {
+    return lines.push("".concat(i + 1, "- ").concat(x.name, "\n   ").concat(x.price ? "".concat(money(x.price), " \xD7 ").concat(x.qty, " = ").concat(money(Number(x.price) * x.qty), " \u062F\u0631\u0647\u0645") : "\u0627\u0644\u0643\u0645\u064A\u0629: ".concat(x.qty)));
+  });
+  lines.push("", "\u0639\u062F\u062F \u0627\u0644\u0623\u0635\u0646\u0627\u0641: ".concat(t.itemCount), "\u0625\u062C\u0645\u0627\u0644\u064A \u0627\u0644\u0642\u0637\u0639: ".concat(t.qtyCount), "\u0627\u0644\u0625\u062C\u0645\u0627\u0644\u064A \u0642\u0628\u0644 \u0627\u0644\u062A\u0648\u0635\u064A\u0644: ".concat(money(t.subtotal), " \u062F\u0631\u0647\u0645"));
+  if (t.delivery) lines.push("\u0631\u0633\u0648\u0645 \u0627\u0644\u062A\u0648\u0635\u064A\u0644: ".concat(money(t.delivery), " \u062F\u0631\u0647\u0645"));
+  if (t.discount) lines.push("\u0627\u0644\u062E\u0635\u0645: -".concat(money(t.discount), " \u062F\u0631\u0647\u0645"));
+  lines.push("\u2705 \u0627\u0644\u0625\u062C\u0645\u0627\u0644\u064A \u0627\u0644\u0646\u0647\u0627\u0626\u064A: ".concat(money(t.total), " \u062F\u0631\u0647\u0645"));
+  window.open("https://wa.me/".concat(settings.phone, "?text=").concat(encodeURIComponent(lines.join("\n"))), "_blank");
+  alert("\u062A\u0645 \u062A\u0633\u062C\u064A\u0644 \u0627\u0644\u0637\u0644\u0628 \u0631\u0642\u0645 #".concat(orderNo));
+  cart = {};
+  saveCart();
+  renderCart();
+  closeCart();
+}
+function requestAdmin() {
+  pinInput.value = "";
+  loginModal.classList.add("open");
+  setTimeout(function () {
+    return pinInput.focus();
+  }, 100);
+}
+function closeLogin() {
+  loginModal.classList.remove("open");
+}
+function loginAdmin() {
+  if (pinInput.value !== settings.pin) {
+    alert("كلمة المرور غير صحيحة");
+    return;
+  }
+  closeLogin();
+  openAdmin();
+}
+function openAdmin() {
+  showAdminTab("products");
+  settingPhone.value = settings.phone;
+  settingPin.value = settings.pin;
+  settingDelivery.value = settings.deliveryFee || 0;
+  settingMinOrder.value = settings.minOrder || 0;
+  settingDiscountThreshold.value = settings.discountThreshold || 0;
+  settingDiscountPercent.value = settings.discountPercent || 0;
+  fillCats();
+  renderAdmin();
+  renderOrders();
+  adminModal.classList.add("open");
+}
+function closeAdmin() {
+  adminModal.classList.remove("open");
+  clearForm();
+}
+function fillCats() {
+  pCat.innerHTML = Object.entries(categoryNames).filter(function (_ref3) {
+    var _ref4 = _slicedToArray(_ref3, 1),
+      k = _ref4[0];
+    return k !== "all";
+  }).map(function (_ref5) {
+    var _ref6 = _slicedToArray(_ref5, 2),
+      k = _ref6[0],
+      v = _ref6[1];
+    return "<option value=\"".concat(esc(k), "\">").concat(esc(v), "</option>");
+  }).join("");
+  renderCategoryAdmin();
+}
+function loadImage(_x) {
+  return _loadImage.apply(this, arguments);
+}
+function _loadImage() {
+  _loadImage = _asyncToGenerator(_regenerator().m(function _callee2(e) {
+    var f, _t;
+    return _regenerator().w(function (_context2) {
+      while (1) switch (_context2.p = _context2.n) {
+        case 0:
+          f = e.target.files[0];
+          if (f) {
+            _context2.n = 1;
+            break;
+          }
+          return _context2.a(2);
+        case 1:
+          if (/^image\/(png|jpe?g|webp)$/i.test(f.type)) {
+            _context2.n = 2;
+            break;
+          }
+          alert("اختر صورة JPG أو PNG أو WEBP");
+          e.target.value = "";
+          return _context2.a(2);
+        case 2:
+          _context2.p = 2;
+          preview.alt = "جاري تجهيز الصورة...";
+          _context2.n = 3;
+          return compressProductImage(f);
+        case 3:
+          pendingImage = _context2.v;
+          preview.src = pendingImage;
+          preview.alt = "معاينة الصورة";
+          _context2.n = 5;
+          break;
+        case 4:
+          _context2.p = 4;
+          _t = _context2.v;
+          pendingImage = "";
+          e.target.value = "";
+          preview.removeAttribute("src");
+          preview.alt = "معاينة الصورة";
+          alert("تعذر تجهيز الصورة: " + _t.message);
+        case 5:
+          return _context2.a(2);
+      }
+    }, _callee2, null, [[2, 4]]);
+  }));
+  return _loadImage.apply(this, arguments);
+}
+function compressProductImage(file) {
+  return new Promise(function (resolve, reject) {
+    var reader = new FileReader();
+    reader.onerror = function () {
+      return reject(new Error("تعذر قراءة الصورة"));
+    };
+    reader.onload = function () {
+      var img = new Image();
+      img.onerror = function () {
+        return reject(new Error("ملف الصورة غير صالح"));
+      };
+      img.onload = function () {
+        var maxSide = 1400,
+          scale = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight)),
+          w = Math.max(1, Math.round(img.naturalWidth * scale)),
+          h = Math.max(1, Math.round(img.naturalHeight * scale)),
+          canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        var ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(0, 0, w, h);
+        ctx.drawImage(img, 0, 0, w, h);
+        var quality = 0.86,
+          data = canvas.toDataURL("image/jpeg", quality);
+        while (data.length > 12e5 && quality > 0.5) {
+          quality -= 0.08;
+          data = canvas.toDataURL("image/jpeg", quality);
+        }
+        if (data.length > 16e5) return reject(new Error("الصورة كبيرة جدًا"));
+        resolve(data);
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+function clearForm() {
+  editId.value = "";
+  formTitle.textContent = "إضافة منتج";
+  pName.value = "";
+  pDesc.value = "";
+  pPrice.value = "";
+  pCat.value = "labneh";
+  pVisible.checked = true;
+  pendingImage = "";
+  preview.removeAttribute("src");
+  pImage.value = "";
+}
+function saveProduct() {
+  return _saveProduct.apply(this, arguments);
+}
+function _saveProduct() {
+  _saveProduct = _asyncToGenerator(_regenerator().m(function _callee3() {
+    var name, payload, saveBtn, oldButtonText, d, _t2;
+    return _regenerator().w(function (_context3) {
+      while (1) switch (_context3.p = _context3.n) {
+        case 0:
+          name = String(pName.value || "").trim();
+          if (name) {
+            _context3.n = 1;
+            break;
+          }
+          alert("اكتب اسم المنتج");
+          return _context3.a(2);
+        case 1:
+          if (gsUrl()) {
+            _context3.n = 2;
+            break;
+          }
+          alert("رابط Google Apps Script غير موجود");
+          return _context3.a(2);
+        case 2:
+          payload = {
+            action: "saveProduct",
+            pin: settings.pin,
+            id: Number(editId.value || 0),
+            name: name,
+            desc: String(pDesc.value || "").trim(),
+            price: pPrice.value === "" ? "" : Number(pPrice.value),
+            cat: String(pCat.value || "").trim(),
+            visible: pVisible.checked,
+            imageData: pendingImage && pendingImage.startsWith("data:") ? pendingImage : "",
+            existingImage: pendingImage && !pendingImage.startsWith("data:") ? pendingImage : ""
+          };
+          saveBtn = document.querySelector('button[onclick="saveProduct()"]');
+          oldButtonText = saveBtn ? saveBtn.textContent : "";
+          _context3.p = 3;
+          if (saveBtn) {
+            saveBtn.disabled = true;
+            saveBtn.textContent = "جاري الحفظ...";
+          }
+          _context3.n = 4;
+          return gsPost(payload);
+        case 4:
+          d = _context3.v;
+          if (d.ok) {
+            _context3.n = 5;
+            break;
+          }
+          throw new Error(d.error || "FAILED");
+        case 5:
+          _context3.n = 6;
+          return loadCloudProducts();
+        case 6:
+          clearForm();
+          alert(payload.id ? "تم تعديل المنتج في Google Sheets" : "تمت إضافة المنتج إلى Google Sheets");
+          _context3.n = 8;
+          break;
+        case 7:
+          _context3.p = 7;
+          _t2 = _context3.v;
+          alert("تعذر حفظ المنتج: " + _t2.message);
+        case 8:
+          _context3.p = 8;
+          if (saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.textContent = oldButtonText || "حفظ المنتج";
+          }
+          return _context3.f(8);
+        case 9:
+          return _context3.a(2);
+      }
+    }, _callee3, null, [[3, 7, 8, 9]]);
+  }));
+  return _saveProduct.apply(this, arguments);
+}
+function editProduct(id) {
+  var p = products.find(function (x) {
+    return x.id === id;
+  });
+  if (!p) return;
+  editId.value = p.id;
+  formTitle.textContent = "تعديل المنتج";
+  pName.value = p.name;
+  pDesc.value = p.desc || "";
+  pPrice.value = p.price || "";
+  pCat.value = p.cat;
+  pVisible.checked = p.visible !== false;
+  pendingImage = p.image;
+  preview.src = p.image;
+  document.querySelector(".adminBody").scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+}
+function toggleProduct(_x2) {
+  return _toggleProduct.apply(this, arguments);
+}
+function _toggleProduct() {
+  _toggleProduct = _asyncToGenerator(_regenerator().m(function _callee4(id) {
+    var p, d, _t3;
+    return _regenerator().w(function (_context4) {
+      while (1) switch (_context4.p = _context4.n) {
+        case 0:
+          p = products.find(function (x) {
+            return Number(x.id) === Number(id);
+          });
+          if (p) {
+            _context4.n = 1;
+            break;
+          }
+          return _context4.a(2);
+        case 1:
+          _context4.p = 1;
+          _context4.n = 2;
+          return gsPost({
+            action: "toggleProduct",
+            pin: settings.pin,
+            id: Number(id),
+            visible: p.visible === false
+          });
+        case 2:
+          d = _context4.v;
+          if (d.ok) {
+            _context4.n = 3;
+            break;
+          }
+          throw new Error(d.error || "FAILED");
+        case 3:
+          _context4.n = 4;
+          return loadCloudProducts();
+        case 4:
+          _context4.n = 6;
+          break;
+        case 5:
+          _context4.p = 5;
+          _t3 = _context4.v;
+          alert("تعذر تغيير حالة المنتج: " + _t3.message);
+        case 6:
+          return _context4.a(2);
+      }
+    }, _callee4, null, [[1, 5]]);
+  }));
+  return _toggleProduct.apply(this, arguments);
+}
+function deleteProduct(_x3) {
+  return _deleteProduct.apply(this, arguments);
+}
+function _deleteProduct() {
+  _deleteProduct = _asyncToGenerator(_regenerator().m(function _callee5(id) {
+    var d, _t4;
+    return _regenerator().w(function (_context5) {
+      while (1) switch (_context5.p = _context5.n) {
+        case 0:
+          if (confirm("حذف المنتج نهائيًا من Google Sheets؟")) {
+            _context5.n = 1;
+            break;
+          }
+          return _context5.a(2);
+        case 1:
+          _context5.p = 1;
+          _context5.n = 2;
+          return gsPost({
+            action: "deleteProduct",
+            pin: settings.pin,
+            id: Number(id)
+          });
+        case 2:
+          d = _context5.v;
+          if (d.ok) {
+            _context5.n = 3;
+            break;
+          }
+          throw new Error(d.error || "FAILED");
+        case 3:
+          delete cart[id];
+          saveCart();
+          _context5.n = 4;
+          return loadCloudProducts();
+        case 4:
+          alert("تم حذف المنتج");
+          _context5.n = 6;
+          break;
+        case 5:
+          _context5.p = 5;
+          _t4 = _context5.v;
+          alert("تعذر حذف المنتج: " + _t4.message);
+        case 6:
+          return _context5.a(2);
+      }
+    }, _callee5, null, [[1, 5]]);
+  }));
+  return _deleteProduct.apply(this, arguments);
+}
+function normalizeCatCode(value) {
+  return String(value || "").trim().toLowerCase().replace(/\s+/g, "_").replace(/[^a-z0-9_-]/g, "");
+}
+function renderCategoryAdmin() {
+  var box = document.getElementById("categoryAdminList");
+  if (!box) return;
+  var rows = (categoryRows.length ? categoryRows : Object.entries(categoryNames).filter(function (_ref7) {
+    var _ref8 = _slicedToArray(_ref7, 1),
+      code = _ref8[0];
+    return code !== "all";
+  }).map(function (_ref9, i) {
+    var _ref0 = _slicedToArray(_ref9, 2),
+      code = _ref0[0],
+      name = _ref0[1];
+    return {
+      code: code,
+      name: name,
+      sort: i + 1
+    };
+  })).slice().sort(function (a, b) {
+    return Number(a.sort || 999) - Number(b.sort || 999);
+  });
+  box.innerHTML = rows.map(function (c) {
+    return "\n    <div class=\"categoryRow\">\n      <input value=\"".concat(esc(c.code), "\" readonly title=\"\u0643\u0648\u062F \u0627\u0644\u062C\u0631\u0648\u0628 \u0644\u0627 \u064A\u062A\u063A\u064A\u0631 \u0628\u0639\u062F \u0627\u0644\u0625\u0646\u0634\u0627\u0621\">\n      <input id=\"catName_").concat(esc(c.code), "\" value=\"").concat(esc(c.name), "\">\n      <input id=\"catSort_").concat(esc(c.code), "\" type=\"number\" min=\"1\" value=\"").concat(Number(c.sort || 99), "\">\n      <div class=\"categoryActions row\">\n        <button type=\"button\" class=\"secondary\" onclick=\"saveCategory('").concat(esc(c.code), "')\">\u062D\u0641\u0638</button>\n        <button type=\"button\" class=\"danger\" onclick=\"deleteCategory('").concat(esc(c.code), "')\">\u062D\u0630\u0641</button>\n      </div>\n    </div>");
+  }).join("");
+}
+function loadCloudCategories() {
+  return _loadCloudCategories.apply(this, arguments);
+}
+function _loadCloudCategories() {
+  _loadCloudCategories = _asyncToGenerator(_regenerator().m(function _callee6() {
+    var d, dedup, _t5;
+    return _regenerator().w(function (_context6) {
+      while (1) switch (_context6.p = _context6.n) {
+        case 0:
+          if (gsUrl()) {
+            _context6.n = 1;
+            break;
+          }
+          return _context6.a(2);
+        case 1:
+          _context6.p = 1;
+          _context6.n = 2;
+          return jsonp("categories");
+        case 2:
+          d = _context6.v;
+          if (Array.isArray(d.categories)) {
+            _context6.n = 3;
+            break;
+          }
+          throw new Error("INVALID_CATEGORIES");
+        case 3:
+          dedup = {};
+          d.categories.forEach(function (c, i) {
+            var code = String(c.code || "").trim();
+            if (!code) return;
+            dedup[code] = {
+              code: code,
+              name: String(c.name || c.code || "").trim(),
+              sort: Number(c.sort || i + 1)
+            };
+          });
+          categoryRows = Object.values(dedup);
+          categoryNames = {
+            all: "الكل"
+          };
+          categoryRows.forEach(function (c) {
+            return categoryNames[c.code] = c.name;
+          });
+          if (current !== "all" && !categoryNames[current]) current = "all";
+          renderCats();
+          fillCats();
+          render();
+          renderAdmin();
+          _context6.n = 5;
+          break;
+        case 4:
+          _context6.p = 4;
+          _t5 = _context6.v;
+          console.warn("Categories:", _t5.message);
+        case 5:
+          return _context6.a(2);
+      }
+    }, _callee6, null, [[1, 4]]);
+  }));
+  return _loadCloudCategories.apply(this, arguments);
+}
+function addCategory(_x4) {
+  return _addCategory.apply(this, arguments);
+}
+function _addCategory() {
+  _addCategory = _asyncToGenerator(_regenerator().m(function _callee7(event) {
+    var codeInput, nameInput, sortInput, button, code, name, sort, oldText, result, _t6;
+    return _regenerator().w(function (_context7) {
+      while (1) switch (_context7.p = _context7.n) {
+        case 0:
+          if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+          codeInput = document.getElementById("newCatCode");
+          nameInput = document.getElementById("newCatName");
+          sortInput = document.getElementById("newCatSort");
+          button = document.getElementById("addCategoryBtn");
+          code = normalizeCatCode((codeInput == null ? void 0 : codeInput.value) || "");
+          name = String((nameInput == null ? void 0 : nameInput.value) || "").trim();
+          sort = Math.max(1, Number((sortInput == null ? void 0 : sortInput.value) || 99));
+          if (code) {
+            _context7.n = 1;
+            break;
+          }
+          alert("اكتب كود الجروب بحروف إنجليزية فقط، مثل: oils");
+          codeInput == null ? void 0 : codeInput.focus();
+          return _context7.a(2);
+        case 1:
+          if (name) {
+            _context7.n = 2;
+            break;
+          }
+          alert("اكتب اسم الجروب");
+          nameInput == null ? void 0 : nameInput.focus();
+          return _context7.a(2);
+        case 2:
+          if (!categoryNames[code]) {
+            _context7.n = 3;
+            break;
+          }
+          alert("كود الجروب موجود بالفعل. استخدم كودًا مختلفًا.");
+          codeInput == null ? void 0 : codeInput.focus();
+          return _context7.a(2);
+        case 3:
+          if (gsUrl()) {
+            _context7.n = 4;
+            break;
+          }
+          alert("رابط Google Apps Script غير موجود في الإعدادات");
+          return _context7.a(2);
+        case 4:
+          oldText = (button == null ? void 0 : button.textContent) || "إضافة جروب";
+          if (button) {
+            button.disabled = true;
+            button.textContent = "جارٍ الإضافة...";
+          }
+          _context7.p = 5;
+          _context7.n = 6;
+          return jsonp("saveCategory", {
+            pin: String(settings.pin || "1234"),
+            code: code,
+            name: name,
+            sort: String(sort)
+          });
+        case 6:
+          result = _context7.v;
+          if (!(!result || result.ok !== true)) {
+            _context7.n = 7;
+            break;
+          }
+          throw new Error((result == null ? void 0 : result.error) || "لم يستجب Google Apps Script بصورة صحيحة");
+        case 7:
+          if (codeInput) codeInput.value = "";
+          if (nameInput) nameInput.value = "";
+          if (sortInput) sortInput.value = "99";
+          _context7.n = 8;
+          return loadCloudCategories();
+        case 8:
+          if (categoryNames[code]) {
+            _context7.n = 9;
+            break;
+          }
+          throw new Error("تم إرسال الطلب، لكن الجروب لم يظهر بعد إعادة القراءة");
+        case 9:
+          alert("تمت إضافة الجروب بنجاح: " + name);
+          _context7.n = 11;
+          break;
+        case 10:
+          _context7.p = 10;
+          _t6 = _context7.v;
+          console.error("Add category error:", _t6);
+          alert("تعذر إضافة الجروب:\n" + String((_t6 == null ? void 0 : _t6.message) || _t6));
+        case 11:
+          _context7.p = 11;
+          if (button) {
+            button.disabled = false;
+            button.textContent = oldText;
+          }
+          return _context7.f(11);
+        case 12:
+          return _context7.a(2);
+      }
+    }, _callee7, null, [[5, 10, 11, 12]]);
+  }));
+  return _addCategory.apply(this, arguments);
+}
+function testCategoryConnection() {
+  return _testCategoryConnection.apply(this, arguments);
+}
+function _testCategoryConnection() {
+  _testCategoryConnection = _asyncToGenerator(_regenerator().m(function _callee8() {
+    var result, _t7;
+    return _regenerator().w(function (_context8) {
+      while (1) switch (_context8.p = _context8.n) {
+        case 0:
+          _context8.p = 0;
+          _context8.n = 1;
+          return jsonp("categories");
+        case 1:
+          result = _context8.v;
+          if (result == null ? void 0 : result.ok) {
+            _context8.n = 2;
+            break;
+          }
+          throw new Error((result == null ? void 0 : result.error) || "FAILED");
+        case 2:
+          alert("الاتصال يعمل. عدد الجروبات: " + (result.categories || []).length + "\nالإصدار: " + (result.version || "غير محدد"));
+          _context8.n = 4;
+          break;
+        case 3:
+          _context8.p = 3;
+          _t7 = _context8.v;
+          alert("فشل الاتصال:\n" + String((_t7 == null ? void 0 : _t7.message) || _t7));
+        case 4:
+          return _context8.a(2);
+      }
+    }, _callee8, null, [[0, 3]]);
+  }));
+  return _testCategoryConnection.apply(this, arguments);
+}
+function saveCategory(_x5) {
+  return _saveCategory.apply(this, arguments);
+}
+function _saveCategory() {
+  _saveCategory = _asyncToGenerator(_regenerator().m(function _callee9(code) {
+    var _a, _b, name, sort, d, _t8;
+    return _regenerator().w(function (_context9) {
+      while (1) switch (_context9.p = _context9.n) {
+        case 0:
+          name = String(((_a = document.getElementById("catName_" + code)) == null ? void 0 : _a.value) || "").trim();
+          sort = Number(((_b = document.getElementById("catSort_" + code)) == null ? void 0 : _b.value) || 99);
+          if (name) {
+            _context9.n = 1;
+            break;
+          }
+          alert("اسم الجروب مطلوب");
+          return _context9.a(2);
+        case 1:
+          _context9.p = 1;
+          _context9.n = 2;
+          return jsonp("saveCategory", {
+            pin: settings.pin,
+            code: code,
+            name: name,
+            sort: sort
+          });
+        case 2:
+          d = _context9.v;
+          if (d.ok) {
+            _context9.n = 3;
+            break;
+          }
+          throw new Error(d.error || "FAILED");
+        case 3:
+          _context9.n = 4;
+          return loadCloudCategories();
+        case 4:
+          alert("تم حفظ اسم الجروب");
+          _context9.n = 6;
+          break;
+        case 5:
+          _context9.p = 5;
+          _t8 = _context9.v;
+          alert("تعذر حفظ الجروب: " + _t8.message);
+        case 6:
+          return _context9.a(2);
+      }
+    }, _callee9, null, [[1, 5]]);
+  }));
+  return _saveCategory.apply(this, arguments);
+}
+function deleteCategory(_x6) {
+  return _deleteCategory.apply(this, arguments);
+}
+function _deleteCategory() {
+  _deleteCategory = _asyncToGenerator(_regenerator().m(function _callee0(code) {
+    var used, d, _t9;
+    return _regenerator().w(function (_context0) {
+      while (1) switch (_context0.p = _context0.n) {
+        case 0:
+          used = products.some(function (p) {
+            return p.cat === code;
+          });
+          if (!used) {
+            _context0.n = 1;
+            break;
+          }
+          alert("لا يمكن حذف الجروب لأنه مستخدم في منتجات. انقل المنتجات إلى جروب آخر أولًا.");
+          return _context0.a(2);
+        case 1:
+          if (confirm("حذف هذا الجروب؟")) {
+            _context0.n = 2;
+            break;
+          }
+          return _context0.a(2);
+        case 2:
+          _context0.p = 2;
+          _context0.n = 3;
+          return jsonp("deleteCategory", {
+            pin: settings.pin,
+            code: code
+          });
+        case 3:
+          d = _context0.v;
+          if (d.ok) {
+            _context0.n = 4;
+            break;
+          }
+          throw new Error(d.error || "FAILED");
+        case 4:
+          _context0.n = 5;
+          return loadCloudCategories();
+        case 5:
+          alert("تم حذف الجروب");
+          _context0.n = 7;
+          break;
+        case 6:
+          _context0.p = 6;
+          _t9 = _context0.v;
+          alert("تعذر حذف الجروب: " + _t9.message);
+        case 7:
+          return _context0.a(2);
+      }
+    }, _callee0, null, [[2, 6]]);
+  }));
+  return _deleteCategory.apply(this, arguments);
+}
+function renderAdmin() {
+  if (!adminProducts) return;
+  var q = (adminSearch.value || "").trim();
+  var list = products.filter(function (p) {
+    return !q || "".concat(p.name, " ").concat(p.desc).includes(q);
+  });
+  adminProducts.innerHTML = list.map(function (p) {
+    return "<div class=\"adminItem ".concat(p.visible === false ? "hiddenP" : "", "\"><img src=\"").concat(p.image, "\" onerror=\"this.src='slides/slide-01.jpg'\"><div><b>").concat(esc(p.name), "</b><div class=\"muted\">").concat(categoryNames[p.cat] || p.cat, " \u2022 ").concat(p.price || "بدون سعر", " \u062F\u0631\u0647\u0645 ").concat(p.visible === false ? "• مخفي" : "", "</div></div><div class=\"row\"><button class=\"secondary\" onclick=\"editProduct(").concat(p.id, ")\">\u062A\u0639\u062F\u064A\u0644</button><button class=\"secondary\" onclick=\"toggleProduct(").concat(p.id, ")\">").concat(p.visible === false ? "إظهار" : "إخفاء", "</button><button class=\"danger\" onclick=\"deleteProduct(").concat(p.id, ")\">\u062D\u0630\u0641</button></div></div>");
+  }).join("");
+}
+function saveSettings() {
+  var phone = settingPhone.value.replace(/\D/g, "");
+  var pin = settingPin.value.trim();
+  if (phone.length < 10 || pin.length < 4) {
+    alert("راجع رقم واتساب وكلمة المرور");
+    return;
+  }
+  settings = {
+    phone: phone,
+    pin: pin,
+    deliveryFee: Number(settingDelivery.value || 0),
+    minOrder: Number(settingMinOrder.value || 0),
+    discountThreshold: Number(settingDiscountThreshold.value || 0),
+    discountPercent: Number(settingDiscountPercent.value || 0)
+  };
+  localStorage.setItem(SETKEY, JSON.stringify(settings));
+  render();
+  renderCart();
+  alert("تم حفظ الإعدادات");
+}
+function exportData() {
+  var blob = new Blob([JSON.stringify({
+    products: products,
+    settings: settings,
+    orders: orders,
+    orderSeq: Number(localStorage.getItem(ORDERSEQKEY) || 999)
+  }, null, 2)], {
+    type: "application/json"
+  });
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "olive-menu-backup.json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+function importData(e) {
+  var f = e.target.files[0];
+  if (!f) return;
+  var r = new FileReader();
+  r.onload = function () {
+    try {
+      var d = JSON.parse(r.result);
+      if (!Array.isArray(d.products)) throw 0;
+      products = d.products;
+      settings = d.settings || settings;
+      orders = Array.isArray(d.orders) ? d.orders : orders;
+      if (d.orderSeq) localStorage.setItem(ORDERSEQKEY, String(d.orderSeq));
+      localStorage.setItem(ORDERSKEY, JSON.stringify(orders));
+      localStorage.setItem(KEY, JSON.stringify(products));
+      localStorage.setItem(SETKEY, JSON.stringify(settings));
+      render();
+      renderAdmin();
+      alert("تم استرجاع النسخة");
+    } catch (e2) {
+      alert("ملف النسخة غير صالح");
+    }
+  };
+  r.readAsText(f);
+}
+function resetData() {
+  if (!confirm("إعادة كل المنتجات والإعدادات للوضع الافتراضي؟")) return;
+  products = structuredClone(defaultProducts);
+  settings = {
+    phone: "971505660791",
+    pin: "1234",
+    deliveryFee: 0,
+    minOrder: 0,
+    discountThreshold: 0,
+    discountPercent: 0
+  };
+  localStorage.setItem(KEY, JSON.stringify(products));
+  localStorage.setItem(SETKEY, JSON.stringify(settings));
+  render();
+  renderAdmin();
+  alert("تمت الإعادة");
+}
+function showAdminTab(tab) {
+  var isOrders = tab === "orders";
+  productsTab.classList.toggle("active", !isOrders);
+  ordersTab.classList.toggle("active", isOrders);
+  productsTabBtn.classList.toggle("active", !isOrders);
+  ordersTabBtn.classList.toggle("active", isOrders);
+  if (isOrders) renderOrders();
+}
+function orderProductsText(o) {
+  return (o.items || []).map(function (x) {
+    return "".concat(x.name, " \xD7 ").concat(x.qty).concat(x.price ? " = ".concat(money(x.lineTotal), " \u062F\u0631\u0647\u0645") : "");
+  }).join("\n");
+}
+function renderOrders() {
+  var q = ((ordersSearch == null ? void 0 : ordersSearch.value) || "").trim().toLowerCase();
+  var list = orders.filter(function (o) {
+    return !q || "".concat(o.orderNo, " ").concat(o.customerNo, " ").concat(o.name, " ").concat(o.phone, " ").concat(o.area, " ").concat(orderProductsText(o)).toLowerCase().includes(q);
+  });
+  var uniqueCustomers = new Set(orders.map(function (o) {
+    return o.phone;
+  }).filter(function (x) {
+    return x && x !== "-";
+  })).size;
+  var today = (new Date()).toDateString();
+  statOrders.textContent = orders.length;
+  statCustomers.textContent = uniqueCustomers;
+  statSales.textContent = money(orders.reduce(function (s, o) {
+    return s + Number(o.total || 0);
+  }, 0)) + " درهم";
+  statToday.textContent = orders.filter(function (o) {
+    return new Date(o.dateISO).toDateString() === today;
+  }).length;
+  ordersCountBadge.textContent = "(".concat(orders.length, ")");
+  ordersBody.innerHTML = list.length ? list.map(function (o) {
+    return "<tr><td><div class=\"orderNo\">#".concat(o.orderNo, "</div><div class=\"customerNo\">\u0639\u0645\u064A\u0644 ").concat(o.customerNo, "</div></td><td>").concat(esc(o.dateText || ""), "</td><td><b>").concat(esc(o.name), "</b><br>").concat(esc(o.phone), "</td><td>").concat(esc(o.area)).concat(o.location && o.location !== "-" ? "<br><a href=\"".concat(o.location, "\" target=\"_blank\">\u0641\u062A\u062D \u0627\u0644\u0645\u0648\u0642\u0639</a>") : "", "</td><td class=\"orderProducts\">").concat(esc(orderProductsText(o)), "</td><td><b>").concat(money(o.total), " \u062F\u0631\u0647\u0645</b><br><small>").concat(o.qtyCount || 0, " \u0642\u0637\u0639\u0629</small></td><td><select class=\"statusSelect\" onchange=\"updateOrderStatus(").concat(o.orderNo, ",this.value)\">").concat(["جديد", "قيد التجهيز", "جاهز", "تم التسليم", "ملغي"].map(function (st) {
+      return "<option ".concat(o.status === st ? "selected" : "", ">").concat(st, "</option>");
+    }).join(""), "</select></td><td><button class=\"danger\" onclick=\"deleteOrder(").concat(o.orderNo, ")\">\u062D\u0630\u0641</button></td></tr>");
+  }).join("") : '<tr><td colspan="8" class="empty">لا توجد طلبات مسجلة</td></tr>';
+}
+function updateOrderStatus(no, status) {
+  var o = orders.find(function (x) {
+    return x.orderNo === no;
+  });
+  if (o) {
+    o.status = status;
+    localStorage.setItem(ORDERSKEY, JSON.stringify(orders));
+  }
+}
+function deleteOrder(no) {
+  if (!confirm("\u062D\u0630\u0641 \u0627\u0644\u0637\u0644\u0628 #".concat(no, "\u061F"))) return;
+  orders = orders.filter(function (x) {
+    return x.orderNo !== no;
+  });
+  localStorage.setItem(ORDERSKEY, JSON.stringify(orders));
+  renderOrders();
+}
+function clearOrders() {
+  if (!confirm("حذف جميع الطلبات المسجلة؟")) return;
+  orders = [];
+  localStorage.setItem(ORDERSKEY, "[]");
+  localStorage.setItem(ORDERSEQKEY, "999");
+  renderOrders();
+}
+function csvCell(v) {
+  return '"' + String(v != null ? v : "").replace(/"/g, '""') + '"';
+}
+function exportOrdersCSV() {
+  var rows = [["رقم الطلب", "رقم العميل", "التاريخ", "الاسم", "الهاتف", "المنطقة", "الموقع", "المنتجات", "عدد القطع", "الإجمالي", "الحالة"]];
+  orders.forEach(function (o) {
+    return rows.push([o.orderNo, o.customerNo, o.dateText, o.name, o.phone, o.area, o.location, orderProductsText(o), o.qtyCount, o.total, o.status]);
+  });
+  var csv = "\uFEFF" + rows.map(function (r) {
+    return r.map(csvCell).join(",");
+  }).join("\n");
+  var blob = new Blob([csv], {
+    type: "text/csv;charset=utf-8"
+  });
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "orders-customers.csv";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+function formatPhone(p) {
+  return String(p || "").startsWith("971") ? "0" + String(p).slice(3) : String(p || "");
+}
+document.addEventListener("DOMContentLoaded", function () {
+  var searchBox = document.getElementById("search");
+  if (searchBox) searchBox.addEventListener("input", render);
+  renderCats();
+  render();
+});
+function gsUrl() {
+  return (settings.webAppUrl || "").trim();
+}
+function jsonp(action) {
+  var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  return new Promise(function (resolve, reject) {
+    var url = gsUrl();
+    if (!url) return reject(new Error("NO_URL"));
+    var cb = "gs_cb_" + Date.now() + "_" + Math.random().toString(36).slice(2);
+    var s = document.createElement("script");
+    var timer = setTimeout(function () {
+      cleanup();
+      reject(new Error("TIMEOUT"));
+    }, 2e4);
+    function cleanup() {
+      clearTimeout(timer);
+      delete window[cb];
+      s.remove();
+    }
+    window[cb] = function (d) {
+      cleanup();
+      d && d.ok ? resolve(d) : reject(new Error((d == null ? void 0 : d.error) || "FAILED"));
+    };
+    var q = new URLSearchParams(__spreadValues({
+      action: action,
+      callback: cb,
+      _t: Date.now()
+    }, params));
+    s.src = url + (url.includes("?") ? "&" : "?") + q.toString();
+    s.onerror = function () {
+      cleanup();
+      reject(new Error("NETWORK"));
+    };
+    document.head.appendChild(s);
+  });
+}
+function gsPost(_x7) {
+  return _gsPost.apply(this, arguments);
+}
+function _gsPost() {
+  _gsPost = _asyncToGenerator(_regenerator().m(function _callee1(payload) {
+    var url, r, text, _t0;
+    return _regenerator().w(function (_context1) {
+      while (1) switch (_context1.p = _context1.n) {
+        case 0:
+          url = gsUrl();
+          if (url) {
+            _context1.n = 1;
+            break;
+          }
+          throw new Error("NO_URL");
+        case 1:
+          _context1.n = 2;
+          return fetch(url, {
+            method: "POST",
+            headers: {
+              "Content-Type": "text/plain;charset=utf-8"
+            },
+            body: JSON.stringify(payload),
+            redirect: "follow"
+          });
+        case 2:
+          r = _context1.v;
+          _context1.n = 3;
+          return r.text();
+        case 3:
+          text = _context1.v;
+          _context1.p = 4;
+          return _context1.a(2, JSON.parse(text));
+        case 5:
+          _context1.p = 5;
+          _t0 = _context1.v;
+          throw new Error("INVALID_RESPONSE");
+        case 6:
+          return _context1.a(2);
+      }
+    }, _callee1, null, [[4, 5]]);
+  }));
+  return _gsPost.apply(this, arguments);
+}
+function loadCloudProducts() {
+  return _loadCloudProducts.apply(this, arguments);
+}
+function _loadCloudProducts() {
+  _loadCloudProducts = _asyncToGenerator(_regenerator().m(function _callee10() {
+    var d, _t1;
+    return _regenerator().w(function (_context10) {
+      while (1) switch (_context10.p = _context10.n) {
+        case 0:
+          if (gsUrl()) {
+            _context10.n = 1;
+            break;
+          }
+          return _context10.a(2);
+        case 1:
+          _context10.p = 1;
+          _context10.n = 2;
+          return jsonp("products");
+        case 2:
+          d = _context10.v;
+          if (Array.isArray(d.products)) {
+            products = d.products.map(function (p, i) {
+              return {
+                id: Number(p.id),
+                name: String(p.name || ""),
+                desc: String(p.desc || ""),
+                price: p.price === "" || p.price == null ? "" : Number(p.price),
+                cat: String(p.cat || "labneh"),
+                image: String(p.image || ""),
+                visible: p.visible !== false,
+                sort: Number(p.sort || i + 1)
+              };
+            });
+            render();
+            renderAdmin();
+            console.log("Products loaded from Google Sheets");
+          }
+          _context10.n = 4;
+          break;
+        case 3:
+          _context10.p = 3;
+          _t1 = _context10.v;
+          console.warn("Google Sheets products fallback:", _t1.message);
+        case 4:
+          return _context10.a(2);
+      }
+    }, _callee10, null, [[1, 3]]);
+  }));
+  return _loadCloudProducts.apply(this, arguments);
+}
+var originalOpenAdmin = openAdmin;
+openAdmin = function openAdmin() {
+  originalOpenAdmin();
+  settingWebApp.value = settings.webAppUrl || "";
+  if (gsUrl()) {
+    loadCloudCategories();
+    loadCloudOrders();
+  }
+};
+var originalSaveSettings = saveSettings;
+saveSettings = function saveSettings() {
+  var phone = settingPhone.value.replace(/\D/g, "");
+  var pin = settingPin.value.trim();
+  if (phone.length < 10 || pin.length < 4) {
+    alert("راجع رقم واتساب وكلمة المرور");
+    return;
+  }
+  settings = {
+    phone: phone,
+    pin: pin,
+    deliveryFee: Number(settingDelivery.value || 0),
+    minOrder: Number(settingMinOrder.value || 0),
+    discountThreshold: Number(settingDiscountThreshold.value || 0),
+    discountPercent: Number(settingDiscountPercent.value || 0),
+    webAppUrl: (settingWebApp.value || "").trim()
+  };
+  localStorage.setItem(SETKEY, JSON.stringify(settings));
+  render();
+  renderCart();
+  loadCloudProducts();
+  alert("تم حفظ الإعدادات وربط Google Sheets");
+};
+function sendWA() {
+  return _sendWA.apply(this, arguments);
+}
+function _sendWA() {
+  _sendWA = _asyncToGenerator(_regenerator().m(function _callee11() {
+    var arr, t, record, orderNo, customerNo, d, lines, _t10;
+    return _regenerator().w(function (_context11) {
+      while (1) switch (_context11.p = _context11.n) {
+        case 0:
+          arr = Object.values(cart);
+          if (arr.length) {
+            _context11.n = 1;
+            break;
+          }
+          alert("اختر منتجًا أولًا");
+          return _context11.a(2);
+        case 1:
+          t = getOrderTotals();
+          if (!(Number(settings.minOrder || 0) > 0 && t.subtotal < Number(settings.minOrder))) {
+            _context11.n = 2;
+            break;
+          }
+          alert("\u0627\u0644\u062D\u062F \u0627\u0644\u0623\u062F\u0646\u0649 \u0644\u0644\u0637\u0644\u0628 ".concat(money(settings.minOrder), " \u062F\u0631\u0647\u0645"));
+          return _context11.a(2);
+        case 2:
+          if (customer.value.trim()) {
+            _context11.n = 3;
+            break;
+          }
+          alert("اكتب اسم العميل");
+          customer.focus();
+          return _context11.a(2);
+        case 3:
+          if (customerPhone.value.trim()) {
+            _context11.n = 4;
+            break;
+          }
+          alert("اكتب رقم هاتف العميل");
+          customerPhone.focus();
+          return _context11.a(2);
+        case 4:
+          if (!gsUrl()) {
+            _context11.n = 10;
+            break;
+          }
+          _context11.p = 5;
+          _context11.n = 6;
+          return gsPost({
+            action: "createOrder",
+            name: customer.value.trim(),
+            phone: customerPhone.value.trim(),
+            area: area.value.trim(),
+            location: location.value.trim(),
+            deliveryType: t.deliveryType,
+            subtotal: t.subtotal,
+            delivery: t.delivery,
+            discount: t.discount,
+            total: t.total,
+            items: arr.map(function (x) {
+              return {
+                productId: x.id,
+                name: x.name,
+                price: Number(x.price) || 0,
+                qty: Number(x.qty) || 0,
+                lineTotal: (Number(x.price) || 0) * Number(x.qty || 0)
+              };
+            })
+          });
+        case 6:
+          d = _context11.v;
+          if (d.ok) {
+            _context11.n = 7;
+            break;
+          }
+          throw new Error(d.error || "FAILED");
+        case 7:
+          orderNo = d.orderNo;
+          customerNo = d.customerNo;
+          record = {
+            orderNo: orderNo,
+            customerNo: customerNo,
+            dateText: d.dateText || (new Date()).toLocaleString("ar-AE"),
+            name: customer.value.trim(),
+            phone: customerPhone.value.trim(),
+            area: area.value.trim() || "-",
+            location: location.value.trim() || "-"
+          };
+          _context11.n = 9;
+          break;
+        case 8:
+          _context11.p = 8;
+          _t10 = _context11.v;
+          alert("تعذر تسجيل الطلب في Google Sheets: " + _t10.message);
+          return _context11.a(2);
+        case 9:
+          _context11.n = 11;
+          break;
+        case 10:
+          orderNo = nextOrderNumber();
+          record = saveOrderRecord(arr, t, orderNo);
+          customerNo = record.customerNo;
+        case 11:
+          lines = ["\uD83D\uDED2 \u0637\u0644\u0628 \u062C\u062F\u064A\u062F \u0631\u0642\u0645 #".concat(orderNo, " \u0645\u0646 \u0645\u0646\u064A\u0648 \u063A\u0635\u0646 \u0627\u0644\u0632\u064A\u062A\u0648\u0646"), "", "\u0631\u0642\u0645 \u0627\u0644\u0639\u0645\u064A\u0644: ".concat(customerNo), "\u0627\u0644\u0627\u0633\u0645: ".concat(record.name), "\u0631\u0642\u0645 \u0627\u0644\u0647\u0627\u062A\u0641: ".concat(record.phone), "\u0627\u0644\u062A\u0627\u0631\u064A\u062E: ".concat(record.dateText), "\u0627\u0644\u0645\u0646\u0637\u0642\u0629: ".concat(record.area), "\u0637\u0631\u064A\u0642\u0629 \u0627\u0644\u0627\u0633\u062A\u0644\u0627\u0645: ".concat(t.deliveryType === "delivery" ? "توصيل" : "استلام من الفرع"), "\u0627\u0644\u0645\u0648\u0642\u0639: ".concat(record.location), "", "الطلبات:"];
+          arr.forEach(function (x, i) {
+            return lines.push("".concat(i + 1, "- ").concat(x.name, "\n   ").concat(x.price ? "".concat(money(x.price), " \xD7 ").concat(x.qty, " = ").concat(money(Number(x.price) * x.qty), " \u062F\u0631\u0647\u0645") : "\u0627\u0644\u0643\u0645\u064A\u0629: ".concat(x.qty)));
+          });
+          lines.push("", "\u0639\u062F\u062F \u0627\u0644\u0623\u0635\u0646\u0627\u0641: ".concat(t.itemCount), "\u0625\u062C\u0645\u0627\u0644\u064A \u0627\u0644\u0642\u0637\u0639: ".concat(t.qtyCount), "\u0627\u0644\u0625\u062C\u0645\u0627\u0644\u064A \u0642\u0628\u0644 \u0627\u0644\u062A\u0648\u0635\u064A\u0644: ".concat(money(t.subtotal), " \u062F\u0631\u0647\u0645"));
+          if (t.delivery) lines.push("\u0631\u0633\u0648\u0645 \u0627\u0644\u062A\u0648\u0635\u064A\u0644: ".concat(money(t.delivery), " \u062F\u0631\u0647\u0645"));
+          if (t.discount) lines.push("\u0627\u0644\u062E\u0635\u0645: -".concat(money(t.discount), " \u062F\u0631\u0647\u0645"));
+          lines.push("\u2705 \u0627\u0644\u0625\u062C\u0645\u0627\u0644\u064A \u0627\u0644\u0646\u0647\u0627\u0626\u064A: ".concat(money(t.total), " \u062F\u0631\u0647\u0645"));
+          window.open("https://wa.me/".concat(settings.phone, "?text=").concat(encodeURIComponent(lines.join("\n"))), "_blank");
+          alert("\u062A\u0645 \u062A\u0633\u062C\u064A\u0644 \u0627\u0644\u0637\u0644\u0628 \u0631\u0642\u0645 #".concat(orderNo));
+          cart = {};
+          saveCart();
+          renderCart();
+          closeCart();
+        case 12:
+          return _context11.a(2);
+      }
+    }, _callee11, null, [[5, 8]]);
+  }));
+  return _sendWA.apply(this, arguments);
+}
+function loadCloudOrders() {
+  return _loadCloudOrders.apply(this, arguments);
+}
+function _loadCloudOrders() {
+  _loadCloudOrders = _asyncToGenerator(_regenerator().m(function _callee12() {
+    var d, _t11;
+    return _regenerator().w(function (_context12) {
+      while (1) switch (_context12.p = _context12.n) {
+        case 0:
+          if (gsUrl()) {
+            _context12.n = 1;
+            break;
+          }
+          return _context12.a(2);
+        case 1:
+          _context12.p = 1;
+          _context12.n = 2;
+          return jsonp("orders", {
+            pin: settings.pin
+          });
+        case 2:
+          d = _context12.v;
+          orders = d.orders || [];
+          renderOrders();
+          _context12.n = 4;
+          break;
+        case 3:
+          _context12.p = 3;
+          _t11 = _context12.v;
+          console.warn(_t11);
+        case 4:
+          return _context12.a(2);
+      }
+    }, _callee12, null, [[1, 3]]);
+  }));
+  return _loadCloudOrders.apply(this, arguments);
+}
+var originalShowAdminTab = showAdminTab;
+showAdminTab = function showAdminTab(tab) {
+  originalShowAdminTab(tab);
+  if (tab === "orders" && gsUrl()) loadCloudOrders();
+};
+function updateOrderStatus(_x8, _x9) {
+  return _updateOrderStatus.apply(this, arguments);
+}
+function _updateOrderStatus() {
+  _updateOrderStatus = _asyncToGenerator(_regenerator().m(function _callee13(no, status) {
+    var d, o, _t12;
+    return _regenerator().w(function (_context13) {
+      while (1) switch (_context13.p = _context13.n) {
+        case 0:
+          if (!gsUrl()) {
+            _context13.n = 6;
+            break;
+          }
+          _context13.p = 1;
+          _context13.n = 2;
+          return gsPost({
+            action: "updateStatus",
+            pin: settings.pin,
+            orderNo: no,
+            status: status
+          });
+        case 2:
+          d = _context13.v;
+          if (d.ok) {
+            _context13.n = 3;
+            break;
+          }
+          throw new Error(d.error);
+        case 3:
+          _context13.n = 4;
+          return loadCloudOrders();
+        case 4:
+          return _context13.a(2);
+        case 5:
+          _context13.p = 5;
+          _t12 = _context13.v;
+          alert("تعذر تحديث الحالة: " + _t12.message);
+          return _context13.a(2);
+        case 6:
+          o = orders.find(function (x) {
+            return x.orderNo === no;
+          });
+          if (o) {
+            o.status = status;
+            localStorage.setItem(ORDERSKEY, JSON.stringify(orders));
+          }
+        case 7:
+          return _context13.a(2);
+      }
+    }, _callee13, null, [[1, 5]]);
+  }));
+  return _updateOrderStatus.apply(this, arguments);
+}
+window.addEventListener("load", function () {
+  return setTimeout(_asyncToGenerator(_regenerator().m(function _callee() {
+    return _regenerator().w(function (_context) {
+      while (1) switch (_context.n) {
+        case 0:
+          _context.n = 1;
+          return loadCloudCategories();
+        case 1:
+          _context.n = 2;
+          return loadCloudProducts();
+        case 2:
+          return _context.a(2);
+      }
+    }, _callee);
+  })), 300);
+});
+</script>
+</body></html>
