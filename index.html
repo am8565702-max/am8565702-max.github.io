@@ -11,6 +11,7 @@
 header{position:-webkit-sticky;position:sticky;top:0;z-index:10;background:rgba(255,255,255,.96);backdrop-filter:blur(10px);border-bottom:1px solid #e8dcc7;padding:12px 16px;display:grid;grid-template-columns:auto auto minmax(180px,1fr) auto auto;gap:10px;align-items:center}.brand h1{font-size:22px;margin:0;color:var(--green)}.brand small{color:var(--muted)}
 .langSwitch{display:flex;gap:4px;padding:4px;border:1px solid #decdb1;background:#f7f1e7;border-radius:14px}.langSwitch button{min-height:36px;border:0;border-radius:10px;padding:7px 11px;background:transparent;color:var(--green);font-weight:800;cursor:pointer}.langSwitch button.active{background:var(--green);color:#fff;box-shadow:0 3px 10px rgba(40,91,53,.18)}html[dir="ltr"] .panel{left:auto;right:0;transform:translateX(105%)}html[dir="ltr"] .tag{right:auto;left:10px}html[dir="ltr"] .close{float:right}
 .search{width:100%;padding:13px 16px;border:1px solid #decdb1;border-radius:14px;font-size:15px;outline:none}.topBtn{border:0;border-radius:14px;padding:12px 15px;font-weight:700;cursor:pointer}.cartBtn{background:var(--green);color:#fff;position:relative}.adminBtn{background:#f3eadb;color:var(--green);border:1px solid #decdb1}.badge{position:absolute;top:-8px;left:-8px;background:#d62828;color:#fff;border-radius:50%;min-width:24px;height:24px;display:grid;place-items:center;font-size:12px}
+.locationStatus{margin:7px 0 10px;padding:12px;border:1px solid #add0b6;border-radius:12px;background:#e8f6eb;color:#1f5a30;line-height:1.7}.locationStatus.error{border-color:#efb2ad;background:#fee4e2;color:#9b1c15}.locationStatus.loading{border-color:#ead28b;background:#fff7df;color:#6b4d00}.locationStatus a{display:inline-block;margin-top:4px;color:var(--green);font-weight:800;text-decoration:underline;text-underline-offset:3px}.locationStatus[hidden]{display:none}.gps:disabled{opacity:.65;cursor:wait}
 .hero{margin:18px auto;max-width:1200px;padding:22px;border-radius:24px;background:linear-gradient(135deg,#2e6840,#1f4a2c);color:#fff;display:flex;justify-content:space-between;gap:20px;align-items:center}.hero h2{margin:0 0 8px;font-size:28px}.hero p{margin:0;opacity:.9}.hero .wa{background:#25D366;color:#073b1b;padding:12px 18px;border-radius:14px;font-weight:700}
 .categories{max-width:1200px;margin:auto;padding:0 16px 14px;display:flex;gap:10px;overflow:auto}.cat{white-space:nowrap;border:1px solid #dfd2bd;background:#fff;padding:10px 15px;border-radius:999px;cursor:pointer}.cat.active{background:var(--green);color:#fff;border-color:var(--green)}
 main{max-width:1200px;margin:auto;padding:0 16px 80px}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}.card{background:var(--card);border-radius:20px;overflow:hidden;box-shadow:0 10px 28px rgba(59,45,24,.10);border:1px solid #eadfcd;display:flex;flex-direction:column}.pic{height:175px;background:#eee;overflow:hidden;position:relative}.pic img{width:100%;height:100%;object-fit:cover}.tag{position:absolute;top:10px;right:10px;background:rgba(255,255,255,.92);padding:6px 9px;border-radius:10px;font-size:12px;color:var(--green);font-weight:700}.body{padding:14px;display:flex;flex-direction:column;gap:8px;flex:1}.name{font-size:18px;font-weight:800}.desc{color:var(--muted);font-size:13px;line-height:1.6;min-height:40px}.price{font-size:20px;color:var(--green);font-weight:900}.actions{display:flex;gap:8px;align-items:center;margin-top:auto}.pick{flex:1;border:0;background:var(--green);color:#fff;padding:11px;border-radius:12px;font-weight:700;cursor:pointer}.qty{display:flex;align-items:center;border:1px solid #decdb1;border-radius:12px;overflow:hidden}.qty button{width:34px;height:38px;border:0;background:#f6efe3;font-size:20px;cursor:pointer}.qty span{min-width:34px;text-align:center;font-weight:700}
@@ -47,7 +48,7 @@ main{max-width:1200px;margin:auto;padding:0 16px 80px}.grid{display:grid;grid-te
 <section class="hero"><div><h2>منتجات فلسطينية مختارة بعناية</h2><p>اطلب مباشرة عبر واتساب مع تحديد موقعك GPS</p></div><div id="heroPhone" class="wa">واتساب 0505660791</div></section>
 <div id="cats" class="categories"></div><main><div id="pageError" style="display:none;margin:12px auto;max-width:900px;padding:12px;border-radius:12px;background:#fee4e2;color:#9b1c15;text-align:center"></div>
 <div id="grid" class="grid"></div></main>
-<div id="drawer" class="drawer"><div class="shade" onclick="closeCart()"></div><aside class="panel"><button class="close" onclick="closeCart()">✕</button><h3>سلة الطلب</h3><div id="cart"></div><div class="orderOptions"><b>طريقة الاستلام</b><label><input type="radio" name="deliveryType" value="pickup" checked onchange="renderCart()"> استلام من الفرع</label><label><input type="radio" name="deliveryType" value="delivery" onchange="renderCart()"> توصيل</label><div class="miniNote" id="deliveryHint"></div></div><div id="summary" class="summary"></div><div class="form"><div class="notice">سيتم إنشاء رقم طلب تلقائي يبدأ من 1000 عند الإرسال.</div><input id="customer" placeholder="اسم العميل"><input id="customerPhone" placeholder="رقم هاتف العميل"><input id="area" placeholder="المنطقة / العنوان"><button class="gps" onclick="getGPS()">📍 تحديد موقعي GPS</button><input id="location" placeholder="رابط الموقع" readonly><button class="send" onclick="sendWA()">إرسال الطلب على واتساب</button></div></aside></div>
+<div id="drawer" class="drawer"><div class="shade" onclick="closeCart()"></div><aside class="panel"><button class="close" onclick="closeCart()">✕</button><h3>سلة الطلب</h3><div id="cart"></div><div class="orderOptions"><b>طريقة الاستلام</b><label><input type="radio" name="deliveryType" value="pickup" checked onchange="renderCart()"> استلام من الفرع</label><label><input type="radio" name="deliveryType" value="delivery" onchange="renderCart()"> توصيل</label><div class="miniNote" id="deliveryHint"></div></div><div id="summary" class="summary"></div><div class="form"><div class="notice">سيتم إنشاء رقم طلب تلقائي يبدأ من 1000 عند الإرسال.</div><input id="customer" placeholder="اسم العميل"><input id="customerPhone" placeholder="رقم هاتف العميل"><input id="area" placeholder="المنطقة / العنوان"><button id="gpsButton" class="gps" type="button" onclick="getGPS()">📍 تحديد موقعي GPS</button><div id="locationStatus" class="locationStatus" role="status" aria-live="polite" hidden><span id="locationStatusText"></span><br><a id="locationMapLink" href="#" target="_blank" rel="noopener noreferrer" hidden>فتح الموقع على الخريطة</a></div><input id="location" type="hidden"><button class="send" onclick="sendWA()">إرسال الطلب على واتساب</button></div></aside></div>
 <div id="loginModal" class="modal"><div class="shade" onclick="closeLogin()"></div><div class="loginBox"><button class="close" onclick="closeLogin()">✕</button><h3>دخول لوحة التحكم</h3><input id="pinInput" type="password" inputmode="numeric" placeholder="كلمة المرور"><button class="primary" style="width:100%" onclick="loginAdmin()">دخول</button><div class="notice">كلمة المرور الافتراضية: <b>1234</b>. غيّرها من إعدادات لوحة التحكم.</div></div></div>
 <div id="adminModal" class="modal"><div class="shade"></div><div class="dialog"><div class="adminHead"><h2>لوحة تحكم المنيو والعملاء</h2><button class="secondary" onclick="closeAdmin()">إغلاق</button></div><div class="adminTabs"><button id="productsTabBtn" class="adminTab active" onclick="showAdminTab('products')">المنتجات والإعدادات</button><button id="ordersTabBtn" class="adminTab" onclick="showAdminTab('orders')">الطلبات والعملاء <span id="ordersCountBadge"></span></button></div><div id="productsTab" class="adminBody tabPage active"><section class="adminSide"><h3 id="formTitle">إضافة منتج</h3><input type="hidden" id="editId"><div class="field"><label>اسم المنتج</label><input id="pName"></div><div class="field"><label>المكونات / الوصف</label><textarea id="pDesc"></textarea></div><div class="row"><div class="field"><label>السعر</label><input id="pPrice" type="number" step="0.01"></div><div class="field"><label>الجروب</label><select id="pCat"></select></div></div><div class="field"><label>صورة المنتج</label><input id="pImage" type="file" accept="image/*" onchange="loadImage(event)"><img id="preview" class="preview" alt="معاينة الصورة"></div><div class="field"><label><input id="pVisible" type="checkbox" checked> المنتج ظاهر للزبائن</label></div><div class="row"><button class="primary" onclick="saveProduct()">حفظ المنتج</button><button class="secondary" onclick="clearForm()">جديد</button></div><hr style="border:0;border-top:1px solid #eee;margin:16px 0"><h3>إعدادات</h3><div class="field"><label>رقم واتساب بصيغة دولية</label><input id="settingPhone" placeholder="971505660791"></div><div class="field"><label>كلمة مرور الإدارة</label><input id="settingPin" type="password"></div><div class="row"><div class="field"><label>رسوم التوصيل</label><input id="settingDelivery" type="number" min="0" step="0.01"></div><div class="field"><label>الحد الأدنى للطلب</label><input id="settingMinOrder" type="number" min="0" step="0.01"></div></div><div class="row"><div class="field"><label>خصم عند طلب بقيمة</label><input id="settingDiscountThreshold" type="number" min="0" step="0.01"></div><div class="field"><label>نسبة الخصم %</label><input id="settingDiscountPercent" type="number" min="0" max="100" step="0.01"></div></div><div class="field"><label>رابط Google Apps Script Web App</label><input id="settingWebApp" placeholder="https://script.google.com/macros/s/.../exec"></div><div class="notice">ضع رابط النشر هنا مرة واحدة، وبعدها ستُحفظ الطلبات والعملاء في Google Sheets.</div><button class="primary" style="width:100%" onclick="saveSettings()">حفظ الإعدادات</button>
 <div class="categoryAdminBox">
@@ -432,7 +433,7 @@ function getGPS() {
     return;
   }
   navigator.geolocation.getCurrentPosition(function (p) {
-    location.value = "https://maps.google.com/?q=".concat(p.coords.latitude, ",").concat(p.coords.longitude);
+    document.getElementById("location").value = "https://maps.google.com/?q=".concat(p.coords.latitude, ",").concat(p.coords.longitude);
   }, function () {
     return alert("تعذر تحديد الموقع. افتح الصفحة عبر HTTPS واسمح للموقع.");
   });
@@ -457,7 +458,7 @@ function saveOrderRecord(arr, t, orderNo) {
     name: (customer.value || "-").trim(),
     phone: phone || "-",
     area: (area.value || "-").trim(),
-    location: (location.value || "-").trim(),
+    location: (document.getElementById("location").value || "-").trim(),
     deliveryType: t.deliveryType,
     items: arr.map(function (x) {
       return {
@@ -1586,7 +1587,7 @@ function _sendWA() {
             name: customer.value.trim(),
             phone: customerPhone.value.trim(),
             area: area.value.trim(),
-            location: location.value.trim(),
+            location: document.getElementById("location").value.trim(),
             deliveryType: t.deliveryType,
             subtotal: t.subtotal,
             delivery: t.delivery,
@@ -1619,7 +1620,7 @@ function _sendWA() {
             name: customer.value.trim(),
             phone: customerPhone.value.trim(),
             area: area.value.trim() || "-",
-            location: location.value.trim() || "-"
+            location: document.getElementById("location").value.trim() || "-"
           };
           _context11.n = 9;
           break;
@@ -1815,6 +1816,9 @@ window.addEventListener("load", function () {
       area: "المنطقة / العنوان",
       gps: "📍 تحديد موقعي GPS",
       location: "رابط الموقع",
+      locating: "جاري تحديد موقعك...",
+      locationReady: "تم تحديد موقعك بنجاح",
+      openMap: "فتح الموقع على الخريطة",
       send: "إرسال الطلب على واتساب",
       adminLogin: "دخول لوحة التحكم",
       password: "كلمة المرور",
@@ -1875,6 +1879,9 @@ window.addEventListener("load", function () {
       area: "Area / address",
       gps: "📍 Share my GPS location",
       location: "Location link",
+      locating: "Getting your location...",
+      locationReady: "Your location was added successfully",
+      openMap: "Open location in Maps",
       send: "Send order on WhatsApp",
       adminLogin: "Admin Login",
       password: "Password",
@@ -2010,7 +2017,6 @@ window.addEventListener("load", function () {
     setPlaceholder("#customerPhone", tr("customerPhone"));
     setPlaceholder("#area", tr("area"));
     setText("#drawer .gps", tr("gps"));
-    setPlaceholder("#location", tr("location"));
     setText("#drawer .send", tr("send"));
     setText("#loginModal h3", tr("adminLogin"));
     setPlaceholder("#pinInput", tr("password"));
@@ -2021,6 +2027,8 @@ window.addEventListener("load", function () {
     var enButton = document.getElementById("langEn");
     if (arButton) arButton.className = menuLanguage === "ar" ? "active" : "";
     if (enButton) enButton.className = menuLanguage === "en" ? "active" : "";
+    var savedLocation = document.getElementById("location");
+    if (savedLocation && savedLocation.value) showLocationSuccess(savedLocation.value);
   }
 
   window.setMenuLanguage = function (language) {
@@ -2079,16 +2087,48 @@ window.addEventListener("load", function () {
     summary.innerHTML = html;
   };
 
+  function showLocationSuccess(url) {
+    var status = document.getElementById("locationStatus");
+    var statusText = document.getElementById("locationStatusText");
+    var mapLink = document.getElementById("locationMapLink");
+    if (!status || !statusText || !mapLink) return;
+    status.hidden = false;
+    status.className = "locationStatus";
+    statusText.textContent = "✓ " + tr("locationReady");
+    mapLink.href = url;
+    mapLink.textContent = tr("openMap");
+    mapLink.hidden = false;
+  }
+
+  function showLocationMessage(message, type) {
+    var status = document.getElementById("locationStatus");
+    var statusText = document.getElementById("locationStatusText");
+    var mapLink = document.getElementById("locationMapLink");
+    if (!status || !statusText || !mapLink) return;
+    status.hidden = false;
+    status.className = "locationStatus " + type;
+    statusText.textContent = message;
+    mapLink.hidden = true;
+  }
+
   getGPS = function () {
+    var gpsButton = document.getElementById("gpsButton");
+    var locationInput = document.getElementById("location");
     if (!navigator.geolocation) {
-      alert(tr("gpsUnsupported"));
+      showLocationMessage(tr("gpsUnsupported"), "error");
       return;
     }
+    if (gpsButton) gpsButton.disabled = true;
+    showLocationMessage(tr("locating"), "loading");
     navigator.geolocation.getCurrentPosition(function (position) {
-      location.value = "https://maps.google.com/?q=" + position.coords.latitude + "," + position.coords.longitude;
+      var url = "https://maps.google.com/?q=" + position.coords.latitude + "," + position.coords.longitude;
+      if (locationInput) locationInput.value = url;
+      if (gpsButton) gpsButton.disabled = false;
+      showLocationSuccess(url);
     }, function () {
-      alert(tr("gpsError"));
-    });
+      if (gpsButton) gpsButton.disabled = false;
+      showLocationMessage(tr("gpsError"), "error");
+    }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
   };
 
   function finishLocalizedOrder(items, totals, orderNo, customerNo, record, popup) {
@@ -2145,7 +2185,7 @@ window.addEventListener("load", function () {
         name: customer.value.trim(),
         phone: customerPhone.value.trim(),
         area: area.value.trim(),
-        location: location.value.trim(),
+        location: document.getElementById("location").value.trim(),
         deliveryType: totals.deliveryType,
         subtotal: totals.subtotal,
         delivery: totals.delivery,
@@ -2156,7 +2196,7 @@ window.addEventListener("load", function () {
         })
       }).then(function (data) {
         if (!data.ok) throw new Error(data.error || "FAILED");
-        var record = { name: customer.value.trim(), phone: customerPhone.value.trim(), dateText: data.dateText || (new Date()).toLocaleString(menuLanguage === "en" ? "en-AE" : "ar-AE"), area: area.value.trim() || "-", location: location.value.trim() || "-" };
+        var record = { name: customer.value.trim(), phone: customerPhone.value.trim(), dateText: data.dateText || (new Date()).toLocaleString(menuLanguage === "en" ? "en-AE" : "ar-AE"), area: area.value.trim() || "-", location: document.getElementById("location").value.trim() || "-" };
         finishLocalizedOrder(items, totals, data.orderNo, data.customerNo, record, popup);
       }).catch(function (error) {
         if (popup && !popup.closed) popup.close();
