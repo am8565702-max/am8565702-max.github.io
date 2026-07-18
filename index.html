@@ -2236,19 +2236,31 @@ window.addEventListener("load", function () {
   };
 
   var CLOUD_WHATSAPP_MARKER = "__MENU_WHATSAPP__";
+  var CLOUD_PUBLIC_SETTINGS_MARKER = "__MENU_PUBLIC_SETTINGS__";
   var cloudWhatsAppRecordId = 0;
+  var cloudPublicSettingsRecordId = 0;
   var baseCloudProductsLoader = loadCloudProducts;
+
+  function publicSettingNumber(value, fallback, maximum) {
+    var number = Number(value);
+    if (!isFinite(number) || number < 0) return Number(fallback || 0);
+    if (maximum != null) return Math.min(maximum, number);
+    return number;
+  }
 
   loadCloudProducts = function () {
     var pending = baseCloudProductsLoader();
     if (!pending || typeof pending.then !== "function") return pending;
     return pending.then(function () {
       var marker = null;
+      var publicSettingsMarker = null;
       products.forEach(function (product) {
         if (String(product.name || "").trim() === CLOUD_WHATSAPP_MARKER && !marker) marker = product;
+        if (String(product.name || "").trim() === CLOUD_PUBLIC_SETTINGS_MARKER && !publicSettingsMarker) publicSettingsMarker = product;
       });
       products = products.filter(function (product) {
-        return String(product.name || "").trim() !== CLOUD_WHATSAPP_MARKER;
+        var name = String(product.name || "").trim();
+        return name !== CLOUD_WHATSAPP_MARKER && name !== CLOUD_PUBLIC_SETTINGS_MARKER;
       });
       if (marker) {
         cloudWhatsAppRecordId = Number(marker.id || 0);
@@ -2260,6 +2272,29 @@ window.addEventListener("load", function () {
           if (document.getElementById("settingPhone") && adminModal.classList.contains("open")) {
             settingPhone.value = cloudPhone;
           }
+        }
+      }
+      if (publicSettingsMarker) {
+        cloudPublicSettingsRecordId = Number(publicSettingsMarker.id || 0);
+        try {
+          var cloudSettings = JSON.parse(String(publicSettingsMarker.desc || "{}"));
+          var sharedPhone = String(cloudSettings.phone || "").replace(/\D/g, "");
+          if (sharedPhone.length >= 10) settings.phone = sharedPhone;
+          settings.deliveryFee = publicSettingNumber(cloudSettings.deliveryFee, settings.deliveryFee);
+          settings.minOrder = publicSettingNumber(cloudSettings.minOrder, settings.minOrder);
+          settings.discountThreshold = publicSettingNumber(cloudSettings.discountThreshold, settings.discountThreshold);
+          settings.discountPercent = publicSettingNumber(cloudSettings.discountPercent, settings.discountPercent, 100);
+          settings.webAppUrl = CURRENT_WEB_APP_URL;
+          localStorage.setItem(SETKEY, JSON.stringify(settings));
+          if (document.getElementById("settingPhone") && adminModal.classList.contains("open")) {
+            settingPhone.value = settings.phone;
+            settingDelivery.value = settings.deliveryFee;
+            settingMinOrder.value = settings.minOrder;
+            settingDiscountThreshold.value = settings.discountThreshold;
+            settingDiscountPercent.value = settings.discountPercent;
+          }
+        } catch (error) {
+          console.warn("Ignored invalid shared menu settings", error);
         }
       }
       render();
@@ -2294,7 +2329,15 @@ window.addEventListener("load", function () {
       saveButton.disabled = true;
       saveButton.textContent = "جاري الحفظ للجميع...";
     }
-    gsPost({
+    var publicSettingsValue = JSON.stringify({
+      version: 2,
+      phone: phone,
+      deliveryFee: settings.deliveryFee,
+      minOrder: settings.minOrder,
+      discountThreshold: settings.discountThreshold,
+      discountPercent: settings.discountPercent
+    });
+    var savePhone = gsPost({
       action: "saveProduct",
       pin: previousPin,
       id: cloudWhatsAppRecordId || 0,
@@ -2305,21 +2348,37 @@ window.addEventListener("load", function () {
       visible: false,
       imageData: "",
       existingImage: ""
-    }).then(function (data) {
-      if (!data.ok) throw new Error(data.error || "FAILED");
+    });
+    var publicSettingsPayload = {
+      action: "saveProduct",
+      pin: previousPin,
+      id: cloudPublicSettingsRecordId || 0,
+      name: CLOUD_PUBLIC_SETTINGS_MARKER,
+      desc: publicSettingsValue,
+      price: "",
+      cat: "labneh",
+      visible: false,
+      imageData: "",
+      existingImage: ""
+    };
+    savePhone.then(function (phoneResult) {
+      if (!phoneResult.ok) throw new Error(phoneResult.error || "FAILED_PHONE");
+      return gsPost(publicSettingsPayload);
+    }).then(function (settingsResult) {
+      if (!settingsResult.ok) throw new Error(settingsResult.error || "FAILED_SETTINGS");
       return loadCloudProducts();
     }).then(function () {
       if (saveButton) {
         saveButton.disabled = false;
         saveButton.textContent = oldText || "حفظ الإعدادات";
       }
-      alert("تم حفظ رقم واتساب للجميع. سيظهر على الأجهزة المفتوحة خلال دقيقة.");
+      alert("تم حفظ رقم واتساب والرسوم والحد الأدنى والخصم للجميع. ستظهر التغييرات خلال دقيقة.");
     }).catch(function (error) {
       if (saveButton) {
         saveButton.disabled = false;
         saveButton.textContent = oldText || "حفظ الإعدادات";
       }
-      alert("تعذر حفظ رقم واتساب للجميع: " + error.message);
+      alert("تعذر حفظ الإعدادات للجميع: " + error.message);
     });
   };
 
