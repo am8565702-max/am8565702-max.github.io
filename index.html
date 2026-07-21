@@ -16,7 +16,7 @@ header{position:-webkit-sticky;position:sticky;top:0;z-index:10;background:rgba(
 .hero{margin:18px auto;max-width:1200px;padding:22px;border-radius:24px;background:linear-gradient(135deg,#2e6840,#1f4a2c);color:#fff;display:flex;justify-content:space-between;gap:20px;align-items:center}.hero h2{margin:0 0 8px;font-size:28px}.hero p{margin:0;opacity:.9}.hero .wa{background:#25D366;color:#073b1b;padding:12px 18px;border-radius:14px;font-weight:700}
 .categories{max-width:1200px;margin:auto;padding:0 16px 14px;display:flex;gap:10px;overflow:auto}.cat{white-space:nowrap;border:1px solid #dfd2bd;background:#fff;padding:10px 15px;border-radius:999px;cursor:pointer}.cat.active{background:var(--green);color:#fff;border-color:var(--green)}
 main{max-width:1200px;margin:auto;padding:0 16px 80px}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}.card{background:var(--card);border-radius:20px;overflow:hidden;box-shadow:0 10px 28px rgba(59,45,24,.10);border:1px solid #eadfcd;display:flex;flex-direction:column}.pic{height:175px;background:#eee;overflow:hidden;position:relative}.pic img{width:100%;height:100%;object-fit:cover}.tag{position:absolute;top:10px;right:10px;background:rgba(255,255,255,.92);padding:6px 9px;border-radius:10px;font-size:12px;color:var(--green);font-weight:700}.body{padding:14px;display:flex;flex-direction:column;gap:8px;flex:1}.name{font-size:18px;font-weight:800}.desc{color:var(--muted);font-size:13px;line-height:1.6;min-height:40px}.price{font-size:20px;color:var(--green);font-weight:900}.actions{display:flex;gap:8px;align-items:center;margin-top:auto}.pick{flex:1;border:0;background:var(--green);color:#fff;padding:11px;border-radius:12px;font-weight:700;cursor:pointer}.qty{display:flex;align-items:center;border:1px solid #decdb1;border-radius:12px;overflow:hidden}.qty button{width:34px;height:38px;border:0;background:#f6efe3;font-size:20px;cursor:pointer}.qty span{min-width:34px;text-align:center;font-weight:700}
-.drawer,.modal{position:fixed;top:0;right:0;bottom:0;left:0;inset:0;z-index:30;pointer-events:none}.drawer.open,.modal.open{pointer-events:auto}.shade{position:absolute;top:0;right:0;bottom:0;left:0;inset:0;background:rgba(0,0,0,.48);opacity:0;transition:.2s}.open .shade{opacity:1}.panel{position:absolute;top:0;bottom:0;left:0;width:min(440px,94vw);background:#fff;transform:translateX(-105%);transition:.25s;padding:18px;overflow:auto}.drawer.open .panel{transform:none}.panel h3{margin:0 0 14px;color:var(--green)}.cartItem{display:grid;grid-template-columns:1fr auto;gap:8px;padding:12px 0;border-bottom:1px solid #eee}.itemTotal{color:var(--green);font-weight:800;margin-top:4px}.orderOptions{margin:14px 0;padding:12px;border:1px solid #eadfcd;border-radius:14px;background:#faf7f1}.orderOptions label{display:flex;align-items:center;gap:8px;margin:7px 0}.summary{margin:14px 0;border-radius:16px;background:#f4efe5;padding:14px}.sumRow{display:flex;justify-content:space-between;gap:12px;padding:6px 0}.sumRow.final{border-top:2px solid #d6c29e;margin-top:7px;padding-top:12px;font-size:20px;font-weight:900;color:var(--green)}.discountRow{color:#b42318}.miniNote{font-size:12px;color:var(--muted);margin-top:5px}.form input{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;margin:5px 0}.gps{width:100%;padding:11px;border:1px solid var(--green);background:#eef7f0;color:var(--green);border-radius:10px;font-weight:700}.send{width:100%;padding:14px;border:0;background:#25D366;color:#fff;border-radius:12px;font-size:16px;font-weight:800;margin-top:10px}.empty{text-align:center;color:#777;padding:30px}.close{float:left;border:0;background:#eee;width:34px;height:34px;border-radius:10px;cursor:pointer}
+.drawer,.modal{position:fixed;top:0;right:0;bottom:0;left:0;inset:0;z-index:30;pointer-events:none}.drawer.open,.modal.open{pointer-events:auto}.shade{position:absolute;top:0;right:0;bottom:0;left:0;inset:0;background:rgba(0,0,0,.48);opacity:0;transition:.2s}.open .shade{opacity:1}.panel{position:absolute;top:0;bottom:0;left:0;width:min(440px,94vw);background:#fff;transform:translateX(-105%);transition:.25s;padding:18px;overflow:auto}.drawer.open .panel{transform:none}.panel h3{margin:0 0 14px;color:var(--green)}.cartItem{display:grid;grid-template-columns:1fr auto;gap:8px;padding:12px 0;border-bottom:1px solid #eee}.itemTotal{color:var(--green);font-weight:800;margin-top:4px}.orderOptions{margin:14px 0;padding:12px;border:1px solid #eadfcd;border-radius:14px;background:#faf7f1}.orderOptions label{display:flex;align-items:center;gap:8px;margin:7px 0}.summary{margin:14px 0;border-radius:16px;background:#f4efe5;padding:14px}.sumRow{display:flex;justify-content:space-between;gap:12px;padding:6px 0}.sumRow.final{border-top:2px solid #d6c29e;margin-top:7px;padding-top:12px;font-size:20px;font-weight:900;color:var(--green)}.discountRow{color:#b42318}.paymentSection{border-top:1px solid #d6c29e;margin-top:12px;padding-top:13px}.paymentTitle{display:block;margin-bottom:9px;color:var(--green);font-weight:900}.paymentChoices{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.paymentChoice{display:flex;align-items:center;justify-content:center;gap:5px;min-height:42px;padding:8px 6px;border:1px solid #d8c6a8;border-radius:11px;background:#fff;cursor:pointer;font-weight:700;text-align:center}.paymentChoice:has(input:checked){border-color:var(--green);background:#e8f3ea;color:var(--green);box-shadow:0 0 0 1px var(--green)}.paymentChoice input{accent-color:var(--green);margin:0}.bankDetails{margin-top:10px;padding:11px;border:1px dashed #caa56a;border-radius:12px;background:#fffaf0;text-align:center}.bankNumber{display:block;margin:6px 0 9px;font-size:19px;font-weight:900;letter-spacing:1px;direction:ltr}.copyAccount{width:100%;min-height:42px;border:0;border-radius:10px;background:var(--green);color:#fff;font-weight:800;cursor:pointer}.miniNote{font-size:12px;color:var(--muted);margin-top:5px}.form input{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;margin:5px 0}.gps{width:100%;padding:11px;border:1px solid var(--green);background:#eef7f0;color:var(--green);border-radius:10px;font-weight:700}.send{width:100%;padding:14px;border:0;background:#25D366;color:#fff;border-radius:12px;font-size:16px;font-weight:800;margin-top:10px}.empty{text-align:center;color:#777;padding:30px}.close{float:left;border:0;background:#eee;width:34px;height:34px;border-radius:10px;cursor:pointer}
 .dialog{position:absolute;top:4vh;right:3vw;bottom:4vh;left:3vw;inset:4vh 3vw;background:#fff;border-radius:22px;opacity:0;transform:scale(.97);transition:.2s;overflow:hidden;display:flex;flex-direction:column}.modal.open .dialog{opacity:1;transform:none}.adminHead{padding:14px 18px;background:var(--green);color:#fff;display:flex;align-items:center;gap:12px}.adminHead h2{margin:0;flex:1}.adminBody{display:grid;grid-template-columns:380px 1fr;gap:16px;padding:16px;overflow:auto}.adminSide,.adminList{border:1px solid #eadfcd;border-radius:16px;padding:14px;background:#fff}.adminSide h3,.adminList h3{margin:0 0 12px;color:var(--green)}.field{display:grid;gap:5px;margin-bottom:10px}.field label{font-size:13px;font-weight:700}.field input,.field textarea,.field select{width:100%;padding:10px;border:1px solid #d8ccb8;border-radius:9px}.field textarea{min-height:72px;resize:vertical}.row{display:flex;gap:8px}.row>*{flex:1}.primary,.secondary,.danger{border:0;border-radius:10px;padding:10px 12px;font-weight:700;cursor:pointer}.primary{background:var(--green);color:#fff}.secondary{background:#f1eadf;color:var(--green)}.danger{background:#fee4e2;color:var(--danger)}.adminTools{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}.adminProducts{display:grid;gap:10px}.adminItem{display:grid;grid-template-columns:72px 1fr auto;gap:10px;align-items:center;border:1px solid #eee;border-radius:12px;padding:8px}.adminItem img{width:72px;height:60px;object-fit:cover;border-radius:8px}.muted{color:var(--muted);font-size:12px}.hiddenP{opacity:.5}.loginBox{position:absolute;width:min(360px,90vw);top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;padding:22px;border-radius:18px;opacity:0;transition:.2s}.modal.open .loginBox{opacity:1}.loginBox input{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;margin:10px 0}.preview{width:100%;height:150px;object-fit:cover;border:1px dashed #cbb99b;border-radius:12px;background:#f8f3ea}.notice{background:#fff7df;border:1px solid #f1d58a;padding:10px;border-radius:10px;font-size:12px;margin-top:10px}
 @media(max-width:800px){header{grid-template-columns:1fr auto auto}.brand,.langSwitch{grid-column:1/-1}.langSwitch{justify-self:start}.hero{margin:12px;border-radius:18px;display:block}.hero .wa{display:inline-block;margin-top:14px}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.pic{height:130px}.name{font-size:15px}.desc{font-size:12px;min-height:52px}.price{font-size:17px}.actions{flex-direction:column}.qty{width:100%;justify-content:space-between}.qty button{flex:1}.pick{width:100%}.adminBody{grid-template-columns:1fr}.dialog{inset:1vh 1vw}.adminItem{grid-template-columns:58px 1fr}.adminItem img{width:58px;height:52px}.adminItem .row{grid-column:1/-1}}
 @media(max-width:800px){body{padding-bottom:env(safe-area-inset-bottom);-webkit-text-size-adjust:100%;touch-action:manipulation}header{grid-template-columns:1fr auto auto;padding:10px 12px;padding-top:max(10px,env(safe-area-inset-top));gap:8px}.brand,.langSwitch{grid-column:1/-1}.brand h1{font-size:19px}.brand small{font-size:12px}.search{min-width:0;padding:12px;font-size:16px}.topBtn{min-height:44px;padding:10px 12px}.hero{margin:10px 12px 14px;padding:18px;border-radius:18px;display:block}.hero h2{font-size:22px}.hero p{font-size:14px;line-height:1.7}.hero .wa{display:inline-block;margin-top:12px}.categories{padding:0 12px 12px}.cat{min-height:44px;padding:10px 16px}main{padding:0 10px 90px}.card{border-radius:16px}.body{padding:11px;gap:7px}.qty button,.pick{min-height:44px}.panel{width:100vw;max-width:none;padding:16px 14px calc(18px + env(safe-area-inset-bottom))}.close{width:44px;height:44px}.form input,.gps,.send{min-height:48px;font-size:16px}.adminBody{grid-template-columns:1fr;padding:10px;display:block}.dialog{top:0;right:0;bottom:0;left:0;inset:0;border-radius:0;padding-top:env(safe-area-inset-top)}.field input,.field textarea,.field select{font-size:16px;min-height:44px}.primary,.secondary,.danger{min-height:44px}}
@@ -1774,9 +1774,14 @@ window.addEventListener("load", function () {
 <script>
 (function () {
   var LANGUAGE_KEY = "oliveMenuLanguageV1";
+  var PAYMENT_METHOD_KEY = "oliveMenuPaymentMethodV1";
+  var BANK_ACCOUNT_NUMBER = "11434864820002";
   var menuLanguage = "ar";
+  var paymentMethod = "cash";
   try {
     menuLanguage = localStorage.getItem(LANGUAGE_KEY) === "en" ? "en" : "ar";
+    var savedPaymentMethod = localStorage.getItem(PAYMENT_METHOD_KEY);
+    if (["cash", "visa", "bank"].indexOf(savedPaymentMethod) !== -1) paymentMethod = savedPaymentMethod;
   } catch (e) {}
 
   var copy = {
@@ -1809,6 +1814,14 @@ window.addEventListener("load", function () {
       subtotal: "الإجمالي قبل التوصيل",
       discount: "الخصم",
       finalTotal: "الإجمالي النهائي",
+      paymentMethod: "طريقة الدفع",
+      cash: "كاش",
+      visa: "فيزا",
+      bankTransfer: "تحويل بنكي",
+      bankAccount: "رقم الحساب",
+      copyAccount: "نسخ رقم الحساب",
+      copied: "تم النسخ ✓",
+      copyFailed: "تعذر النسخ. اضغط مطولًا على رقم الحساب لنسخه.",
       minimumOrder: "الحد الأدنى للطلب",
       remaining: "والمتبقي",
       orderNotice: "سيتم إنشاء رقم طلب تلقائي يبدأ من 1000 عند الإرسال.",
@@ -1874,6 +1887,14 @@ window.addEventListener("load", function () {
       subtotal: "Subtotal before delivery",
       discount: "Discount",
       finalTotal: "Final total",
+      paymentMethod: "Payment method",
+      cash: "Cash",
+      visa: "Visa",
+      bankTransfer: "Bank transfer",
+      bankAccount: "Account number",
+      copyAccount: "Copy account number",
+      copied: "Copied ✓",
+      copyFailed: "Copy failed. Press and hold the account number to copy it.",
       minimumOrder: "Minimum order",
       remaining: "remaining",
       orderNotice: "An order number starting from 1000 will be created automatically.",
@@ -2088,8 +2109,63 @@ window.addEventListener("load", function () {
     if (totals.delivery) html += '<div class="sumRow"><span>' + tr("deliveryFee") + '</span><b>' + money(totals.delivery) + " " + tr("currency") + '</b></div>';
     if (totals.discount) html += '<div class="sumRow discountRow"><span>' + tr("discount") + ' (' + money(settings.discountPercent) + '%)</span><b>− ' + money(totals.discount) + " " + tr("currency") + '</b></div>';
     html += '<div class="sumRow final"><span>' + tr("finalTotal") + '</span><span>' + money(totals.total) + " " + tr("currency") + '</span></div>';
+    html += '<div class="paymentSection"><b class="paymentTitle">' + tr("paymentMethod") + '</b><div class="paymentChoices">';
+    html += '<label class="paymentChoice"><input type="radio" name="paymentMethod" value="cash" ' + (paymentMethod === "cash" ? "checked" : "") + ' onchange="setPaymentMethod(this.value)"><span>' + tr("cash") + '</span></label>';
+    html += '<label class="paymentChoice"><input type="radio" name="paymentMethod" value="visa" ' + (paymentMethod === "visa" ? "checked" : "") + ' onchange="setPaymentMethod(this.value)"><span>' + tr("visa") + '</span></label>';
+    html += '<label class="paymentChoice"><input type="radio" name="paymentMethod" value="bank" ' + (paymentMethod === "bank" ? "checked" : "") + ' onchange="setPaymentMethod(this.value)"><span>' + tr("bankTransfer") + '</span></label></div>';
+    if (paymentMethod === "bank") html += '<div class="bankDetails"><span>' + tr("bankAccount") + '</span><b class="bankNumber">' + BANK_ACCOUNT_NUMBER + '</b><button type="button" class="copyAccount" onclick="copyBankAccount(this)">' + tr("copyAccount") + '</button></div>';
+    html += '</div>';
     if (settings.minOrder && totals.subtotal < settings.minOrder) html += '<div class="notice">' + tr("minimumOrder") + " " + money(settings.minOrder) + " " + tr("currency") + ", " + tr("remaining") + " " + money(settings.minOrder - totals.subtotal) + " " + tr("currency") + '.</div>';
     summary.innerHTML = html;
+  };
+
+  function paymentMethodLabel() {
+    if (paymentMethod === "visa") return tr("visa");
+    if (paymentMethod === "bank") return tr("bankTransfer");
+    return tr("cash");
+  }
+
+  function paymentNotes() {
+    return "Payment: " + paymentMethod + (paymentMethod === "bank" ? " | Account: " + BANK_ACCOUNT_NUMBER : "");
+  }
+
+  window.setPaymentMethod = function (method) {
+    paymentMethod = ["cash", "visa", "bank"].indexOf(method) !== -1 ? method : "cash";
+    try { localStorage.setItem(PAYMENT_METHOD_KEY, paymentMethod); } catch (e) {}
+    renderCart();
+  };
+
+  function fallbackCopyAccount() {
+    var input = document.createElement("textarea");
+    input.value = BANK_ACCOUNT_NUMBER;
+    input.setAttribute("readonly", "");
+    input.style.position = "fixed";
+    input.style.opacity = "0";
+    document.body.appendChild(input);
+    input.focus();
+    input.select();
+    input.setSelectionRange(0, input.value.length);
+    var copied = false;
+    try { copied = document.execCommand("copy"); } catch (e) {}
+    document.body.removeChild(input);
+    return copied;
+  }
+
+  window.copyBankAccount = function (button) {
+    function done() {
+      if (!button) return;
+      button.textContent = tr("copied");
+      setTimeout(function () { if (button) button.textContent = tr("copyAccount"); }, 1800);
+    }
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(BANK_ACCOUNT_NUMBER).then(done).catch(function () {
+        if (fallbackCopyAccount()) done(); else alert(tr("copyFailed"));
+      });
+    } else if (fallbackCopyAccount()) {
+      done();
+    } else {
+      alert(tr("copyFailed"));
+    }
   };
 
   function showLocationSuccess(url) {
@@ -2152,6 +2228,8 @@ window.addEventListener("load", function () {
     if (totals.delivery) lines.push(tr("deliveryFee") + ": " + money(totals.delivery) + " " + tr("currency"));
     if (totals.discount) lines.push(tr("discount") + ": -" + money(totals.discount) + " " + tr("currency"));
     lines.push("✅ " + tr("finalTotal") + ": " + money(totals.total) + " " + tr("currency"));
+    lines.push(tr("paymentMethod") + ": " + paymentMethodLabel());
+    if (paymentMethod === "bank") lines.push(tr("bankAccount") + ": " + BANK_ACCOUNT_NUMBER);
     var whatsappUrl = "https://wa.me/" + settings.phone + "?text=" + encodeURIComponent(lines.join("\n"));
     var sendButton = document.querySelector("#drawer button.send");
     var fallback = document.getElementById("whatsappFallback");
@@ -2214,6 +2292,8 @@ window.addEventListener("load", function () {
         delivery: totals.delivery,
         discount: totals.discount,
         total: totals.total,
+        paymentMethod: paymentMethod,
+        notes: paymentNotes(),
         items: items.map(function (item) {
           return { productId: item.id, name: item.name, price: Number(item.price) || 0, qty: Number(item.qty) || 0, lineTotal: (Number(item.price) || 0) * Number(item.qty || 0) };
         })
