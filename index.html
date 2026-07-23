@@ -54,7 +54,7 @@ main{max-width:1200px;margin:auto;padding:0 16px 80px}.grid{display:grid;grid-te
 <div id="grid" class="grid"></div></main>
 <div id="drawer" class="drawer"><div class="shade" onclick="closeCart()"></div><aside class="panel"><button class="close" onclick="closeCart()">✕</button><h3>سلة الطلب</h3><div id="cart"></div><div class="orderOptions"><b>طريقة الاستلام</b><label><input type="radio" name="deliveryType" value="pickup" checked onchange="renderCart()"> استلام من الفرع</label><label><input type="radio" name="deliveryType" value="delivery" onchange="renderCart()"> توصيل</label><div class="miniNote" id="deliveryHint"></div></div><div id="summary" class="summary"></div><div class="form"><div class="notice">سيتم إنشاء رقم طلب تلقائي يبدأ من 1000 عند الإرسال.</div><input id="customer" placeholder="اسم العميل"><input id="customerPhone" placeholder="رقم هاتف العميل"><input id="area" placeholder="المنطقة / العنوان"><button id="gpsButton" class="gps" type="button" onclick="getGPS()">📍 تحديد موقعي GPS</button><div id="locationStatus" class="locationStatus" role="status" aria-live="polite" hidden><span id="locationStatusText"></span><br><a id="locationMapLink" href="#" target="_blank" rel="noopener noreferrer" hidden>فتح الموقع على الخريطة</a></div><input id="location" type="hidden"><button class="send" onclick="sendWA()">إرسال الطلب على واتساب</button><a id="whatsappFallback" class="send whatsappFallback" href="#" target="_self" hidden>فتح واتساب لإرسال الطلب</a></div></aside></div>
 <div id="loginModal" class="modal"><div class="shade" onclick="closeLogin()"></div><div class="loginBox"><button class="close" onclick="closeLogin()">✕</button><h3>دخول لوحة التحكم</h3><input id="pinInput" type="password" inputmode="numeric" placeholder="كلمة المرور"><button class="primary" style="width:100%" onclick="loginAdmin()">دخول</button><div class="notice">كلمة المرور الافتراضية: <b>1234</b>. غيّرها من إعدادات لوحة التحكم.</div></div></div>
-<div id="adminModal" class="modal"><div class="shade"></div><div class="dialog"><div class="adminHead"><h2>لوحة تحكم المنيو والعملاء</h2><button class="secondary" onclick="closeAdmin()">إغلاق</button></div><div class="adminTabs"><button id="productsTabBtn" class="adminTab active" onclick="showAdminTab('products')">المنتجات والإعدادات</button><button id="ordersTabBtn" class="adminTab" onclick="showAdminTab('orders')">الطلبات والعملاء <span id="ordersCountBadge"></span></button></div><div id="productsTab" class="adminBody tabPage active"><section class="adminSide"><h3 id="formTitle">إضافة منتج</h3><input type="hidden" id="editId"><div class="field"><label>اسم المنتج</label><input id="pName"></div><div class="field"><label>المكونات / الوصف</label><textarea id="pDesc"></textarea></div><div class="row"><div class="field"><label>السعر</label><input id="pPrice" type="number" step="0.01"></div><div class="field"><label>الجروب</label><select id="pCat"></select></div></div><div class="field"><label>صورة المنتج</label><input id="pImage" type="file" accept="image/*" onchange="loadImage(event)"><img id="preview" class="preview" alt="معاينة الصورة"></div><div class="field"><label><input id="pVisible" type="checkbox" checked> المنتج ظاهر للزبائن</label></div><div class="row"><button class="primary" onclick="saveProduct()">حفظ المنتج</button><button class="secondary" onclick="clearForm()">جديد</button></div><hr style="border:0;border-top:1px solid #eee;margin:16px 0"><h3>إعدادات</h3><div class="field"><label>رقم واتساب بصيغة دولية</label><input id="settingPhone" placeholder="971505660791"></div><div class="field"><label>كلمة مرور الإدارة</label><input id="settingPin" type="password"></div><div class="row"><div class="field"><label>رسوم التوصيل</label><input id="settingDelivery" type="number" min="0" step="0.01"></div><div class="field"><label>الحد الأدنى للطلب</label><input id="settingMinOrder" type="number" min="0" step="0.01"></div></div><div class="row"><div class="field"><label>خصم عند طلب بقيمة</label><input id="settingDiscountThreshold" type="number" min="0" step="0.01"></div><div class="field"><label>نسبة الخصم %</label><input id="settingDiscountPercent" type="number" min="0" max="100" step="0.01"></div></div><div class="field"><label>رابط Google Apps Script Web App</label><input id="settingWebApp" placeholder="https://script.google.com/macros/s/.../exec"></div><div class="notice">ضع رابط النشر هنا مرة واحدة، وبعدها ستُحفظ الطلبات والعملاء في Google Sheets.</div><button class="primary" style="width:100%" onclick="saveSettings()">حفظ الإعدادات</button>
+<div id="adminModal" class="modal"><div class="shade"></div><div class="dialog"><div class="adminHead"><h2>لوحة تحكم المنيو والعملاء</h2><button class="secondary" onclick="closeAdmin()">إغلاق</button></div><div class="adminTabs"><button id="productsTabBtn" class="adminTab active" onclick="showAdminTab('products')">المنتجات والإعدادات</button><button id="ordersTabBtn" class="adminTab" onclick="showAdminTab('orders')">الطلبات والعملاء <span id="ordersCountBadge"></span></button></div><div id="productsTab" class="adminBody tabPage active"><section class="adminSide"><h3 id="formTitle">إضافة منتج</h3><input type="hidden" id="editId"><div class="field"><label>اسم المنتج</label><input id="pName" placeholder="الاسم بالعربي || English name"></div><div class="field"><label>المكونات / الوصف</label><textarea id="pDesc" placeholder="الوصف بالعربي || English description"></textarea><div class="notice" style="margin:0 0 10px">لترجمة أي منتج جديد: اكتب العربي ثم <b>||</b> ثم الإنجليزي في خانة الاسم والوصف.</div></div><div class="row"><div class="field"><label>السعر</label><input id="pPrice" type="number" step="0.01"></div><div class="field"><label>الجروب</label><select id="pCat"></select></div></div><div class="field"><label>صورة المنتج</label><input id="pImage" type="file" accept="image/*" onchange="loadImage(event)"><img id="preview" class="preview" alt="معاينة الصورة"></div><div class="field"><label><input id="pVisible" type="checkbox" checked> المنتج ظاهر للزبائن</label></div><div class="row"><button class="primary" onclick="saveProduct()">حفظ المنتج</button><button class="secondary" onclick="clearForm()">جديد</button></div><hr style="border:0;border-top:1px solid #eee;margin:16px 0"><h3>إعدادات</h3><div class="field"><label>رقم واتساب بصيغة دولية</label><input id="settingPhone" placeholder="971505660791"></div><div class="field"><label>كلمة مرور الإدارة</label><input id="settingPin" type="password"></div><div class="row"><div class="field"><label>رسوم التوصيل</label><input id="settingDelivery" type="number" min="0" step="0.01"></div><div class="field"><label>الحد الأدنى للطلب</label><input id="settingMinOrder" type="number" min="0" step="0.01"></div></div><div class="row"><div class="field"><label>خصم عند طلب بقيمة</label><input id="settingDiscountThreshold" type="number" min="0" step="0.01"></div><div class="field"><label>نسبة الخصم %</label><input id="settingDiscountPercent" type="number" min="0" max="100" step="0.01"></div></div><div class="field"><label>رابط Google Apps Script Web App</label><input id="settingWebApp" placeholder="https://script.google.com/macros/s/.../exec"></div><div class="notice">ضع رابط النشر هنا مرة واحدة، وبعدها ستُحفظ الطلبات والعملاء في Google Sheets.</div><button class="primary" style="width:100%" onclick="saveSettings()">حفظ الإعدادات</button>
 <div class="categoryAdminBox">
   <h3>إدارة الجروبات</h3>
   <div class="notice">يمكنك تغيير اسم الجروب أو إضافة جروب جديد. التعديل يُحفظ في Google Sheets ويظهر لكل الزبائن.</div>
@@ -1956,7 +1956,28 @@ window.addEventListener("load", function () {
     oil: { ar: "زيت الزيتون", en: "Olive Oil" },
     pickles: { ar: "الزيتون والمخللات", en: "Olives & Pickles" },
     pastries: { ar: "المعجنات", en: "Pastries" },
-    herbs: { ar: "الزهورات والأعشاب", en: "Herbal Drinks & Herbs" }
+    herbs: { ar: "الزهورات والأعشاب", en: "Herbal Drinks & Herbs" },
+    "الكل": { ar: "الكل", en: "All" },
+    "اللبنة": { ar: "اللبنة", en: "Labneh" },
+    "اللبنه": { ar: "اللبنة", en: "Labneh" },
+    "المربى": { ar: "المربى", en: "Jam" },
+    "الجبنة": { ar: "الجبنة", en: "Cheese" },
+    "الجبنه": { ar: "الجبنة", en: "Cheese" },
+    "السمن": { ar: "السمن", en: "Ghee" },
+    "الجميد": { ar: "الجميد", en: "Jameed" },
+    "المعلبات": { ar: "المعلبات", en: "Canned Food" },
+    "المشروبات الساخنة": { ar: "المشروبات الساخنة", en: "Hot Drinks" },
+    "الكعك": { ar: "الكعك", en: "Cakes" },
+    "الحلويات": { ar: "الحلويات", en: "Sweets" },
+    "العصائر": { ar: "العصائر", en: "Drinks" },
+    "العلكة": { ar: "العلكة", en: "Gum" },
+    "الصابون": { ar: "الصابون", en: "Soap" },
+    "العطار": { ar: "العطار", en: "Herbs & Spices" },
+    "الزعتر": { ar: "الزعتر", en: "Zaatar" },
+    "زيت الزيتون": { ar: "زيت الزيتون", en: "Olive Oil" },
+    "الزيتون والمخللات": { ar: "الزيتون والمخللات", en: "Olives & Pickles" },
+    "المعجنات": { ar: "المعجنات", en: "Pastries" },
+    "الزهورات والأعشاب": { ar: "الزهورات والأعشاب", en: "Herbal Drinks & Herbs" }
   };
 
   var productCopy = {
@@ -1967,7 +1988,26 @@ window.addEventListener("load", function () {
     "1002": {
       ar: { name: "لبنة خلطة بيتزا", desc: "لبنة، سلطة، زيت زيتون" },
       en: { name: "Pizza Mix Labneh", desc: "Labneh, salad and olive oil" }
+    },
+    "1003": {
+      ar: { name: "لبنة مكدوس بارد", desc: "لبنة، مكدوس، زيت زيتون" },
+      en: { name: "Cold Makdous Labneh", desc: "Labneh, makdous and olive oil" }
+    },
+    "1005": {
+      ar: { name: "لبنة زعتر", desc: "لبنة، زعتر، زيت زيتون" },
+      en: { name: "Zaatar Labneh", desc: "Labneh, zaatar and olive oil" }
     }
+  };
+
+  var productCopyByArabicName = {
+    "لبنه خلطه فلسطينيه": productCopy["1001"],
+    "لبنة خلطة فلسطينية": productCopy["1001"],
+    "لبنه خلطه بيتزا": productCopy["1002"],
+    "لبنة خلطة بيتزا": productCopy["1002"],
+    "لبنه مكدوس بارد": productCopy["1003"],
+    "لبنة مكدوس بارد": productCopy["1003"],
+    "لبنه زعتر": productCopy["1005"],
+    "لبنة زعتر": productCopy["1005"]
   };
 
   function tr(key) {
@@ -1982,12 +2022,15 @@ window.addEventListener("load", function () {
   }
 
   function categoryLabel(code, fallback) {
-    var item = categoryCopy[String(code || "").toLowerCase()];
+    var codeKey = String(code || "").trim().toLowerCase();
+    var fallbackKey = String(fallback || "").trim().toLowerCase();
+    var item = categoryCopy[codeKey] || categoryCopy[fallbackKey];
     return item ? item[menuLanguage] : bilingualValue(fallback || code);
   }
 
   function productView(product) {
-    var translated = productCopy[String(product.id)];
+    var arabicName = String(product.name || "").split(/\s*\|\|\s*|\s+\|\s+/)[0].trim();
+    var translated = productCopy[String(product.id)] || productCopyByArabicName[arabicName];
     if (translated) return translated[menuLanguage];
     return {
       name: bilingualValue(product.name),
