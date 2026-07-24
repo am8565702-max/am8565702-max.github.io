@@ -61,6 +61,14 @@ html[dir="ltr"] .sizeDialog h3{margin:4px 0 4px 46px}
 .sizeOption .sizeOptionPrice{color:var(--green);white-space:nowrap}
 .sizeOption:disabled{cursor:not-allowed;opacity:.55;background:#f6f3ed}
 .sizeEmptyNotice{grid-column:1/-1;padding:11px;border:1px solid #f1d58a;border-radius:10px;background:#fff7df;color:#6b4d00;text-align:center}
+.card.unavailable{background:#f4f4f4;box-shadow:0 6px 18px rgba(0,0,0,.07)}
+.card.unavailable .pic img,.card.unavailable .tag,.card.unavailable .name,.card.unavailable .desc,.card.unavailable .price{opacity:.42;filter:grayscale(.35)}
+.availabilityBadge{position:absolute;right:10px;bottom:10px;z-index:2;padding:9px 13px;border:1px solid #d5d5d5;border-radius:11px;background:rgba(255,255,255,.96);color:#777;font-weight:900;box-shadow:0 3px 12px rgba(0,0,0,.10)}
+html[dir="ltr"] .availabilityBadge{right:auto;left:10px}
+.card.unavailable .pick,.card.unavailable .pick:disabled{background:#d5d5d5;color:#777;cursor:not-allowed}
+.adminItem.outOfStockAdmin{background:#f4f4f4}
+.adminItem.outOfStockAdmin img{opacity:.45;filter:grayscale(.35)}
+.stockState{color:#9b1c15;font-weight:800}
 @media(max-width:600px){.sizePriceGrid,.sizeOptions{grid-template-columns:1fr}.sizePriceRow{grid-template-columns:1fr 120px}.sizeDialog{width:calc(100vw - 20px);max-height:92vh}.sizeOption{min-height:54px}}
 
 </style>
@@ -75,7 +83,7 @@ html[dir="ltr"] .sizeDialog h3{margin:4px 0 4px 46px}
 <div id="drawer" class="drawer"><div class="shade" onclick="closeCart()"></div><aside class="panel"><button class="close" onclick="closeCart()">✕</button><h3>سلة الطلب</h3><div id="cart"></div><div class="orderOptions"><b>طريقة الاستلام</b><label><input type="radio" name="deliveryType" value="pickup" checked onchange="renderCart()"> استلام من الفرع</label><label><input type="radio" name="deliveryType" value="delivery" onchange="renderCart()"> توصيل</label><div class="miniNote" id="deliveryHint"></div></div><div id="summary" class="summary"></div><div class="form"><div class="notice">سيتم إنشاء رقم طلب تلقائي يبدأ من 1000 عند الإرسال.</div><input id="customer" placeholder="اسم العميل"><input id="customerPhone" placeholder="رقم هاتف العميل"><input id="area" placeholder="المنطقة / العنوان"><button id="gpsButton" class="gps" type="button" onclick="getGPS()">📍 تحديد موقعي GPS</button><div id="locationStatus" class="locationStatus" role="status" aria-live="polite" hidden><span id="locationStatusText"></span><br><a id="locationMapLink" href="#" target="_blank" rel="noopener noreferrer" hidden>فتح الموقع على الخريطة</a></div><input id="location" type="hidden"><button class="send" onclick="sendWA()">إرسال الطلب على واتساب</button><a id="whatsappFallback" class="send whatsappFallback" href="#" target="_self" hidden>فتح واتساب لإرسال الطلب</a></div></aside></div>
 <div id="loginModal" class="modal"><div class="shade" onclick="closeLogin()"></div><div class="loginBox"><button class="close" onclick="closeLogin()">✕</button><h3>دخول لوحة التحكم</h3><input id="pinInput" type="password" inputmode="numeric" placeholder="كلمة المرور"><button class="primary" style="width:100%" onclick="loginAdmin()">دخول</button><div class="notice">كلمة المرور الافتراضية: <b>1234</b>. غيّرها من إعدادات لوحة التحكم.</div></div></div>
 <div id="sizeModal" class="modal"><div class="shade" onclick="closeSizeModal()"></div><div class="sizeDialog" role="dialog" aria-modal="true" aria-labelledby="sizeProductName"><button class="close" onclick="closeSizeModal()">✕</button><h3 id="sizeProductName">اختر الحجم</h3><p id="sizeProductHint">حدد الحجم المطلوب لإضافته إلى السلة</p><div id="sizeOptions" class="sizeOptions"></div></div></div>
-<div id="adminModal" class="modal"><div class="shade"></div><div class="dialog"><div class="adminHead"><h2>لوحة تحكم المنيو والعملاء</h2><button class="secondary" onclick="closeAdmin()">إغلاق</button></div><div class="adminTabs"><button id="productsTabBtn" class="adminTab active" onclick="showAdminTab('products')">المنتجات والإعدادات</button><button id="ordersTabBtn" class="adminTab" onclick="showAdminTab('orders')">الطلبات والعملاء <span id="ordersCountBadge"></span></button></div><div id="productsTab" class="adminBody tabPage active"><section class="adminSide"><h3 id="formTitle">إضافة منتج</h3><input type="hidden" id="editId"><div class="field"><label>اسم المنتج</label><input id="pName" placeholder="الاسم بالعربي || English name"></div><div class="field"><label>المكونات / الوصف</label><textarea id="pDesc" placeholder="الوصف بالعربي || English description"></textarea></div><div class="notice" style="margin:0 0 10px">لترجمة أي منتج جديد: اكتب العربي ثم <b>||</b> ثم الإنجليزي في خانة الاسم والوصف.</div><div class="row"><div class="field"><label>السعر</label><input id="pPrice" type="number" step="0.01"></div><div class="field"><label>الجروب</label><select id="pCat"></select></div></div><div id="productSizesBox" class="productSizesBox" hidden><h3>أحجام وأسعار المنتج</h3><div class="notice">اكتب سعر الأحجام المتاحة فقط. اترك السعر فارغًا للحجم غير المتاح.</div><div id="productSizePrices" class="sizePriceGrid"></div></div><div class="field"><label>صورة المنتج</label><input id="pImage" type="file" accept="image/*" onchange="loadImage(event)"><img id="preview" class="preview" alt="معاينة الصورة"></div><div class="field"><label><input id="pVisible" type="checkbox" checked> المنتج ظاهر للزبائن</label></div><div class="row"><button class="primary" onclick="saveProduct()">حفظ المنتج</button><button class="secondary" onclick="clearForm()">جديد</button></div><hr style="border:0;border-top:1px solid #eee;margin:16px 0"><h3>إعدادات</h3><div class="field"><label>رقم واتساب بصيغة دولية</label><input id="settingPhone" placeholder="971505660791"></div><div class="field"><label>كلمة مرور الإدارة</label><input id="settingPin" type="password"></div><div class="row"><div class="field"><label>رسوم التوصيل</label><input id="settingDelivery" type="number" min="0" step="0.01"></div><div class="field"><label>الحد الأدنى للطلب</label><input id="settingMinOrder" type="number" min="0" step="0.01"></div></div><div class="row"><div class="field"><label>خصم عند طلب بقيمة</label><input id="settingDiscountThreshold" type="number" min="0" step="0.01"></div><div class="field"><label>نسبة الخصم %</label><input id="settingDiscountPercent" type="number" min="0" max="100" step="0.01"></div></div><div class="field"><label>رابط Google Apps Script Web App</label><input id="settingWebApp" placeholder="https://script.google.com/macros/s/.../exec"></div><div class="notice">ضع رابط النشر هنا مرة واحدة، وبعدها ستُحفظ الطلبات والعملاء في Google Sheets.</div><button class="primary" style="width:100%" onclick="saveSettings()">حفظ الإعدادات</button>
+<div id="adminModal" class="modal"><div class="shade"></div><div class="dialog"><div class="adminHead"><h2>لوحة تحكم المنيو والعملاء</h2><button class="secondary" onclick="closeAdmin()">إغلاق</button></div><div class="adminTabs"><button id="productsTabBtn" class="adminTab active" onclick="showAdminTab('products')">المنتجات والإعدادات</button><button id="ordersTabBtn" class="adminTab" onclick="showAdminTab('orders')">الطلبات والعملاء <span id="ordersCountBadge"></span></button></div><div id="productsTab" class="adminBody tabPage active"><section class="adminSide"><h3 id="formTitle">إضافة منتج</h3><input type="hidden" id="editId"><div class="field"><label>اسم المنتج</label><input id="pName" placeholder="الاسم بالعربي || English name"></div><div class="field"><label>المكونات / الوصف</label><textarea id="pDesc" placeholder="الوصف بالعربي || English description"></textarea></div><div class="notice" style="margin:0 0 10px">لترجمة أي منتج جديد: اكتب العربي ثم <b>||</b> ثم الإنجليزي في خانة الاسم والوصف.</div><div class="row"><div class="field"><label>السعر</label><input id="pPrice" type="number" step="0.01"></div><div class="field"><label>الجروب</label><select id="pCat"></select></div></div><div id="productSizesBox" class="productSizesBox" hidden><h3>أحجام وأسعار المنتج</h3><div class="notice">اكتب سعر الأحجام المتاحة فقط. اترك السعر فارغًا للحجم غير المتاح.</div><div id="productSizePrices" class="sizePriceGrid"></div></div><div class="field"><label>صورة المنتج</label><input id="pImage" type="file" accept="image/*" onchange="loadImage(event)"><img id="preview" class="preview" alt="معاينة الصورة"></div><div class="field"><label><input id="pAvailable" type="checkbox" checked> متوفر للطلب الآن</label></div><div class="field"><label><input id="pVisible" type="checkbox" checked> المنتج ظاهر للزبائن</label></div><div class="row"><button class="primary" onclick="saveProduct()">حفظ المنتج</button><button class="secondary" onclick="clearForm()">جديد</button></div><hr style="border:0;border-top:1px solid #eee;margin:16px 0"><h3>إعدادات</h3><div class="field"><label>رقم واتساب بصيغة دولية</label><input id="settingPhone" placeholder="971505660791"></div><div class="field"><label>كلمة مرور الإدارة</label><input id="settingPin" type="password"></div><div class="row"><div class="field"><label>رسوم التوصيل</label><input id="settingDelivery" type="number" min="0" step="0.01"></div><div class="field"><label>الحد الأدنى للطلب</label><input id="settingMinOrder" type="number" min="0" step="0.01"></div></div><div class="row"><div class="field"><label>خصم عند طلب بقيمة</label><input id="settingDiscountThreshold" type="number" min="0" step="0.01"></div><div class="field"><label>نسبة الخصم %</label><input id="settingDiscountPercent" type="number" min="0" max="100" step="0.01"></div></div><div class="field"><label>رابط Google Apps Script Web App</label><input id="settingWebApp" placeholder="https://script.google.com/macros/s/.../exec"></div><div class="notice">ضع رابط النشر هنا مرة واحدة، وبعدها ستُحفظ الطلبات والعملاء في Google Sheets.</div><button class="primary" style="width:100%" onclick="saveSettings()">حفظ الإعدادات</button>
 <div class="categoryAdminBox">
   <h3>إدارة الجروبات</h3>
   <div class="notice">يمكنك تغيير اسم الجروب أو إضافة جروب جديد. التعديل يُحفظ في Google Sheets ويظهر لكل الزبائن.</div>
@@ -2551,7 +2559,7 @@ window.addEventListener("load", function () {
       var fresh = products.find(function (product) {
         return String(product.id) === String(sourceId);
       });
-      if (!fresh || fresh.visible === false) {
+      if (!fresh || fresh.visible === false || fresh.available === false) {
         delete cart[id];
         changed = true;
         return;
@@ -2637,11 +2645,14 @@ window.addEventListener("load", function () {
     var text = String(value || "");
     var match = text.match(OLIVE_SIZE_MARKER);
     var parsedSizes = [];
+    var available = true;
     if (match) {
       try {
         var decoded = JSON.parse(atob(match[1]));
-        if (Array.isArray(decoded)) {
-          parsedSizes = decoded.filter(function (item) {
+        var sizeSource = Array.isArray(decoded) ? decoded : (decoded && Array.isArray(decoded.sizes) ? decoded.sizes : []);
+        if (decoded && !Array.isArray(decoded)) available = decoded.available !== false;
+        if (sizeSource.length) {
+          parsedSizes = sizeSource.filter(function (item) {
             return item && oliveSizeDefinition(String(item.key || "")) && Number(item.price) > 0;
           }).map(function (item) {
             return { key: String(item.key), price: Number(item.price) };
@@ -2654,16 +2665,18 @@ window.addEventListener("load", function () {
     return {
       description: text.replace(OLIVE_SIZE_MARKER, "").trim(),
       sizes: parsedSizes,
+      available: available,
       hasMarker: Boolean(match)
     };
   }
 
-  function oliveEncodeSizeDescription(description, sizes) {
+  function oliveEncodeSizeDescription(description, sizes, available) {
     var clean = oliveParseSizeDescription(description).description;
-    if (!sizes || !sizes.length) return clean;
-    var compact = sizes.map(function (item) {
+    var compactSizes = (sizes || []).map(function (item) {
       return { key: item.key, price: Number(item.price) };
     });
+    if (!compactSizes.length && available !== false) return clean;
+    var compact = { sizes: compactSizes, available: available !== false };
     return clean + (clean ? "\n" : "") + "[[OLIVE_SIZES:" + btoa(JSON.stringify(compact)) + "]]";
   }
 
@@ -2671,8 +2684,13 @@ window.addEventListener("load", function () {
     if (!product) return product;
     var parsed = oliveParseSizeDescription(product.desc);
     product.desc = parsed.description;
-    if (parsed.hasMarker) product.sizes = parsed.sizes;
-    else if (!Array.isArray(product.sizes)) product.sizes = [];
+    if (parsed.hasMarker) {
+      product.sizes = parsed.sizes;
+      product.available = parsed.available;
+    } else {
+      if (!Array.isArray(product.sizes)) product.sizes = [];
+      if (typeof product.available !== "boolean") product.available = true;
+    }
     return product;
   }
 
@@ -2725,7 +2743,7 @@ window.addEventListener("load", function () {
   window.openSizeModal = function (productId) {
     oliveNormalizeAllProducts();
     var product = products.find(function (item) { return Number(item.id) === Number(productId); });
-    if (!product) return;
+    if (!product || product.available === false) return;
     var language = oliveLanguage();
     var modal = document.getElementById("sizeModal");
     var title = document.getElementById("sizeProductName");
@@ -2751,6 +2769,7 @@ window.addEventListener("load", function () {
     var definition = oliveSizeDefinition(sizeKey);
     if (!product || !definition) return;
     oliveNormalizeProduct(product);
+    if (product.available === false) return;
     var selected = (product.sizes || []).find(function (item) { return item.key === sizeKey; });
     if (!selected || Number(selected.price) <= 0) return;
     var variantId = oliveVariantId(product.id, sizeKey);
@@ -2798,9 +2817,26 @@ window.addEventListener("load", function () {
       var match = String(button.getAttribute("onclick") || "").match(/add\((\d+)\)/);
       if (!match) return;
       var product = products.find(function (item) { return Number(item.id) === Number(match[1]); });
-      if (!product || !oliveIsSizeCategory(product)) return;
+      if (!product) return;
       var quantity = card.querySelector(".qty");
       var priceBox = card.querySelector(".price");
+      if (product.available === false) {
+        card.classList.add("unavailable");
+        if (quantity) quantity.style.display = "none";
+        button.textContent = language === "en" ? "Unavailable" : "غير متوفر";
+        button.disabled = true;
+        button.onclick = null;
+        button.removeAttribute("onclick");
+        var picture = card.querySelector(".pic");
+        if (picture && !picture.querySelector(".availabilityBadge")) {
+          var unavailableBadge = document.createElement("span");
+          unavailableBadge.className = "availabilityBadge";
+          unavailableBadge.textContent = language === "en" ? "Unavailable" : "غير متوفر";
+          picture.appendChild(unavailableBadge);
+        }
+        return;
+      }
+      if (!oliveIsSizeCategory(product)) return;
       var configured = (product.sizes || []).filter(function (item) { return Number(item.price) > 0; });
       if (quantity) quantity.style.display = "none";
       button.textContent = language === "en" ? "Choose size" : "اختر الحجم";
@@ -2819,6 +2855,7 @@ window.addEventListener("load", function () {
   var oliveBaseAdd = add;
   add = function (id) {
     var product = products.find(function (item) { return Number(item.id) === Number(id); });
+    if (product && product.available === false) return;
     if (product && oliveIsSizeCategory(product)) {
       openSizeModal(id);
       return;
@@ -2848,6 +2885,7 @@ window.addEventListener("load", function () {
     oliveBaseEditProduct(id);
     if (product) {
       document.getElementById("pDesc").value = product.desc || "";
+      document.getElementById("pAvailable").checked = product.available !== false;
       oliveRenderAdminSizePrices(product.sizes || []);
     }
   };
@@ -2855,7 +2893,30 @@ window.addEventListener("load", function () {
   var oliveBaseClearForm = clearForm;
   clearForm = function () {
     oliveBaseClearForm();
+    document.getElementById("pAvailable").checked = true;
     oliveRenderAdminSizePrices([]);
+  };
+
+  var oliveBaseRenderAdmin = renderAdmin;
+  renderAdmin = function () {
+    oliveNormalizeAllProducts();
+    oliveBaseRenderAdmin();
+    document.querySelectorAll("#adminProducts .adminItem").forEach(function (itemBox) {
+      var editButton = itemBox.querySelector('button[onclick^="editProduct("]');
+      if (!editButton) return;
+      var match = String(editButton.getAttribute("onclick") || "").match(/editProduct\((\d+)\)/);
+      if (!match) return;
+      var product = products.find(function (item) { return Number(item.id) === Number(match[1]); });
+      if (!product || product.available !== false) return;
+      itemBox.classList.add("outOfStockAdmin");
+      var info = itemBox.querySelector(".muted");
+      if (info) {
+        var state = document.createElement("span");
+        state.className = "stockState";
+        state.textContent = " • غير متوفر";
+        info.appendChild(state);
+      }
+    });
   };
 
   var oliveBaseOpenAdmin = openAdmin;
@@ -2879,7 +2940,8 @@ window.addEventListener("load", function () {
     var category = String(document.getElementById("pCat").value || "").trim();
     var usesSizes = oliveIsSizeCategory(category);
     var sizes = usesSizes ? oliveCollectAdminSizes() : [];
-    if (usesSizes && !sizes.length) {
+    var isAvailable = document.getElementById("pAvailable").checked;
+    if (usesSizes && isAvailable && !sizes.length) {
       alert("حدد سعر حجم واحد على الأقل لهذا المنتج");
       return;
     }
@@ -2890,7 +2952,7 @@ window.addEventListener("load", function () {
       pin: settings.pin,
       id: Number(document.getElementById("editId").value || 0),
       name: name,
-      desc: oliveEncodeSizeDescription(document.getElementById("pDesc").value, sizes),
+      desc: oliveEncodeSizeDescription(document.getElementById("pDesc").value, sizes, isAvailable),
       price: basePrice,
       cat: category,
       visible: document.getElementById("pVisible").checked,
