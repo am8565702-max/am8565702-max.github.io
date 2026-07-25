@@ -11,7 +11,7 @@
 .welcomeSplash{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;overflow:hidden;padding:24px;background:radial-gradient(circle at center,#fff 0,#fbf5e9 45%,#eadcc4 100%);animation:welcomeSplashFade 5s ease forwards}.welcomeStage{width:min(92vw,720px);text-align:center}.welcomeArabic,.welcomeEnglish{will-change:transform,opacity;line-height:1.35;text-wrap:balance}.welcomeArabic{direction:rtl;color:var(--green);font-size:clamp(27px,6vw,52px);font-weight:900;transform:translateX(110vw);opacity:0;animation:welcomeFromRight .9s cubic-bezier(.22,.9,.3,1.12) .12s forwards}.welcomeDivider{width:min(220px,55vw);height:3px;margin:14px auto;border-radius:999px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0;animation:welcomeDividerIn .4s ease .82s forwards}.welcomeEnglish{direction:ltr;color:#a36c10;font-size:clamp(19px,4.2vw,34px);font-weight:800;letter-spacing:.2px;transform:translateX(-110vw);opacity:0;animation:welcomeFromLeft .9s cubic-bezier(.22,.9,.3,1.12) .22s forwards}@keyframes welcomeFromRight{to{transform:translateX(0);opacity:1}}@keyframes welcomeFromLeft{to{transform:translateX(0);opacity:1}}@keyframes welcomeDividerIn{to{opacity:1}}@keyframes welcomeSplashFade{0%,84%{opacity:1;visibility:visible}100%{opacity:0;visibility:hidden;pointer-events:none}}@media(prefers-reduced-motion:reduce){.welcomeSplash,.welcomeArabic,.welcomeEnglish,.welcomeDivider{animation:none}.welcomeArabic,.welcomeEnglish,.welcomeDivider{transform:none;opacity:1}}
 header{position:-webkit-sticky;position:sticky;top:0;z-index:10;background:rgba(255,255,255,.96);backdrop-filter:blur(10px);border-bottom:1px solid #e8dcc7;padding:10px 16px;display:grid;grid-template-columns:auto auto minmax(180px,1fr) auto auto;gap:10px;align-items:center}.brand{display:flex;align-items:center;gap:10px;min-width:220px}.brandLogo{display:block;width:72px;height:68px;object-fit:contain;flex:0 0 auto}.brandText{min-width:0}.brand h1{font-size:22px;margin:0;color:var(--green)}.brand small{color:var(--muted)}
 .langSwitch{display:flex;gap:4px;padding:4px;border:1px solid #decdb1;background:#f7f1e7;border-radius:14px}.langSwitch button{min-height:36px;border:0;border-radius:10px;padding:7px 11px;background:transparent;color:var(--green);font-weight:800;cursor:pointer}.langSwitch button.active{background:var(--green);color:#fff;box-shadow:0 3px 10px rgba(40,91,53,.18)}html[dir="ltr"] .panel{left:auto;right:0;transform:translateX(105%)}html[dir="ltr"] .tag{right:auto;left:10px}html[dir="ltr"] .close{float:right}
-.search{width:100%;padding:13px 16px;border:1px solid #decdb1;border-radius:14px;font-size:15px;outline:none}.topBtn{border:0;border-radius:14px;padding:12px 15px;font-weight:700;cursor:pointer}.cartBtn{background:var(--green);color:#fff;position:relative}.adminBtn{background:#f3eadb;color:var(--green);border:1px solid #decdb1}.badge{position:absolute;top:-8px;left:-8px;background:#d62828;color:#fff;border-radius:50%;min-width:24px;height:24px;display:grid;place-items:center;font-size:12px}
+.search{width:100%;padding:13px 16px;border:1px solid #decdb1;border-radius:14px;font-size:15px;outline:none}.topBtn{border:0;border-radius:14px;padding:12px 15px;font-weight:700;cursor:pointer}.cartBtn{background:var(--green);color:#fff;position:relative}.adminBtn{display:none;background:#f3eadb;color:var(--green);border:1px solid #decdb1}.adminBtn.ownerOnlyVisible{display:block}.badge{position:absolute;top:-8px;left:-8px;background:#d62828;color:#fff;border-radius:50%;min-width:24px;height:24px;display:grid;place-items:center;font-size:12px}
 .locationStatus{margin:7px 0 10px;padding:12px;border:1px solid #add0b6;border-radius:12px;background:#e8f6eb;color:#1f5a30;line-height:1.7}.locationStatus.error{border-color:#efb2ad;background:#fee4e2;color:#9b1c15}.locationStatus.loading{border-color:#ead28b;background:#fff7df;color:#6b4d00}.locationStatus a{display:inline-block;margin-top:4px;color:var(--green);font-weight:800;text-decoration:underline;text-underline-offset:3px}.locationStatus[hidden]{display:none}.gps:disabled{opacity:.65;cursor:wait}
 .send:disabled{opacity:.65;cursor:wait}.whatsappFallback{display:block;text-align:center;text-decoration:none}.whatsappFallback[hidden]{display:none}
 .hero{margin:18px auto;max-width:1200px;padding:22px;border-radius:24px;background:linear-gradient(135deg,#2e6840,#1f4a2c);color:#fff;display:flex;justify-content:space-between;gap:20px;align-items:center}.hero h2{margin:0 0 8px;font-size:28px}.hero p{margin:0;opacity:.9}.hero .wa{background:#25D366;color:#073b1b;padding:12px 18px;border-radius:14px;font-weight:700}
@@ -2994,6 +2994,60 @@ window.addEventListener("load", function () {
   oliveRenderAdminSizePrices([]);
   render();
   renderCart();
+})();
+</script>
+<script>
+(function () {
+  var OWNER_STORAGE_KEY = "oliveMenuOwnerAccessV1";
+  var OWNER_ACCESS_PARAMETER = "owner_access";
+  var OWNER_ACCESS_TOKEN = "da6aef46c18b74ed1adcfa5a1ed87e7f61f5";
+
+  function hasOwnerAccess() {
+    try {
+      return localStorage.getItem(OWNER_STORAGE_KEY) === "1";
+    } catch (error) {
+      return false;
+    }
+  }
+
+  function cleanOwnerParameter(parameters) {
+    if (!parameters.has(OWNER_ACCESS_PARAMETER)) return;
+    parameters.delete(OWNER_ACCESS_PARAMETER);
+    var query = parameters.toString();
+    var cleanUrl = location.pathname + (query ? "?" + query : "") + location.hash;
+    try { history.replaceState(null, document.title, cleanUrl); } catch (error) {}
+  }
+
+  try {
+    var parameters = new URLSearchParams(location.search);
+    var suppliedToken = parameters.get(OWNER_ACCESS_PARAMETER);
+    if (suppliedToken === OWNER_ACCESS_TOKEN) {
+      localStorage.setItem(OWNER_STORAGE_KEY, "1");
+    }
+    cleanOwnerParameter(parameters);
+  } catch (error) {
+    console.warn("Owner access setup failed", error);
+  }
+
+  window.refreshOwnerAdminAccess = function () {
+    var button = document.querySelector(".adminBtn");
+    if (!button) return;
+    button.classList.toggle("ownerOnlyVisible", hasOwnerAccess());
+  };
+
+  var ownerBaseRequestAdmin = requestAdmin;
+  requestAdmin = function () {
+    if (!hasOwnerAccess()) return;
+    ownerBaseRequestAdmin();
+  };
+
+  var ownerBaseOpenAdmin = openAdmin;
+  openAdmin = function () {
+    if (!hasOwnerAccess()) return;
+    ownerBaseOpenAdmin();
+  };
+
+  refreshOwnerAdminAccess();
 })();
 </script>
 </body></html>
