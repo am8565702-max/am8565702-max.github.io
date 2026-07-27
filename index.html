@@ -4,6 +4,11 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=yes">
 <meta name="theme-color" content="#285b35">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="غصن الزيتون">
+<meta name="application-name" content="غصن الزيتون">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
 <title>منيو غصن الزيتون</title>
 <style>
 :root{--green:#285b35;--green2:#1f4a2c;--gold:#caa56a;--cream:#f7f1e7;--card:#fff;--text:#223126;--muted:#6b746d;--danger:#b42318}
@@ -81,7 +86,7 @@ html[dir="ltr"] .availabilityBadge{right:auto;left:10px}
 <div id="cats" class="categories"></div><main><div id="pageError" style="display:none;margin:12px auto;max-width:900px;padding:12px;border-radius:12px;background:#fee4e2;color:#9b1c15;text-align:center"></div>
 <div id="grid" class="grid"></div></main>
 <div id="drawer" class="drawer"><div class="shade" onclick="closeCart()"></div><aside class="panel"><button class="close" onclick="closeCart()">✕</button><h3>سلة الطلب</h3><div id="cart"></div><div class="orderOptions"><b>طريقة الاستلام</b><label><input type="radio" name="deliveryType" value="pickup" checked onchange="renderCart()"> استلام من الفرع</label><label><input type="radio" name="deliveryType" value="delivery" onchange="renderCart()"> توصيل</label><div class="miniNote" id="deliveryHint"></div></div><div id="summary" class="summary"></div><div class="form"><div class="notice">سيتم إنشاء رقم طلب تلقائي يبدأ من 1000 عند الإرسال.</div><input id="customer" placeholder="اسم العميل"><input id="customerPhone" placeholder="رقم هاتف العميل"><input id="area" placeholder="المنطقة / العنوان"><button id="gpsButton" class="gps" type="button" onclick="getGPS()">📍 تحديد موقعي GPS</button><div id="locationStatus" class="locationStatus" role="status" aria-live="polite" hidden><span id="locationStatusText"></span><br><a id="locationMapLink" href="#" target="_blank" rel="noopener noreferrer" hidden>فتح الموقع على الخريطة</a></div><input id="location" type="hidden"><button class="send" onclick="sendWA()">إرسال الطلب على واتساب</button><a id="whatsappFallback" class="send whatsappFallback" href="#" target="_self" hidden>فتح واتساب لإرسال الطلب</a></div></aside></div>
-<div id="loginModal" class="modal"><div class="shade" onclick="closeLogin()"></div><div class="loginBox"><button class="close" onclick="closeLogin()">✕</button><h3>دخول لوحة التحكم</h3><input id="pinInput" type="password" inputmode="numeric" placeholder="كلمة المرور"><button class="primary" style="width:100%" onclick="loginAdmin()">دخول</button><div class="notice">كلمة المرور الافتراضية: <b>1234</b>. غيّرها من إعدادات لوحة التحكم.</div></div></div>
+<div id="loginModal" class="modal"><div class="shade" onclick="closeLogin()"></div><div class="loginBox"><button class="close" onclick="closeLogin()">✕</button><h3>دخول لوحة التحكم</h3><input id="pinInput" type="password" autocomplete="current-password" placeholder="كلمة المرور"><button class="primary" style="width:100%" onclick="loginAdmin()">دخول آمن</button><div class="notice">يتم التحقق من كلمة المرور داخل الخادم، وتنتهي جلسة الإدارة تلقائيًا.</div></div></div>
 <div id="sizeModal" class="modal"><div class="shade" onclick="closeSizeModal()"></div><div class="sizeDialog" role="dialog" aria-modal="true" aria-labelledby="sizeProductName"><button class="close" onclick="closeSizeModal()">✕</button><h3 id="sizeProductName">اختر الحجم</h3><p id="sizeProductHint">حدد الحجم المطلوب لإضافته إلى السلة</p><div id="sizeOptions" class="sizeOptions"></div></div></div>
 <div id="adminModal" class="modal"><div class="shade"></div><div class="dialog"><div class="adminHead"><h2>لوحة تحكم المنيو والعملاء</h2><button class="secondary" onclick="closeAdmin()">إغلاق</button></div><div class="adminTabs"><button id="productsTabBtn" class="adminTab active" onclick="showAdminTab('products')">المنتجات والإعدادات</button><button id="ordersTabBtn" class="adminTab" onclick="showAdminTab('orders')">الطلبات والعملاء <span id="ordersCountBadge"></span></button></div><div id="productsTab" class="adminBody tabPage active"><section class="adminSide"><h3 id="formTitle">إضافة منتج</h3><input type="hidden" id="editId"><div class="field"><label>اسم المنتج</label><input id="pName" placeholder="الاسم بالعربي || English name"></div><div class="field"><label>المكونات / الوصف</label><textarea id="pDesc" placeholder="الوصف بالعربي || English description"></textarea></div><div class="notice" style="margin:0 0 10px">لترجمة أي منتج جديد: اكتب العربي ثم <b>||</b> ثم الإنجليزي في خانة الاسم والوصف.</div><div class="row"><div class="field"><label>السعر</label><input id="pPrice" type="number" step="0.01"></div><div class="field"><label>الجروب</label><select id="pCat"></select></div></div><div id="productSizesBox" class="productSizesBox" hidden><h3>أحجام وأسعار المنتج</h3><div class="notice">اكتب سعر الأحجام المتاحة فقط. اترك السعر فارغًا للحجم غير المتاح.</div><div id="productSizePrices" class="sizePriceGrid"></div></div><div class="field"><label>صورة المنتج</label><input id="pImage" type="file" accept="image/*" onchange="loadImage(event)"><img id="preview" class="preview" alt="معاينة الصورة"></div><div class="field"><label><input id="pAvailable" type="checkbox" checked> متوفر للطلب الآن</label></div><div class="field"><label><input id="pVisible" type="checkbox" checked> المنتج ظاهر للزبائن</label></div><div class="row"><button class="primary" onclick="saveProduct()">حفظ المنتج</button><button class="secondary" onclick="clearForm()">جديد</button></div><hr style="border:0;border-top:1px solid #eee;margin:16px 0"><h3>إعدادات</h3><div class="field"><label>رقم واتساب بصيغة دولية</label><input id="settingPhone" placeholder="971505660791"></div><div class="field"><label>كلمة مرور الإدارة</label><input id="settingPin" type="password"></div><div class="row"><div class="field"><label>رسوم التوصيل</label><input id="settingDelivery" type="number" min="0" step="0.01"></div><div class="field"><label>الحد الأدنى للطلب</label><input id="settingMinOrder" type="number" min="0" step="0.01"></div></div><div class="row"><div class="field"><label>خصم عند طلب بقيمة</label><input id="settingDiscountThreshold" type="number" min="0" step="0.01"></div><div class="field"><label>نسبة الخصم %</label><input id="settingDiscountPercent" type="number" min="0" max="100" step="0.01"></div></div><div class="field"><label>رابط Google Apps Script Web App</label><input id="settingWebApp" placeholder="https://script.google.com/macros/s/.../exec"></div><div class="notice">ضع رابط النشر هنا مرة واحدة، وبعدها ستُحفظ الطلبات والعملاء في Google Sheets.</div><button class="primary" style="width:100%" onclick="saveSettings()">حفظ الإعدادات</button>
 <div class="categoryAdminBox">
@@ -325,7 +330,7 @@ var orders = safeStorageJSON(ORDERSKEY, []);
 var products = loadProducts();
 var settings = Object.assign({
   phone: "971505660791",
-  pin: "1234",
+  pin: "secure-session",
   deliveryFee: 0,
   minOrder: 0,
   discountThreshold: 0,
@@ -387,7 +392,7 @@ function render() {
     return p.visible !== false && (current === "all" || p.cat === current) && (!q || "".concat(p.name, " ").concat(p.desc).includes(q));
   });
   grid.innerHTML = list.map(function (p) {
-    return "<article class=\"card\"><div class=\"pic\"><img src=\"".concat(p.image, "\" onerror=\"this.src='slides/slide-01.jpg'\"><span class=\"tag\">").concat(categoryNames[p.cat] || p.cat, "</span></div><div class=\"body\"><div class=\"name\">").concat(esc(p.name), "</div><div class=\"desc\">").concat(esc(p.desc || "منتج أصلي من منيو غصن الزيتون"), "</div><div class=\"price\">").concat(p.price ? "".concat(p.price, " \u062F\u0631\u0647\u0645") : "حسب العبوة", "</div><div class=\"actions\"><button class=\"pick\" onclick=\"add(").concat(p.id, ")\">\u0627\u062E\u062A\u0631</button><div class=\"qty\"><button onclick=\"change(").concat(p.id, ",-1)\">\u2212</button><span>").concat(qty(p.id), "</span><button onclick=\"change(").concat(p.id, ",1)\">+</button></div></div></div></article>");
+    return "<article class=\"card\"><div class=\"pic\"><img loading=\"lazy\" decoding=\"async\" src=\"".concat(p.image, "\" onerror=\"this.src='slides/slide-01.jpg'\"><span class=\"tag\">").concat(categoryNames[p.cat] || p.cat, "</span></div><div class=\"body\"><div class=\"name\">").concat(esc(p.name), "</div><div class=\"desc\">").concat(esc(p.desc || "منتج أصلي من منيو غصن الزيتون"), "</div><div class=\"price\">").concat(p.price ? "".concat(p.price, " \u062F\u0631\u0647\u0645") : "حسب العبوة", "</div><div class=\"actions\"><button class=\"pick\" onclick=\"add(").concat(p.id, ")\">\u0627\u062E\u062A\u0631</button><div class=\"qty\"><button onclick=\"change(").concat(p.id, ",-1)\">\u2212</button><span>").concat(qty(p.id), "</span><button onclick=\"change(").concat(p.id, ",1)\">+</button></div></div></div></article>");
   }).join("") || '<div class="empty">لا توجد نتائج</div>';
   updateBadge();
 }
@@ -1040,7 +1045,7 @@ function _addCategory() {
           _context7.p = 5;
           _context7.n = 6;
           return jsonp("saveCategory", {
-            pin: String(settings.pin || "1234"),
+            pin: String(settings.pin || "secure-session"),
             code: code,
             name: name,
             sort: String(sort)
@@ -1235,7 +1240,7 @@ function renderAdmin() {
     return !q || "".concat(p.name, " ").concat(p.desc).includes(q);
   });
   adminProducts.innerHTML = list.map(function (p) {
-    return "<div class=\"adminItem ".concat(p.visible === false ? "hiddenP" : "", "\"><img src=\"").concat(p.image, "\" onerror=\"this.src='slides/slide-01.jpg'\"><div><b>").concat(esc(p.name), "</b><div class=\"muted\">").concat(categoryNames[p.cat] || p.cat, " \u2022 ").concat(p.price || "بدون سعر", " \u062F\u0631\u0647\u0645 ").concat(p.visible === false ? "• مخفي" : "", "</div></div><div class=\"row\"><button class=\"secondary\" onclick=\"editProduct(").concat(p.id, ")\">\u062A\u0639\u062F\u064A\u0644</button><button class=\"secondary\" onclick=\"toggleProduct(").concat(p.id, ")\">").concat(p.visible === false ? "إظهار" : "إخفاء", "</button><button class=\"danger\" onclick=\"deleteProduct(").concat(p.id, ")\">\u062D\u0630\u0641</button></div></div>");
+    return "<div class=\"adminItem ".concat(p.visible === false ? "hiddenP" : "", "\"><img loading=\"lazy\" decoding=\"async\" src=\"").concat(p.image, "\" onerror=\"this.src='slides/slide-01.jpg'\"><div><b>").concat(esc(p.name), "</b><div class=\"muted\">").concat(categoryNames[p.cat] || p.cat, " \u2022 ").concat(p.price || "بدون سعر", " \u062F\u0631\u0647\u0645 ").concat(p.visible === false ? "• مخفي" : "", "</div></div><div class=\"row\"><button class=\"secondary\" onclick=\"editProduct(").concat(p.id, ")\">\u062A\u0639\u062F\u064A\u0644</button><button class=\"secondary\" onclick=\"toggleProduct(").concat(p.id, ")\">").concat(p.visible === false ? "إظهار" : "إخفاء", "</button><button class=\"danger\" onclick=\"deleteProduct(").concat(p.id, ")\">\u062D\u0630\u0641</button></div></div>");
   }).join("");
 }
 function saveSettings() {
@@ -1302,7 +1307,7 @@ function resetData() {
   products = structuredClone(defaultProducts);
   settings = {
     phone: "971505660791",
-    pin: "1234",
+    pin: "secure-session",
     deliveryFee: 0,
     minOrder: 0,
     discountThreshold: 0,
@@ -2173,7 +2178,7 @@ window.addEventListener("load", function () {
       var shown = productView(product);
       var category = categoryLabel(product.cat, categoryNames[product.cat] || product.cat);
       var price = product.price ? money(product.price) + " " + tr("currency") : tr("byPackage");
-      return '<article class="card"><div class="pic"><img src="' + esc(product.image) + '" alt="' + esc(shown.name) + '" onerror="this.src=\'slides/slide-01.jpg\'"><span class="tag">' + esc(category) + '</span></div><div class="body"><div class="name">' + esc(shown.name) + '</div><div class="desc">' + esc(shown.desc || tr("originalProduct")) + '</div><div class="price">' + esc(price) + '</div><div class="actions"><button class="pick" onclick="add(' + product.id + ')">' + esc(tr("choose")) + '</button><div class="qty"><button aria-label="Decrease" onclick="change(' + product.id + ',-1)">−</button><span>' + qty(product.id) + '</span><button aria-label="Increase" onclick="change(' + product.id + ',1)">+</button></div></div></div></article>';
+      return '<article class="card"><div class="pic"><img loading="lazy" decoding="async" src="' + esc(product.image) + '" alt="' + esc(shown.name) + '" onerror="this.src=\'slides/slide-01.jpg\'"><span class="tag">' + esc(category) + '</span></div><div class="body"><div class="name">' + esc(shown.name) + '</div><div class="desc">' + esc(shown.desc || tr("originalProduct")) + '</div><div class="price">' + esc(price) + '</div><div class="actions"><button class="pick" onclick="add(' + product.id + ')">' + esc(tr("choose")) + '</button><div class="qty"><button aria-label="Decrease" onclick="change(' + product.id + ',-1)">−</button><span>' + qty(product.id) + '</span><button aria-label="Increase" onclick="change(' + product.id + ',1)">+</button></div></div></div></article>';
     }).join("") || '<div class="empty">' + esc(tr("noResults")) + '</div>';
     updateBadge();
   };
@@ -2998,53 +3003,153 @@ window.addEventListener("load", function () {
 </script>
 <script>
 (function () {
-  var OWNER_STORAGE_KEY = "oliveMenuOwnerAccessV1";
+  var OWNER_SESSION_KEY = "oliveMenuOwnerModeV2";
+  var ADMIN_SESSION_KEY = "oliveMenuAdminSessionV2";
   var OWNER_ACCESS_PARAMETER = "owner_access";
-  var OWNER_ACCESS_TOKEN = "da6aef46c18b74ed1adcfa5a1ed87e7f61f5";
+  var ADMIN_ACTIONS = {
+    orders: true,
+    updateStatus: true,
+    saveCategory: true,
+    deleteCategory: true,
+    saveProduct: true,
+    toggleProduct: true,
+    deleteProduct: true,
+    changeAdminPassword: true,
+    adminLogout: true
+  };
 
-  function hasOwnerAccess() {
+  function sessionGet(key) {
     try {
-      return localStorage.getItem(OWNER_STORAGE_KEY) === "1";
+      return sessionStorage.getItem(key) || "";
     } catch (error) {
-      return false;
+      return "";
     }
   }
 
-  function cleanOwnerParameter(parameters) {
-    if (!parameters.has(OWNER_ACCESS_PARAMETER)) return;
-    parameters.delete(OWNER_ACCESS_PARAMETER);
-    var query = parameters.toString();
-    var cleanUrl = location.pathname + (query ? "?" + query : "") + location.hash;
-    try { history.replaceState(null, document.title, cleanUrl); } catch (error) {}
+  function sessionSet(key, value) {
+    try {
+      if (value) sessionStorage.setItem(key, value);
+      else sessionStorage.removeItem(key);
+    } catch (error) {}
+  }
+
+  function hasOwnerMode() {
+    return sessionGet(OWNER_SESSION_KEY) === "1";
+  }
+
+  function adminSession() {
+    return sessionGet(ADMIN_SESSION_KEY);
+  }
+
+  function clearAdminSession() {
+    sessionSet(ADMIN_SESSION_KEY, "");
   }
 
   try {
     var parameters = new URLSearchParams(location.search);
-    var suppliedToken = parameters.get(OWNER_ACCESS_PARAMETER);
-    if (suppliedToken === OWNER_ACCESS_TOKEN) {
-      localStorage.setItem(OWNER_STORAGE_KEY, "1");
+    var viewVersion = String(parameters.get("v") || "");
+    if (parameters.has(OWNER_ACCESS_PARAMETER)) {
+      sessionSet(OWNER_SESSION_KEY, "1");
+    } else if (viewVersion.indexOf("customer") !== -1) {
+      sessionSet(OWNER_SESSION_KEY, "");
+      clearAdminSession();
     }
-    cleanOwnerParameter(parameters);
+    try { localStorage.removeItem("oliveMenuOwnerAccessV1"); } catch (error) {}
   } catch (error) {
     console.warn("Owner access setup failed", error);
   }
 
+  var secureBaseGsPost = gsPost;
+  gsPost = function (payload) {
+    var securePayload = Object.assign({}, payload || {});
+    var action = String(securePayload.action || "");
+    delete securePayload.pin;
+    if (ADMIN_ACTIONS[action]) {
+      securePayload.session = adminSession();
+    }
+    return secureBaseGsPost(securePayload).then(function (result) {
+      if (result && result.ok === false &&
+          String(result.error || "").indexOf("ADMIN_SESSION_EXPIRED") !== -1) {
+        clearAdminSession();
+      }
+      return result;
+    });
+  };
+
+  var secureBaseJsonp = jsonp;
+  jsonp = function (action, params) {
+    if (ADMIN_ACTIONS[action]) {
+      return gsPost(Object.assign({action:action}, params || {})).then(function (result) {
+        if (!result || !result.ok) {
+          throw new Error((result && result.error) || "تعذر تنفيذ العملية");
+        }
+        return result;
+      });
+    }
+    var publicParams = Object.assign({}, params || {});
+    delete publicParams.pin;
+    return secureBaseJsonp(action, publicParams);
+  };
+
+  loginAdmin = function () {
+    var password = String(pinInput.value || "");
+    if (!password) {
+      alert("اكتب كلمة مرور الإدارة");
+      return;
+    }
+    var button = loginModal.querySelector(".primary");
+    var oldText = button ? button.textContent : "";
+    if (button) {
+      button.disabled = true;
+      button.textContent = "جارٍ التحقق...";
+    }
+    secureBaseGsPost({
+      action:"adminLogin",
+      password:password
+    }).then(function (result) {
+      if (!result || !result.ok || !result.session) {
+        throw new Error((result && result.error) || "تعذر تسجيل الدخول");
+      }
+      sessionSet(ADMIN_SESSION_KEY, result.session);
+      pinInput.value = "";
+      closeLogin();
+      openAdmin();
+    }).catch(function (error) {
+      clearAdminSession();
+      alert(error.message === "SECURITY_NOT_CONFIGURED"
+        ? "يجب تشغيل setupAdminSecurity من Google Apps Script أولًا."
+        : "كلمة المرور غير صحيحة أو تعذر الاتصال بالخادم.");
+    }).then(function () {
+      if (button) {
+        button.disabled = false;
+        button.textContent = oldText || "دخول آمن";
+      }
+    });
+  };
+
   window.refreshOwnerAdminAccess = function () {
     var button = document.querySelector(".adminBtn");
     if (!button) return;
-    button.classList.toggle("ownerOnlyVisible", hasOwnerAccess());
+    button.classList.toggle("ownerOnlyVisible", hasOwnerMode());
   };
 
   var ownerBaseRequestAdmin = requestAdmin;
   requestAdmin = function () {
-    if (!hasOwnerAccess()) return;
-    ownerBaseRequestAdmin();
+    if (!hasOwnerMode()) return;
+    if (adminSession()) openAdmin();
+    else ownerBaseRequestAdmin();
   };
 
   var ownerBaseOpenAdmin = openAdmin;
   openAdmin = function () {
-    if (!hasOwnerAccess()) return;
+    if (!hasOwnerMode() || !adminSession()) return;
     ownerBaseOpenAdmin();
+    var passwordInput = document.getElementById("settingPin");
+    if (passwordInput) {
+      passwordInput.value = "secure-session";
+      var passwordField = passwordInput.closest(".field");
+      if (passwordField) passwordField.style.display = "none";
+    }
   };
 
   refreshOwnerAdminAccess();
