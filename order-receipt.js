@@ -122,11 +122,32 @@
     }
   }
 
+  function whatsappLaunchUrl(webUrl) {
+    var original = safeText(webUrl, "");
+    if (!original) return "";
+    var userAgent = String(navigator.userAgent || "");
+    var isAndroid = /Android/i.test(userAgent);
+    var isAppleMobile = /iPhone|iPad|iPod/i.test(userAgent);
+    if (!isAndroid && !isAppleMobile) return original;
+    try {
+      var parsed = new URL(original);
+      var phone = parsed.pathname.replace(/\D/g, "");
+      var message = parsed.searchParams.get("text") || "";
+      var query = "phone=" + encodeURIComponent(phone) + "&text=" + encodeURIComponent(message);
+      if (isAndroid) {
+        return "intent://send?" + query + "#Intent;scheme=whatsapp;package=com.whatsapp;end";
+      }
+      return "whatsapp://send?" + query;
+    } catch (error) {
+      return original;
+    }
+  }
+
   function openPreparedWhatsApp(url) {
     if (!url) return false;
     if (pendingWhatsAppWindow && !pendingWhatsAppWindow.closed) {
       try {
-        pendingWhatsAppWindow.location.replace(url);
+        pendingWhatsAppWindow.location.replace(whatsappLaunchUrl(url));
         pendingWhatsAppWindow.focus();
         pendingWhatsAppWindow = null;
         return true;
@@ -480,8 +501,13 @@
 
   window.openLastOrderWhatsApp = function () {
     if (!lastOrder || !lastOrder.whatsappUrl) return;
-    var opened = window.open(lastOrder.whatsappUrl, "_blank");
-    if (!opened) window.location.assign(lastOrder.whatsappUrl);
+    var launchUrl = whatsappLaunchUrl(lastOrder.whatsappUrl);
+    if (/^(whatsapp|intent):/i.test(launchUrl)) {
+      window.location.assign(launchUrl);
+      return;
+    }
+    var opened = window.open(launchUrl, "_blank");
+    if (!opened) window.location.assign(launchUrl);
   };
 
   window.downloadLastOrderPdf = function () {
