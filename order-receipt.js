@@ -102,60 +102,14 @@
 
   function prepareWhatsAppWindow() {
     closePendingWhatsApp();
-    try {
-      pendingWhatsAppWindow = window.open("about:blank", "oliveBranchOrderWhatsApp");
-      if (pendingWhatsAppWindow) {
-        pendingWhatsAppWindow.document.open();
-        pendingWhatsAppWindow.document.write(
-          '<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8">' +
-          '<meta name="viewport" content="width=device-width,initial-scale=1">' +
-          '<title>غصن الزيتون</title><style>body{margin:0;min-height:100vh;display:grid;place-items:center;' +
-          'font-family:Tahoma,Arial,sans-serif;background:#f7f1e7;color:#285b35;text-align:center;padding:24px}' +
-          'img{width:120px;height:120px;object-fit:contain}h2{line-height:1.6}</style></head><body><main>' +
-          '<img src="' + new URL("icon-512.png", location.href).href + '" alt=""><h2>جاري تجهيز طلبكم...</h2>' +
-          '<p>Preparing your order...</p></main></body></html>'
-        );
-        pendingWhatsAppWindow.document.close();
-      }
-    } catch (error) {
-      pendingWhatsAppWindow = null;
-    }
-  }
-
-  function whatsappLaunchUrl(webUrl) {
-    var original = safeText(webUrl, "");
-    if (!original) return "";
-    var userAgent = String(navigator.userAgent || "");
-    var isAndroid = /Android/i.test(userAgent);
-    var isAppleMobile = /iPhone|iPad|iPod/i.test(userAgent);
-    if (!isAndroid && !isAppleMobile) return original;
-    try {
-      var parsed = new URL(original);
-      var phone = parsed.pathname.replace(/\D/g, "");
-      var message = parsed.searchParams.get("text") || "";
-      var query = "phone=" + encodeURIComponent(phone) + "&text=" + encodeURIComponent(message);
-      if (isAndroid) {
-        return "intent://send?" + query + "#Intent;scheme=whatsapp;package=com.whatsapp;end";
-      }
-      return "whatsapp://send?" + query;
-    } catch (error) {
-      return original;
-    }
   }
 
   function openPreparedWhatsApp(url) {
     if (!url) return false;
-    if (pendingWhatsAppWindow && !pendingWhatsAppWindow.closed) {
-      try {
-        pendingWhatsAppWindow.location.replace(whatsappLaunchUrl(url));
-        pendingWhatsAppWindow.focus();
-        pendingWhatsAppWindow = null;
-        return true;
-      } catch (error) {
-        pendingWhatsAppWindow = null;
-      }
-    }
-    return false;
+    window.setTimeout(function () {
+      window.location.assign(url);
+    }, 50);
+    return true;
   }
 
   function loadImageFromUrl(url) {
@@ -501,13 +455,7 @@
 
   window.openLastOrderWhatsApp = function () {
     if (!lastOrder || !lastOrder.whatsappUrl) return;
-    var launchUrl = whatsappLaunchUrl(lastOrder.whatsappUrl);
-    if (/^(whatsapp|intent):/i.test(launchUrl)) {
-      window.location.assign(launchUrl);
-      return;
-    }
-    var opened = window.open(launchUrl, "_blank");
-    if (!opened) window.location.assign(launchUrl);
+    window.location.assign(lastOrder.whatsappUrl);
   };
 
   window.downloadLastOrderPdf = function () {
