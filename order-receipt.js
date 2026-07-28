@@ -4,6 +4,8 @@
   var PDF_WIDTH = 1240;
   var PDF_HEIGHT = 1754;
   var ITEMS_PER_PAGE = 5;
+  var RETURN_RECEIPT_KEY = "oliveBranchReturnReceiptV1";
+  var RETURN_RECEIPT_MAX_AGE = 24 * 60 * 60 * 1000;
   var pendingWhatsAppWindow = null;
   var lastOrder = null;
   var lastPdfBlob = null;
@@ -71,7 +73,7 @@
     if (shareButton) shareButton.disabled = !ready;
   }
 
-  function showThankYou(order, whatsappOpened) {
+  function showThankYou(order, whatsappOpened, restoredReceipt) {
     updateModalLanguage();
     var orderNumber = byId("thankYouOrderNo");
     if (orderNumber) {
@@ -83,12 +85,51 @@
     setReceiptStatus("جاري تجهيز فاتورة PDF بالصور...", "Preparing your illustrated PDF receipt...");
     var whatsappButton = byId("receiptWhatsappButton");
     if (whatsappButton) {
+      whatsappButton.hidden = restoredReceipt === true;
       whatsappButton.textContent = whatsappOpened
         ? (isEnglish() ? "Open WhatsApp again" : "فتح واتساب مرة أخرى")
         : (isEnglish() ? "Open WhatsApp to send order" : "فتح واتساب لإرسال الطلب");
     }
     var modal = byId("thankYouModal");
     if (modal) modal.classList.add("open");
+  }
+
+  function saveReturnReceipt(order) {
+    try {
+      localStorage.setItem(RETURN_RECEIPT_KEY, JSON.stringify({
+        savedAt: Date.now(),
+        order: order
+      }));
+    } catch (error) {}
+  }
+
+  function clearReturnReceipt() {
+    try {
+      localStorage.removeItem(RETURN_RECEIPT_KEY);
+    } catch (error) {}
+  }
+
+  function restoreReturnReceipt() {
+    try {
+      var view = String(new URLSearchParams(location.search).get("v") || "");
+      if (view.indexOf("owner") !== -1) return;
+      var saved = JSON.parse(localStorage.getItem(RETURN_RECEIPT_KEY) || "null");
+      if (!saved || !saved.order || !saved.savedAt || Date.now() - Number(saved.savedAt) > RETURN_RECEIPT_MAX_AGE) {
+        clearReturnReceipt();
+        return;
+      }
+      if (!saved.order.items || !saved.order.items.length) {
+        clearReturnReceipt();
+        return;
+      }
+      lastOrder = saved.order;
+      var splash = byId("welcomeSplash");
+      if (splash && splash.parentNode) splash.parentNode.removeChild(splash);
+      showThankYou(lastOrder, true, true);
+      prepareReceipt(lastOrder);
+    } catch (error) {
+      clearReturnReceipt();
+    }
   }
 
   function closePendingWhatsApp() {
@@ -442,13 +483,15 @@
   window.completeCustomerOrderReceiptFlow = function (order) {
     if (!order || !order.items || !order.items.length) return false;
     lastOrder = order;
+    saveReturnReceipt(order);
     var whatsappOpened = openPreparedWhatsApp(order.whatsappUrl);
-    showThankYou(order, whatsappOpened);
+    showThankYou(order, whatsappOpened, false);
     prepareReceipt(order);
     return true;
   };
 
   window.closeThankYouModal = function () {
+    clearReturnReceipt();
     var modal = byId("thankYouModal");
     if (modal) modal.classList.remove("open");
   };
@@ -500,4 +543,6 @@
   document.addEventListener("keydown", function (event) {
     if (event.key === "Escape") window.closeThankYouModal();
   });
+
+  restoreReturnReceipt();
 })();
