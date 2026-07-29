@@ -1531,10 +1531,24 @@
     baseRenderOrders.apply(this, arguments);
     var statuses = ["جديد", "تم التأكيد", "جاري التجهيز", "جاهز للاستلام", "خرج للتوصيل", "تم التسليم", "ملغي"];
     Array.prototype.slice.call(document.querySelectorAll("#ordersBody .statusSelect")).forEach(function (select) {
-      var currentStatus = select.value;
+      var changeHandler = safe(select.getAttribute("onchange"));
+      var orderMatch = changeHandler.match(/updateOrderStatus\(([^,]+),/);
+      var orderNumber = orderMatch ? safe(orderMatch[1]).replace(/['"\s]/g, "") : "";
+      var order = (window.orders || []).find(function (item) {
+        return String(item.orderNo) === orderNumber;
+      });
+      var currentStatus = safe(order && order.status || select.value || "جديد");
+      if (currentStatus === "قيد التجهيز") currentStatus = "جاري التجهيز";
+      if (currentStatus === "جاهز") {
+        currentStatus = order && /delivery|توصيل/i.test(safe(order.deliveryType))
+          ? "خرج للتوصيل"
+          : "جاهز للاستلام";
+      }
+      if (order) order.status = currentStatus;
       select.innerHTML = statuses.map(function (status) {
         return '<option value="' + html(status) + '"' + (status === currentStatus ? " selected" : "") + '>' + html(status) + '</option>';
       }).join("");
+      select.value = currentStatus;
     });
     var tools = document.querySelector("#ordersTab .ordersTools");
     if (tools && !document.getElementById("statusSyncButton")) {
