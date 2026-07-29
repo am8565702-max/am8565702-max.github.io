@@ -8,6 +8,8 @@
   var FAVORITES_KEY = "oliveMenuFavoritesV1";
   var HISTORY_KEY = "oliveMenuOrderHistoryV1";
   var APPLIED_COUPON_KEY = "oliveMenuAppliedCouponV1";
+  var STATUS_SYNC_SIGNATURE_KEY = "oliveMenuStatusSyncSignatureV2";
+  var ADMIN_SESSION_KEY = "oliveMenuAdminSessionV2";
   var MAX_HISTORY = 10;
   var configMarkerId = 0;
   var statusCollectionMarkerId = 0;
@@ -28,6 +30,7 @@
   var baseCompleteReceipt = window.completeCustomerOrderReceiptFlow;
   var baseUpdateOrderStatus = window.updateOrderStatus;
   var baseRenderOrders = window.renderOrders;
+  var baseLoadCloudOrders = window.loadCloudOrders;
 
   function defaultConfig() {
     return {
@@ -524,9 +527,11 @@
       enhancementConfig = mergeConfig(foundConfig);
       saveJson(CONFIG_STORAGE_KEY, enhancementConfig);
     }
-    statusCollection = foundStatusCollection && foundStatusCollection.orders
-      ? foundStatusCollection
-      : { version: 2, orders: {} };
+    if (foundStatusCollection && foundStatusCollection.orders) {
+      statusCollection = foundStatusCollection;
+    } else if (!statusCollection || !statusCollection.orders) {
+      statusCollection = { version: 2, orders: {} };
+    }
     Object.keys(statusCollection.orders || {}).forEach(function (number) {
       statusMarkers[String(number)] = {
         id: statusCollectionMarkerId,
@@ -1148,27 +1153,173 @@
     statusCollection = { version: 2, orders: trimmed };
   }
 
-  function savePublicStatus(orderNumber, status) {
-    var order = (window.orders || []).find(function (item) {
-      return String(item.orderNo) === String(orderNumber);
+  function wait(milliseconds) {
+    return new Promise(function (resolve) {
+      window.setTimeout(resolve, milliseconds);
     });
-    if (!order || !order.phone) return Promise.resolve();
-    return phoneHash(order.phone).then(function (hash) {
-      var statusData = {
-        orderNo: String(orderNumber),
-        status: status,
-        phoneHash: hash,
-        deliveryType: order.deliveryType || "",
-        updatedAt: new Date().toISOString()
+  }
+
+  function adminSession() {
+    try {
+      return sessionStorage.getItem(ADMIN_SESSION_KEY) || "";
+    } catch (error) {
+      return "";
+    }
+  }
+
+  function directJsonp(action, params) {
+    return new Promise(function (resolve, reject) {
+      if (!window.gsUrl || !window.gsUrl()) {
+        reject(new Error("NO_URL"));
+        return;
+      }
+      var callback = "__olive_sync_" + Date.now() + "_" + Math.random().toString(36).slice(2);
+      var script = document.createElement("script");
+      var timer = window.setTimeout(function () {
+        cleanup();
+        reject(new Error("TIMEOUT"));
+      }, 15000);
+      function cleanup() {
+        window.clearTimeout(timer);
+        try { delete window[callback]; } catch (error) { window[callback] = undefined; }
+        script.remove();
+      }
+      window[callback] = function (result) {
+        cleanup();
+        if (!result || result.ok === false) {
+          reject(new Error(result && result.error || "FAILED"));
+          return;
+        }
+        resolve(result);
       };
-      statusCollection.orders = statusCollection.orders || {};
-      statusCollection.orders[String(orderNumber)] = statusData;
-      statusMarkers[String(orderNumber)] = {
-        id: statusCollectionMarkerId,
-        data: statusData
+      var query = new URLSearchParams(Object.assign({
+        action: action,
+        callback: callback,
+        _t: Date.now()
+      }, params || {}));
+      script.src = window.gsUrl() + (window.gsUrl().indexOf("?") === -1 ? "?" : "&") + query.toString();
+      script.onerror = function () {
+        cleanup();
+        reject(new Error("NETWORK"));
       };
-      trimStatusCollection();
-      return window.gsPost({
+      document.head.appendChild(script);
+    });
+  }
+
+  function fallbackPayload(payload) {
+    var updated = Object.assign({}, payload || {});
+    delete updated.pin;
+    if (["orders", "updateStatus", "saveProduct"].indexOf(safe(updated.action)) !== -1) {
+      updated.session = adminSession();
+    }
+    return updated;
+  }
+
+  function postWithoutCors(payload) {
+    return window.fetch(window.gsUrl(), {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(fallbackPayload(payload)),
+      redirect: "follow"
+    });
+  }
+
+  function loadOrdersDirectly() {
+    return directJsonp("orders", { session: adminSession() }).then(function (result) {
+      if (!Array.isArray(result.orders)) throw new Error("INVALID_ORDERS");
+      window.orders = result.orders;
+      window.renderOrders();
+      return result.orders;
+    });
+  }
+
+  function remoteOrderHasStatus(orderNumber, status) {
+    return loadOrdersDirectly().then(function (orders) {
+      return orders.some(function (order) {
+        return String(order.orderNo) === String(orderNumber) && safe(order.status) === safe(status);
+      });
+    }).catch(function () {
+      return false;
+    });
+  }
+
+  function updateRemoteOrderStatus(orderNumber, status) {
+    var payload = {
+      action: "updateStatus",
+      orderNo: orderNumber,
+      status: status
+    };
+    var firstError = null;
+    return window.gsPost(payload).then(function (response) {
+      if (!response || !response.ok) throw new Error(response && response.error || "UPDATE_FAILED");
+      return response;
+    }).catch(function (error) {
+      firstError = error;
+      return wait(500).then(function () {
+        return remoteOrderHasStatus(orderNumber, status);
+      }).then(function (alreadySaved) {
+        if (alreadySaved) return { ok: true, recovered: true };
+        return postWithoutCors(payload).then(function () {
+          return wait(900);
+        }).then(function () {
+          return remoteOrderHasStatus(orderNumber, status);
+        }).then(function (saved) {
+          if (!saved) throw firstError;
+          return { ok: true, recovered: true };
+        });
+      });
+    });
+  }
+
+  function readRemoteStatusCollection() {
+    return directJsonp("products").then(function (result) {
+      var bestMarker = null;
+      (result.products || []).forEach(function (product) {
+        if (safe(product.name).trim() !== STATUS_COLLECTION_MARKER) return;
+        if (!bestMarker || Number(product.id || 0) >= Number(bestMarker.id || 0)) bestMarker = product;
+      });
+      if (!bestMarker) return { id: 0, collection: { version: 2, orders: {} } };
+      try {
+        return {
+          id: Number(bestMarker.id || 0),
+          collection: JSON.parse(safe(bestMarker.desc) || "{}")
+        };
+      } catch (error) {
+        return { id: Number(bestMarker.id || 0), collection: { version: 2, orders: {} } };
+      }
+    });
+  }
+
+  function collectionIncludes(expectedOrders, remoteCollection) {
+    var remoteOrders = remoteCollection && remoteCollection.orders || {};
+    return Object.keys(expectedOrders || {}).every(function (number) {
+      var expected = expectedOrders[number] || {};
+      var remote = remoteOrders[number] || {};
+      return safe(remote.status) === safe(expected.status) &&
+        safe(remote.phoneHash) === safe(expected.phoneHash);
+    });
+  }
+
+  function verifyRemoteStatusCollection(expectedOrders) {
+    return readRemoteStatusCollection().then(function (remote) {
+      if (!collectionIncludes(expectedOrders, remote.collection)) return false;
+      statusCollectionMarkerId = remote.id || statusCollectionMarkerId;
+      statusCollection = remote.collection;
+      Object.keys(statusCollection.orders || {}).forEach(function (number) {
+        statusMarkers[number] = {
+          id: statusCollectionMarkerId,
+          data: statusCollection.orders[number]
+        };
+      });
+      return true;
+    }).catch(function () {
+      return false;
+    });
+  }
+
+  function saveStatusCollection(expectedOrders) {
+    var payload = {
         action: "saveProduct",
         id: statusCollectionMarkerId || 0,
         name: STATUS_COLLECTION_MARKER,
@@ -1178,13 +1329,176 @@
         visible: false,
         imageData: "",
         existingImage: ""
-      });
-    }).then(function (response) {
+      };
+    var firstError = null;
+    return window.gsPost(payload).then(function (response) {
       if (!response || !response.ok) throw new Error((response && response.error) || "STATUS_SYNC_FAILED");
       statusCollectionMarkerId = Number(response.id || response.productId || statusCollectionMarkerId || 0);
       return response;
+    }).catch(function (error) {
+      firstError = error;
+      return wait(500).then(function () {
+        return verifyRemoteStatusCollection(expectedOrders);
+      }).then(function (alreadySaved) {
+        if (alreadySaved) return { ok: true, recovered: true };
+        return postWithoutCors(payload).then(function () {
+          return wait(900);
+        }).then(function () {
+          return verifyRemoteStatusCollection(expectedOrders);
+        }).then(function (saved) {
+          if (!saved) throw firstError;
+          return { ok: true, recovered: true };
+        });
+      });
     });
   }
+
+  function savePublicStatus(orderNumber, status) {
+    var order = (window.orders || []).find(function (item) {
+      return String(item.orderNo) === String(orderNumber);
+    });
+    if (!order || !order.phone) return Promise.resolve();
+    return phoneHash(order.phone).then(function (hash) {
+      var number = String(orderNumber);
+      var statusData = {
+        orderNo: number,
+        status: status,
+        phoneHash: hash,
+        deliveryType: order.deliveryType || "",
+        updatedAt: new Date().toISOString()
+      };
+      statusCollection.orders = statusCollection.orders || {};
+      statusCollection.orders[number] = statusData;
+      statusMarkers[number] = {
+        id: statusCollectionMarkerId,
+        data: statusData
+      };
+      trimStatusCollection();
+      var expected = {};
+      expected[number] = statusData;
+      return saveStatusCollection(expected);
+    });
+  }
+
+  function ordersStatusSignature() {
+    var value = (window.orders || []).map(function (order) {
+      return [safe(order.orderNo), safe(order.status), digits(order.phone)].join("|");
+    }).sort().join(";");
+    var hash = 2166136261;
+    for (var index = 0; index < value.length; index += 1) {
+      hash ^= value.charCodeAt(index);
+      hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
+    }
+    return value.length + "-" + (hash >>> 0).toString(16);
+  }
+
+  function setStatusSyncState(message, failed) {
+    var state = document.getElementById("statusSyncState");
+    if (!state) return;
+    state.textContent = message || "";
+    state.classList.toggle("failed", !!failed);
+  }
+
+  function buildStatusCollectionFromOrders() {
+    var orders = (window.orders || []).filter(function (order) {
+      return order && order.orderNo != null && digits(order.phone).length >= 8;
+    }).sort(function (first, second) {
+      return (Date.parse(second.dateISO) || Number(second.orderNo) || 0) -
+        (Date.parse(first.dateISO) || Number(first.orderNo) || 0);
+    }).slice(0, 100);
+    return Promise.all(orders.map(function (order) {
+      return phoneHash(order.phone).then(function (hash) {
+        var number = String(order.orderNo);
+        var old = statusCollection.orders && statusCollection.orders[number] || {};
+        var status = safe(order.status || "جديد");
+        return {
+          number: number,
+          data: {
+            orderNo: number,
+            status: status,
+            phoneHash: hash,
+            deliveryType: order.deliveryType || "",
+            updatedAt: old.status === status && old.updatedAt
+              ? old.updatedAt
+              : new Date().toISOString()
+          }
+        };
+      });
+    })).then(function (entries) {
+      statusCollection.orders = statusCollection.orders || {};
+      entries.forEach(function (entry) {
+        statusCollection.orders[entry.number] = entry.data;
+        statusMarkers[entry.number] = {
+          id: statusCollectionMarkerId,
+          data: entry.data
+        };
+      });
+      trimStatusCollection();
+      var expected = {};
+      entries.forEach(function (entry) {
+        expected[entry.number] = entry.data;
+      });
+      return expected;
+    });
+  }
+
+  window.syncOrderTrackingStatuses = function (showMessage) {
+    var explicit = showMessage !== false;
+    var button = document.getElementById("statusSyncButton");
+    if (!(window.orders || []).length) {
+      if (explicit) alert("لا توجد طلبات لمزامنتها.");
+      return Promise.resolve(false);
+    }
+    if (button) {
+      button.disabled = true;
+      button.textContent = "جاري مزامنة التتبع...";
+    }
+    setStatusSyncState("جاري إرسال الحالات للزبائن...", false);
+    statusSaveQueue = statusSaveQueue.then(function () {
+      return buildStatusCollectionFromOrders();
+    }).then(function (expected) {
+      return saveStatusCollection(expected);
+    }).then(function () {
+      try { localStorage.setItem(STATUS_SYNC_SIGNATURE_KEY, ordersStatusSignature()); } catch (error) {}
+      setStatusSyncState("تمت مزامنة حالات التتبع", false);
+      if (explicit) alert("تمت مزامنة كل حالات الطلبات مع تتبّع الزبائن.");
+      return true;
+    }).catch(function (error) {
+      console.error("Order tracking batch sync failed", error);
+      setStatusSyncState("تعذّرت المزامنة — اضغط للمحاولة مرة أخرى", true);
+      if (explicit) alert("تعذّرت مزامنة التتبع. تأكد من الإنترنت ثم حاول مرة أخرى.");
+      return false;
+    }).then(function (result) {
+      if (button) {
+        button.disabled = false;
+        button.textContent = "🔄 مزامنة التتبع للزبائن";
+      }
+      return result;
+    });
+    return statusSaveQueue;
+  };
+
+  function autoSyncOrderStatuses() {
+    var signature = ordersStatusSignature();
+    var previous = "";
+    try { previous = localStorage.getItem(STATUS_SYNC_SIGNATURE_KEY) || ""; } catch (error) {}
+    if (!signature || signature === previous || !(window.orders || []).length) return;
+    window.setTimeout(function () {
+      window.syncOrderTrackingStatuses(false);
+    }, 250);
+  }
+
+  window.loadCloudOrders = function () {
+    var args = arguments;
+    return loadOrdersDirectly().then(function (orders) {
+      autoSyncOrderStatuses();
+      return orders;
+    }).catch(function (directError) {
+      console.warn("Direct order loading fallback:", directError);
+      var result = baseLoadCloudOrders.apply(window, args);
+      return result && typeof result.then === "function" ? result : Promise.resolve(result);
+    });
+  };
 
   window.updateOrderStatus = function (number, status) {
     var order = (window.orders || []).find(function (item) {
@@ -1193,16 +1507,16 @@
     var oldStatus = order && order.status;
     if (order) order.status = status;
     window.renderOrders();
-    return window.gsPost({
-      action: "updateStatus",
-      orderNo: number,
-      status: status
-    }).then(function (response) {
-      if (!response || !response.ok) throw new Error((response && response.error) || "UPDATE_FAILED");
+    setStatusSyncState("جاري تحديث الطلب #" + number + "...", false);
+    return updateRemoteOrderStatus(number, status).then(function () {
       statusSaveQueue = statusSaveQueue.then(function () {
         return savePublicStatus(number, status);
+      }).then(function () {
+        try { localStorage.setItem(STATUS_SYNC_SIGNATURE_KEY, ordersStatusSignature()); } catch (error) {}
+        setStatusSyncState("تم تحديث الطلب والتتبّع", false);
       }).catch(function (trackingError) {
         console.error("Customer tracking sync failed", trackingError);
+        setStatusSyncState("تم تحديث الطلب، وتعذّرت مزامنة التتبّع", true);
       });
       return statusSaveQueue;
     }).catch(function (error) {
@@ -1222,6 +1536,12 @@
         return '<option value="' + html(status) + '"' + (status === currentStatus ? " selected" : "") + '>' + html(status) + '</option>';
       }).join("");
     });
+    var tools = document.querySelector("#ordersTab .ordersTools");
+    if (tools && !document.getElementById("statusSyncButton")) {
+      tools.insertAdjacentHTML("beforeend",
+        '<button id="statusSyncButton" class="secondary" type="button" onclick="syncOrderTrackingStatuses(true)">🔄 مزامنة التتبع للزبائن</button>' +
+        '<span id="statusSyncState" class="statusSyncState" aria-live="polite"></span>');
+    }
   };
 
   function parseCoordinates(urlValue) {
@@ -1359,7 +1679,9 @@
 
   if (navigator.serviceWorker && typeof navigator.serviceWorker.register === "function") {
     window.addEventListener("load", function () {
-      navigator.serviceWorker.register("./sw.js").catch(function (error) {
+      navigator.serviceWorker.register("./sw.js").then(function (registration) {
+        return registration.update();
+      }).catch(function (error) {
         console.warn("Service worker registration failed", error);
       });
     });
