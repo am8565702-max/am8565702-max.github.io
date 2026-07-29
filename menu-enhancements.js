@@ -3,12 +3,16 @@
 
   var CONFIG_MARKER = "__MENU_ENHANCEMENTS_V1__";
   var STATUS_MARKER_PREFIX = "__ORDER_STATUS_V1__";
+  var STATUS_COLLECTION_MARKER = "__ORDER_STATUSES_V2__";
   var CONFIG_STORAGE_KEY = "oliveMenuEnhancementsV1";
   var FAVORITES_KEY = "oliveMenuFavoritesV1";
   var HISTORY_KEY = "oliveMenuOrderHistoryV1";
   var APPLIED_COUPON_KEY = "oliveMenuAppliedCouponV1";
   var MAX_HISTORY = 10;
   var configMarkerId = 0;
+  var statusCollectionMarkerId = 0;
+  var statusCollection = { version: 2, orders: {} };
+  var statusSaveQueue = Promise.resolve();
   var statusMarkers = {};
   var favoriteOnly = false;
   var installPromptEvent = null;
@@ -485,6 +489,7 @@
   function extractCloudMarkers() {
     var nextProducts = [];
     var foundConfig = null;
+    var foundStatusCollection = null;
     statusMarkers = {};
     (window.products || []).forEach(function (product) {
       var name = safe(product.name).trim();
@@ -492,6 +497,13 @@
         configMarkerId = Number(product.id || 0);
         try {
           foundConfig = JSON.parse(safe(product.desc) || "{}");
+        } catch (error) {}
+        return;
+      }
+      if (name === STATUS_COLLECTION_MARKER) {
+        statusCollectionMarkerId = Number(product.id || 0);
+        try {
+          foundStatusCollection = JSON.parse(safe(product.desc) || "{}");
         } catch (error) {}
         return;
       }
@@ -512,6 +524,15 @@
       enhancementConfig = mergeConfig(foundConfig);
       saveJson(CONFIG_STORAGE_KEY, enhancementConfig);
     }
+    statusCollection = foundStatusCollection && foundStatusCollection.orders
+      ? foundStatusCollection
+      : { version: 2, orders: {} };
+    Object.keys(statusCollection.orders || {}).forEach(function (number) {
+      statusMarkers[String(number)] = {
+        id: statusCollectionMarkerId,
+        data: statusCollection.orders[number]
+      };
+    });
   }
 
   function renderDeliveryOptions() {
@@ -1022,9 +1043,8 @@
     var latestPhone = latest.record && latest.record.phone || "";
     openEnhancementHtml(
       '<h2>🚚 ' + text("تتبّع الطلب", "Track order") + '</h2>' +
-      '<div class="field"><label for="trackingOrderNo">' + text("رقم الطلب", "Order number") + '</label><input id="trackingOrderNo" inputmode="numeric" value="' + html(latest.orderNo || "") + '"></div>' +
       '<div class="field"><label for="trackingPhone">' + text("رقم الهاتف المستخدم في الطلب", "Phone number used for the order") + '</label><input id="trackingPhone" inputmode="tel" value="' + html(latestPhone) + '"></div>' +
-      '<button class="primary" style="width:100%" type="button" onclick="checkOrderTracking()">' + text("عرض حالة الطلب", "Show order status") + '</button>' +
+      '<button class="primary" style="width:100%" type="button" onclick="checkOrderTracking()">' + text("عرض كل طلباتي", "Show all my orders") + '</button>' +
       '<div id="trackingResult" class="trackingResult" hidden></div>');
   };
 
@@ -1037,38 +1057,77 @@
     return 0;
   }
 
-  function trackingMarkup(orderNo, status) {
-    if (status === "ملغي") {
-      return '<div class="trackingHeadline" style="color:#9b1c15">' + text("تم إلغاء الطلب", "Order cancelled") + '</div>';
+  function trackingMarkup(order) {
+    var orderNo = order.orderNo;
+    var status = order.status;
+    var details = [];
+    if (order.dateText) details.push(html(order.dateText));
+    if (order.total != null && order.total !== "") details.push(html(moneyValue(order.total)) + " " + text("درهم", "AED"));
+    if (order.deliveryType) {
+      details.push(order.deliveryType === "delivery" ? text("توصيل", "Delivery") : text("استلام", "Pickup"));
     }
+    if (status === "ملغي") {
+      return '<article class="trackingOrderCard"><div class="trackingHeadline">' + text("الطلب رقم #", "Order #") + html(orderNo) + '</div>' +
+        (details.length ? '<div class="trackingMeta">' + details.join(" • ") + '</div>' : '') +
+        '<div class="trackingHeadline" style="color:#9b1c15">' + text("تم إلغاء الطلب", "Order cancelled") + '</div></article>';
+    }
+    var isPickupOrder = /pickup|استلام/i.test(safe(order.deliveryType)) || status === "جاهز للاستلام";
     var labels = isEnglish()
-      ? ["New", "Confirmed", "Preparing", "Out for delivery", "Delivered"]
-      : ["جديد", "تم التأكيد", "جاري التجهيز", "خرج للتوصيل", "تم التسليم"];
+      ? ["New", "Confirmed", "Preparing", isPickupOrder ? "Ready for pickup" : "Out for delivery", "Completed"]
+      : ["جديد", "تم التأكيد", "جاري التجهيز", isPickupOrder ? "جاهز للاستلام" : "خرج للتوصيل", "مكتمل"];
     var currentIndex = statusIndex(status);
-    return '<div class="trackingHeadline">' + text("الطلب رقم #", "Order #") + html(orderNo) + '</div>' +
+    return '<article class="trackingOrderCard"><div class="trackingHeadline">' + text("الطلب رقم #", "Order #") + html(orderNo) + '</div>' +
+      (details.length ? '<div class="trackingMeta">' + details.join(" • ") + '</div>' : '') +
       '<p>' + text("الحالة الحالية: ", "Current status: ") + '<b>' + html(status || text("جديد", "New")) + '</b></p>' +
       '<div class="statusSteps">' + labels.map(function (label, index) {
         return '<div class="statusStep ' + (index < currentIndex ? "done" : index === currentIndex ? "current" : "") + '">' + html(label) + '</div>';
-      }).join("") + '</div>';
+      }).join("") + '</div></article>';
   }
 
   window.checkOrderTracking = function () {
-    var orderNo = safe(document.getElementById("trackingOrderNo") && document.getElementById("trackingOrderNo").value).trim();
     var phone = safe(document.getElementById("trackingPhone") && document.getElementById("trackingPhone").value).trim();
     var result = document.getElementById("trackingResult");
-    if (!orderNo || digits(phone).length < 8) {
-      alert(text("اكتب رقم الطلب ورقم الهاتف الصحيح.", "Enter the order number and a valid phone number."));
+    if (digits(phone).length < 8) {
+      alert(text("اكتب رقم الهاتف الصحيح.", "Enter a valid phone number."));
       return;
     }
     phoneHash(phone).then(function (hash) {
-      var marker = statusMarkers[String(orderNo)];
-      var localOrder = orderHistory().find(function (order) {
-        return String(order.orderNo) === String(orderNo) && digits(order.record && order.record.phone) === digits(phone);
+      var matches = {};
+      Object.keys(statusMarkers).forEach(function (number) {
+        var marker = statusMarkers[number];
+        if (marker && marker.data && marker.data.phoneHash === hash) {
+          matches[String(number)] = {
+            orderNo: String(number),
+            status: marker.data.status || text("جديد", "New"),
+            updatedAt: marker.data.updatedAt || "",
+            deliveryType: marker.data.deliveryType || ""
+          };
+        }
       });
-      if (marker && marker.data && marker.data.phoneHash === hash) {
-        result.innerHTML = trackingMarkup(orderNo, marker.data.status);
-      } else if (localOrder && !marker) {
-        result.innerHTML = trackingMarkup(orderNo, text("جديد", "New"));
+      orderHistory().forEach(function (order) {
+        if (digits(order.record && order.record.phone) !== digits(phone)) return;
+        var number = String(order.orderNo);
+        var current = matches[number] || {};
+        matches[number] = {
+          orderNo: number,
+          status: current.status || text("جديد", "New"),
+          updatedAt: current.updatedAt || order.savedAt || "",
+          dateText: order.record && order.record.dateText || "",
+          total: order.totals && order.totals.total,
+          deliveryType: order.totals && order.totals.deliveryType || current.deliveryType || ""
+        };
+      });
+      var ordersForPhone = Object.keys(matches).map(function (number) {
+        return matches[number];
+      }).sort(function (first, second) {
+        var firstTime = Date.parse(first.updatedAt) || Number(first.updatedAt) || Number(first.orderNo) || 0;
+        var secondTime = Date.parse(second.updatedAt) || Number(second.updatedAt) || Number(second.orderNo) || 0;
+        return secondTime - firstTime;
+      });
+      if (ordersForPhone.length) {
+        result.innerHTML = '<div class="trackingCount">' +
+          text("عدد الطلبات: ", "Orders found: ") + '<b>' + ordersForPhone.length + '</b></div>' +
+          ordersForPhone.map(trackingMarkup).join("");
       } else {
         result.innerHTML = '<div class="trackingHeadline" style="color:#9b1c15">' + text("لم نجد طلبًا مطابقًا لهذه البيانات.", "No matching order was found.") + '</div>';
       }
@@ -1076,23 +1135,44 @@
     });
   };
 
+  function trimStatusCollection() {
+    var entries = Object.keys(statusCollection.orders || {}).map(function (number) {
+      return { number: number, data: statusCollection.orders[number] };
+    }).sort(function (first, second) {
+      return (Date.parse(second.data.updatedAt) || 0) - (Date.parse(first.data.updatedAt) || 0);
+    }).slice(0, 100);
+    var trimmed = {};
+    entries.forEach(function (entry) {
+      trimmed[entry.number] = entry.data;
+    });
+    statusCollection = { version: 2, orders: trimmed };
+  }
+
   function savePublicStatus(orderNumber, status) {
     var order = (window.orders || []).find(function (item) {
       return String(item.orderNo) === String(orderNumber);
     });
     if (!order || !order.phone) return Promise.resolve();
     return phoneHash(order.phone).then(function (hash) {
-      var marker = statusMarkers[String(orderNumber)];
+      var statusData = {
+        orderNo: String(orderNumber),
+        status: status,
+        phoneHash: hash,
+        deliveryType: order.deliveryType || "",
+        updatedAt: new Date().toISOString()
+      };
+      statusCollection.orders = statusCollection.orders || {};
+      statusCollection.orders[String(orderNumber)] = statusData;
+      statusMarkers[String(orderNumber)] = {
+        id: statusCollectionMarkerId,
+        data: statusData
+      };
+      trimStatusCollection();
       return window.gsPost({
         action: "saveProduct",
-        id: marker ? marker.id : 0,
-        name: STATUS_MARKER_PREFIX + String(orderNumber),
-        desc: JSON.stringify({
-          orderNo: String(orderNumber),
-          status: status,
-          phoneHash: hash,
-          updatedAt: new Date().toISOString()
-        }),
+        id: statusCollectionMarkerId || 0,
+        name: STATUS_COLLECTION_MARKER,
+        desc: JSON.stringify(statusCollection),
         price: "",
         cat: "labneh",
         visible: false,
@@ -1101,17 +1181,35 @@
       });
     }).then(function (response) {
       if (!response || !response.ok) throw new Error((response && response.error) || "STATUS_SYNC_FAILED");
-      return window.loadCloudProducts();
+      statusCollectionMarkerId = Number(response.id || response.productId || statusCollectionMarkerId || 0);
+      return response;
     });
   }
 
   window.updateOrderStatus = function (number, status) {
-    var result = baseUpdateOrderStatus.apply(this, arguments);
-    return Promise.resolve(result).then(function () {
-      return savePublicStatus(number, status);
+    var order = (window.orders || []).find(function (item) {
+      return String(item.orderNo) === String(number);
+    });
+    var oldStatus = order && order.status;
+    if (order) order.status = status;
+    window.renderOrders();
+    return window.gsPost({
+      action: "updateStatus",
+      orderNo: number,
+      status: status
+    }).then(function (response) {
+      if (!response || !response.ok) throw new Error((response && response.error) || "UPDATE_FAILED");
+      statusSaveQueue = statusSaveQueue.then(function () {
+        return savePublicStatus(number, status);
+      }).catch(function (trackingError) {
+        console.error("Customer tracking sync failed", trackingError);
+      });
+      return statusSaveQueue;
     }).catch(function (error) {
-      console.error("Customer tracking sync failed", error);
-      alert("تم تحديث الطلب، لكن تعذر تحديث شاشة التتبع للزبون. حاول مرة أخرى.");
+      if (order) order.status = oldStatus;
+      window.renderOrders();
+      console.error("Order status update failed", error);
+      alert("تعذر تحديث حالة الطلب. تأكد من الإنترنت ثم حاول مرة أخرى.");
     });
   };
 
@@ -1259,7 +1357,7 @@
     if (button) button.hidden = true;
   });
 
-  if ("serviceWorker" in navigator) {
+  if (navigator.serviceWorker && typeof navigator.serviceWorker.register === "function") {
     window.addEventListener("load", function () {
       navigator.serviceWorker.register("./sw.js").catch(function (error) {
         console.warn("Service worker registration failed", error);
