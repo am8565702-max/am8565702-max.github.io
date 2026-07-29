@@ -21,6 +21,9 @@ html[dir="ltr"] .enhancementDialog h2{margin:2px 0 14px 48px}
 .enhancementDialog .field input,.enhancementDialog .field select{width:100%;min-height:46px;padding:10px;border:1px solid #d8ccb8;border-radius:10px}
 .trackingResult{margin-top:14px;padding:16px;border:1px solid #d8c6a8;border-radius:15px;background:#faf7f1}
 .trackingResult[hidden]{display:none}
+.trackingCount{margin-bottom:10px;padding:10px;border-radius:11px;background:#e8f3ea;color:var(--green);text-align:center}
+.trackingOrderCard{margin-top:10px;padding:14px;border:1px solid #e1d4bd;border-radius:14px;background:#fff}
+.trackingOrderCard:first-of-type{margin-top:0}.trackingMeta{margin:5px 0;color:var(--muted);font-size:12px}
 .trackingHeadline{font-size:19px;font-weight:900;color:var(--green)}
 .statusSteps{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:14px}
 .statusStep{text-align:center;font-size:11px;color:#8b918d}
