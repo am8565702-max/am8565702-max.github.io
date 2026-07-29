@@ -1,0 +1,51 @@
+.quickServices{max-width:1200px;margin:0 auto 14px;padding:0 16px;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}
+.quickService{min-height:52px;border:1px solid #decdb1;border-radius:15px;background:#fff;color:var(--green);font-weight:900;cursor:pointer;box-shadow:0 5px 16px rgba(59,45,24,.07)}
+.quickService.active{background:var(--green);color:#fff;border-color:var(--green)}
+.quickService[hidden]{display:none}
+.offersStrip{max-width:1200px;margin:0 auto 14px;padding:0 16px;display:flex;gap:10px;overflow:auto;scroll-snap-type:x proximity}
+.offersStrip:empty{display:none}
+.offerCard{flex:0 0 min(330px,88vw);scroll-snap-align:start;border:1px solid #d9c192;border-radius:18px;padding:14px;background:linear-gradient(135deg,#fff9eb,#f3e2bd);color:#5a4018;box-shadow:0 7px 20px rgba(75,53,20,.09)}
+.offerCard b{display:block;color:var(--green);font-size:17px;margin-bottom:5px}
+.offerCode{display:inline-block;margin-top:8px;padding:6px 10px;border:1px dashed #ad7925;border-radius:9px;background:#fff;font-weight:900;direction:ltr}
+.offerCard button{margin-top:10px;width:100%;min-height:42px;border:0;border-radius:10px;background:var(--green);color:#fff;font-weight:900;cursor:pointer}
+.productUtility{position:absolute;top:10px;left:10px;z-index:3;display:flex;gap:6px}
+html[dir="ltr"] .productUtility{left:auto;right:10px}
+.productUtility button{width:38px;height:38px;padding:0;border:1px solid rgba(40,91,53,.25);border-radius:12px;background:rgba(255,255,255,.94);color:var(--green);font-size:18px;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.10)}
+.productUtility .favoriteOn{background:#fff0f1;color:#c51f35;border-color:#e9abb4}
+.notifyStock{width:100%;min-height:44px;border:1px solid #d4b56d;border-radius:11px;background:#fff8e8;color:#6b4d00;font-weight:900;cursor:pointer}
+.favoriteEmpty{grid-column:1/-1;padding:34px 16px;border:1px dashed #d8c6a8;border-radius:18px;background:#fff;text-align:center;color:var(--muted)}
+.enhancementModal{z-index:1250}.enhancementDialog{position:absolute;top:50%;left:50%;width:min(610px,94vw);max-height:90vh;overflow:auto;transform:translate(-50%,-48%) scale(.97);background:#fff;border-radius:23px;padding:22px;opacity:0;transition:.2s;box-shadow:0 24px 80px rgba(0,0,0,.3)}
+.enhancementModal.open .enhancementDialog{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.enhancementDialog h2{margin:2px 48px 14px 0;color:var(--green)}
+html[dir="ltr"] .enhancementDialog h2{margin:2px 0 14px 48px}
+.enhancementDialog .field input,.enhancementDialog .field select{width:100%;min-height:46px;padding:10px;border:1px solid #d8ccb8;border-radius:10px}
+.trackingResult{margin-top:14px;padding:16px;border:1px solid #d8c6a8;border-radius:15px;background:#faf7f1}
+.trackingResult[hidden]{display:none}
+.trackingHeadline{font-size:19px;font-weight:900;color:var(--green)}
+.statusSteps{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:14px}
+.statusStep{text-align:center;font-size:11px;color:#8b918d}
+.statusStep:before{content:"";display:block;width:15px;height:15px;margin:0 auto 7px;border-radius:50%;background:#d8ddd9;box-shadow:0 0 0 3px #eef0ee}
+.statusStep.done,.statusStep.current{color:var(--green);font-weight:900}
+.statusStep.done:before,.statusStep.current:before{background:var(--green);box-shadow:0 0 0 3px #dcecdf}
+.statusStep.current:before{background:var(--gold);box-shadow:0 0 0 4px #f4e8d2}
+.branchList{display:grid;gap:9px}.branchCard{padding:13px;border:1px solid #eadfcd;border-radius:13px;background:#faf7f1}
+.branchCard b{color:var(--green)}.branchCard a{display:inline-block;margin-top:7px;color:var(--green);font-weight:900}
+.checkoutExtras{margin:12px 0;padding:12px;border:1px solid #eadfcd;border-radius:14px;background:#faf7f1}
+.checkoutExtras h4{margin:0 0 10px;color:var(--green)}
+.checkoutExtras .field{margin-bottom:9px}.checkoutExtras input,.checkoutExtras select{width:100%;min-height:45px;padding:10px;border:1px solid #d8ccb8;border-radius:10px;background:#fff}
+.couponLine{display:grid;grid-template-columns:1fr auto;gap:7px}.couponLine button{min-width:92px;border:0;border-radius:10px;background:var(--green);color:#fff;font-weight:900;cursor:pointer}
+.couponState{min-height:20px;margin-top:5px;font-size:12px;font-weight:800}.couponState.ok{color:#1f5a30}.couponState.bad{color:#9b1c15}
+.itemNote{grid-column:1/-1;width:100%;min-height:42px;padding:9px 10px;border:1px solid #e0d3bf;border-radius:9px;background:#fffaf3;resize:vertical;font-size:13px}
+.enhancementSummary{margin-top:9px;padding-top:9px;border-top:1px dashed #cdb98f;color:var(--green);font-size:13px;line-height:1.8}
+.adminEnhancements{margin-top:18px;padding-top:16px;border-top:2px solid #eee}
+.adminEnhancements h3{margin:14px 0 8px;color:var(--green)}
+.configRows{display:grid;gap:8px}.configRow{display:grid;grid-template-columns:1.3fr .7fr .7fr auto;gap:7px;align-items:center;padding:8px;border:1px solid #eadfcd;border-radius:11px;background:#faf7f1}
+.configRow.branchConfig{grid-template-columns:1fr 1.6fr auto}.configRow.couponConfig{grid-template-columns:1fr .65fr .75fr 1fr auto}.configRow.bundleConfig{grid-template-columns:1.2fr 1fr .65fr auto}
+.configRow input{width:100%;min-height:40px;padding:8px;border:1px solid #d8ccb8;border-radius:8px}
+.configRow button{width:39px;height:39px;border:0;border-radius:9px;background:#fee4e2;color:var(--danger);font-weight:900;cursor:pointer}
+.addConfigRow{width:100%;margin-top:7px}
+.configTextarea{width:100%;min-height:86px;padding:10px;border:1px solid #d8ccb8;border-radius:9px;resize:vertical}
+.installHint{padding:12px;border:1px solid #d8c6a8;border-radius:12px;background:#fffaf0;color:#6b4d00;line-height:1.7}
+.deepLinkFocus{animation:deepLinkPulse 1.8s ease 2}@keyframes deepLinkPulse{50%{box-shadow:0 0 0 6px rgba(202,165,106,.4),0 12px 32px rgba(40,91,53,.2)}}
+@media(max-width:800px){.quickServices{grid-template-columns:repeat(3,1fr);padding:0 12px}.quickService{font-size:13px}.configRow,.configRow.branchConfig,.configRow.couponConfig,.configRow.bundleConfig{grid-template-columns:1fr 1fr}.configRow button{grid-column:2}.statusSteps{grid-template-columns:repeat(5,minmax(58px,1fr));overflow:auto}}
+@media(max-width:430px){.quickServices{grid-template-columns:repeat(2,1fr);gap:7px}.quickService{min-height:48px}.enhancementDialog{padding:18px 14px}.productUtility button{width:36px;height:36px}.offerCard{flex-basis:90vw}}
