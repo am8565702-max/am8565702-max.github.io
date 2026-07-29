@@ -12,6 +12,8 @@
   var lastPdfUrl = "";
   var lastPdfName = "";
   var buildSequence = 0;
+  var waitingForWhatsAppReturn = false;
+  var whatsappPageWasHidden = false;
 
   function byId(id) {
     return document.getElementById(id);
@@ -145,11 +147,46 @@
     closePendingWhatsApp();
   }
 
+  function directWhatsAppUrl(webUrl) {
+    var original = safeText(webUrl, "");
+    if (!original) return "";
+    var userAgent = String(navigator.userAgent || "");
+    var isAndroid = /Android/i.test(userAgent);
+    var isAppleMobile = /iPhone|iPad|iPod/i.test(userAgent);
+    if (!isAndroid && !isAppleMobile) return original;
+    try {
+      var parsed = new URL(original);
+      var phone = parsed.pathname.replace(/\D/g, "");
+      var message = parsed.searchParams.get("text") || "";
+      var query = "phone=" + encodeURIComponent(phone) + "&text=" + encodeURIComponent(message);
+      if (isAndroid) {
+        return "intent://send?" + query + "#Intent;scheme=whatsapp;package=com.whatsapp;end";
+      }
+      return "whatsapp://send?" + query;
+    } catch (error) {
+      return original;
+    }
+  }
+
+  function launchWhatsApp(url) {
+    var target = directWhatsAppUrl(url);
+    if (!target) return false;
+    waitingForWhatsAppReturn = true;
+    whatsappPageWasHidden = false;
+    if (/^(intent|whatsapp):/i.test(target)) {
+      window.location.assign(target);
+    } else {
+      var opened = window.open(target, "_blank");
+      if (!opened) window.location.assign(target);
+    }
+    return true;
+  }
+
   function openPreparedWhatsApp(url) {
     if (!url) return false;
     window.setTimeout(function () {
-      window.location.assign(url);
-    }, 50);
+      launchWhatsApp(url);
+    }, 80);
     return true;
   }
 
@@ -484,9 +521,9 @@
     if (!order || !order.items || !order.items.length) return false;
     lastOrder = order;
     saveReturnReceipt(order);
-    var whatsappOpened = openPreparedWhatsApp(order.whatsappUrl);
-    showThankYou(order, whatsappOpened, false);
+    showThankYou(order, false, false);
     prepareReceipt(order);
+    openPreparedWhatsApp(order.whatsappUrl);
     return true;
   };
 
@@ -498,7 +535,7 @@
 
   window.openLastOrderWhatsApp = function () {
     if (!lastOrder || !lastOrder.whatsappUrl) return;
-    window.location.assign(lastOrder.whatsappUrl);
+    launchWhatsApp(lastOrder.whatsappUrl);
   };
 
   window.downloadLastOrderPdf = function () {
@@ -542,6 +579,20 @@
 
   document.addEventListener("keydown", function (event) {
     if (event.key === "Escape") window.closeThankYouModal();
+  });
+
+  document.addEventListener("visibilitychange", function () {
+    if (!waitingForWhatsAppReturn) return;
+    if (document.hidden) {
+      whatsappPageWasHidden = true;
+      return;
+    }
+    if (whatsappPageWasHidden) {
+      waitingForWhatsAppReturn = false;
+      whatsappPageWasHidden = false;
+      var whatsappButton = byId("receiptWhatsappButton");
+      if (whatsappButton) whatsappButton.hidden = true;
+    }
   });
 
   restoreReturnReceipt();
