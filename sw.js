@@ -1,4 +1,4 @@
-var CACHE_NAME = "olive-branch-menu-v29";
+var CACHE_NAME = "olive-branch-menu-v30";
 var STATIC_FILES = [
   "./",
   "./index.html",
@@ -7,8 +7,8 @@ var STATIC_FILES = [
   "./icon-512.png",
   "./apple-touch-icon.png",
   "./order-receipt.js?v=7-performance-fix",
-  "./menu-enhancements.css?v=2",
-  "./menu-enhancements.js?v=2"
+  "./menu-enhancements.css?v=3-status-sync",
+  "./menu-enhancements.js?v=3-status-sync"
 ];
 
 self.addEventListener("install", function (event) {
@@ -50,6 +50,24 @@ self.addEventListener("fetch", function (event) {
         return response;
       }).catch(function () {
         return caches.match("./index.html");
+      })
+    );
+    return;
+  }
+
+  if (event.request.destination === "script" || event.request.destination === "style" ||
+      /\.(?:js|css)(?:$|\?)/.test(requestUrl.href)) {
+    event.respondWith(
+      fetch(event.request).then(function (response) {
+        if (response && response.ok) {
+          var copy = response.clone();
+          caches.open(CACHE_NAME).then(function (cache) {
+            cache.put(event.request, copy);
+          });
+        }
+        return response;
+      }).catch(function () {
+        return caches.match(event.request);
       })
     );
     return;
