@@ -14,6 +14,7 @@
   var buildSequence = 0;
   var waitingForWhatsAppReturn = false;
   var whatsappPageWasHidden = false;
+  var pdfLibraryPromise = null;
 
   function byId(id) {
     return document.getElementById(id);
@@ -479,10 +480,30 @@
     return canvas;
   }
 
+  function ensurePdfLibrary() {
+    if (window.jspdf && window.jspdf.jsPDF) return Promise.resolve();
+    if (pdfLibraryPromise) return pdfLibraryPromise;
+    pdfLibraryPromise = new Promise(function (resolve, reject) {
+      var script = document.createElement("script");
+      script.src = "jspdf.umd.min.js?v=2-lazy";
+      script.async = true;
+      script.onload = function () {
+        if (window.jspdf && window.jspdf.jsPDF) resolve();
+        else reject(new Error("PDF_LIBRARY_NOT_READY"));
+      };
+      script.onerror = function () {
+        reject(new Error("PDF_LIBRARY_LOAD_FAILED"));
+      };
+      document.head.appendChild(script);
+    }).catch(function (error) {
+      pdfLibraryPromise = null;
+      throw error;
+    });
+    return pdfLibraryPromise;
+  }
+
   function buildReceiptPdf(order) {
-    if (!window.jspdf || !window.jspdf.jsPDF) {
-      return Promise.reject(new Error("PDF_LIBRARY_NOT_READY"));
-    }
+    return ensurePdfLibrary().then(function () {
     var logoPromise = loadImageFromUrl(new URL("icon-512.png", location.href).href);
     var imagePromises = order.items.map(function (item) {
       return loadImageFromUrl(item.image || "");
@@ -505,6 +526,7 @@
         creator: "Olive Branch Menu"
       });
       return pdf.output("blob");
+    });
     });
   }
 
