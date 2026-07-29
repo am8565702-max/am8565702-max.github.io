@@ -1,0 +1,1287 @@
+(function () {
+  "use strict";
+
+  var CONFIG_MARKER = "__MENU_ENHANCEMENTS_V1__";
+  var STATUS_MARKER_PREFIX = "__ORDER_STATUS_V1__";
+  var CONFIG_STORAGE_KEY = "oliveMenuEnhancementsV1";
+  var FAVORITES_KEY = "oliveMenuFavoritesV1";
+  var HISTORY_KEY = "oliveMenuOrderHistoryV1";
+  var APPLIED_COUPON_KEY = "oliveMenuAppliedCouponV1";
+  var MAX_HISTORY = 10;
+  var configMarkerId = 0;
+  var statusMarkers = {};
+  var favoriteOnly = false;
+  var installPromptEvent = null;
+  var deepLinkHandled = false;
+  var baseGetOrderTotals = window.getOrderTotals;
+  var baseRender = window.render;
+  var baseRenderCart = window.renderCart;
+  var baseLoadCloudProducts = window.loadCloudProducts;
+  var baseOpenAdmin = window.openAdmin;
+  var baseSetMenuLanguage = window.setMenuLanguage;
+  var baseGsPost = window.gsPost;
+  var baseSendWA = window.sendWA;
+  var baseCompleteReceipt = window.completeCustomerOrderReceiptFlow;
+  var baseUpdateOrderStatus = window.updateOrderStatus;
+  var baseRenderOrders = window.renderOrders;
+
+  function defaultConfig() {
+    return {
+      version: 1,
+      zones: [],
+      timeSlots: [
+        "أقرب وقت متاح || Earliest available",
+        "10:00 ص - 2:00 م || 10:00 AM - 2:00 PM",
+        "4:00 م - 9:00 م || 4:00 PM - 9:00 PM"
+      ],
+      coupons: [],
+      bundles: [],
+      branches: []
+    };
+  }
+
+  function safeJson(key, fallback) {
+    try {
+      var parsed = JSON.parse(localStorage.getItem(key) || "null");
+      return parsed == null ? fallback : parsed;
+    } catch (error) {
+      return fallback;
+    }
+  }
+
+  function saveJson(key, value) {
+    try {
+      localStorage.setItem(key, JSON.stringify(value));
+    } catch (error) {}
+  }
+
+  function mergeConfig(value) {
+    var base = defaultConfig();
+    var source = value && typeof value === "object" ? value : {};
+    ["zones", "timeSlots", "coupons", "bundles", "branches"].forEach(function (key) {
+      if (Array.isArray(source[key])) base[key] = source[key];
+    });
+    base.version = Number(source.version || 1);
+    return base;
+  }
+
+  var enhancementConfig = mergeConfig(safeJson(CONFIG_STORAGE_KEY, null));
+  var favorites = safeJson(FAVORITES_KEY, []);
+  var appliedCouponCode = String(safeJson(APPLIED_COUPON_KEY, "") || "").toUpperCase();
+
+  function isEnglish() {
+    return document.documentElement.lang === "en";
+  }
+
+  function text(arabic, english) {
+    return isEnglish() ? english : arabic;
+  }
+
+  function safe(value) {
+    return String(value == null ? "" : value);
+  }
+
+  function html(value) {
+    if (typeof window.esc === "function") return window.esc(value);
+    return safe(value).replace(/[&<>'"]/g, function (character) {
+      return {
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        "'": "&#39;",
+        '"': "&quot;"
+      }[character];
+    });
+  }
+
+  function bilingual(value) {
+    var parts = safe(value).split(/\s*\|\|\s*|\s+\|\s+/);
+    return {
+      ar: (parts[0] || "").trim(),
+      en: (parts[1] || parts[0] || "").trim()
+    };
+  }
+
+  function shown(value) {
+    var parts = bilingual(value);
+    return isEnglish() ? parts.en : parts.ar;
+  }
+
+  function normalize(value) {
+    return safe(value).trim().toLowerCase().replace(/\s+/g, " ");
+  }
+
+  function digits(value) {
+    return safe(value).replace(/\D/g, "");
+  }
+
+  function todayValue() {
+    var date = new Date();
+    var month = String(date.getMonth() + 1).padStart(2, "0");
+    var day = String(date.getDate()).padStart(2, "0");
+    return date.getFullYear() + "-" + month + "-" + day;
+  }
+
+  function moneyValue(value) {
+    if (typeof window.money === "function") return window.money(value);
+    return Number(value || 0).toFixed(2).replace(/\.00$/, "");
+  }
+
+  function currentFavorites() {
+    return favorites.map(String);
+  }
+
+  function isFavorite(productId) {
+    return currentFavorites().indexOf(String(productId)) !== -1;
+  }
+
+  function saveFavorites() {
+    saveJson(FAVORITES_KEY, favorites);
+    updateFavoriteButton();
+  }
+
+  function orderHistory() {
+    var history = safeJson(HISTORY_KEY, []);
+    return Array.isArray(history) ? history : [];
+  }
+
+  function saveOrderHistory(order) {
+    var history = orderHistory().filter(function (item) {
+      return String(item.orderNo) !== String(order.orderNo);
+    });
+    order.savedAt = Date.now();
+    history.unshift(order);
+    saveJson(HISTORY_KEY, history.slice(0, MAX_HISTORY));
+  }
+
+  function activeZone() {
+    var areaInput = document.getElementById("area");
+    var value = normalize(areaInput && areaInput.value);
+    if (!value) return null;
+    return enhancementConfig.zones.find(function (zone) {
+      var names = bilingual(zone.name);
+      return value === normalize(names.ar) || value === normalize(names.en);
+    }) || null;
+  }
+
+  function validCoupon(code) {
+    var normalizedCode = safe(code).trim().toUpperCase();
+    if (!normalizedCode) return null;
+    var coupon = enhancementConfig.coupons.find(function (item) {
+      return safe(item.code).trim().toUpperCase() === normalizedCode;
+    });
+    if (!coupon) return null;
+    if (coupon.expires && safe(coupon.expires) < todayValue()) return null;
+    return coupon;
+  }
+
+  function appliedCoupon(totals) {
+    var coupon = validCoupon(appliedCouponCode);
+    if (!coupon) return null;
+    if (Number(totals.subtotal || 0) < Number(coupon.minimum || 0)) return null;
+    return coupon;
+  }
+
+  function selectedSchedule() {
+    var dateInput = document.getElementById("deliveryDate");
+    var slotInput = document.getElementById("deliverySlot");
+    return {
+      date: dateInput ? dateInput.value : "",
+      slot: slotInput ? slotInput.value : ""
+    };
+  }
+
+  function checkoutMetadata() {
+    var totals = window.getOrderTotals();
+    var schedule = selectedSchedule();
+    var coupon = appliedCoupon(totals);
+    var zone = activeZone();
+    return {
+      zone: zone ? safe(zone.name) : "",
+      deliveryDate: totals.deliveryType === "delivery" ? schedule.date : "",
+      deliverySlot: totals.deliveryType === "delivery" ? schedule.slot : "",
+      couponCode: coupon ? safe(coupon.code).toUpperCase() : "",
+      couponPercent: coupon ? Number(coupon.percent || 0) : 0,
+      zoneMinimum: zone ? Number(zone.minimum || 0) : 0
+    };
+  }
+
+  function checkoutNotesText(metadata) {
+    var lines = [];
+    if (metadata.deliveryDate) lines.push("Delivery date: " + metadata.deliveryDate);
+    if (metadata.deliverySlot) lines.push("Delivery slot: " + shown(metadata.deliverySlot));
+    if (metadata.couponCode) lines.push("Coupon: " + metadata.couponCode + " (" + metadata.couponPercent + "%)");
+    if (metadata.zone) lines.push("Delivery zone: " + shown(metadata.zone));
+    return lines.join(" | ");
+  }
+
+  function whatsappExtras(order) {
+    var metadata = order.enhancements || {};
+    var lines = [];
+    if (metadata.deliveryDate) {
+      lines.push(text("📅 تاريخ التوصيل: ", "📅 Delivery date: ") + metadata.deliveryDate);
+    }
+    if (metadata.deliverySlot) {
+      lines.push(text("🕐 موعد التوصيل: ", "🕐 Delivery time: ") + shown(metadata.deliverySlot));
+    }
+    if (metadata.couponCode) {
+      lines.push(text("🎁 كوبون الخصم: ", "🎁 Coupon: ") + metadata.couponCode + " (" + metadata.couponPercent + "%)");
+    }
+    var itemNotes = (order.items || []).filter(function (item) {
+      return safe(item.note).trim();
+    });
+    if (itemNotes.length) {
+      lines.push("", text("📝 ملاحظات المنتجات:", "📝 Item notes:"));
+      itemNotes.forEach(function (item) {
+        lines.push("- " + shown(item.name) + ": " + safe(item.note).trim());
+      });
+    }
+    return lines;
+  }
+
+  function appendWhatsappText(urlValue, extraLines) {
+    if (!urlValue || !extraLines.length) return urlValue;
+    try {
+      var url = new URL(urlValue);
+      var oldText = url.searchParams.get("text") || "";
+      url.searchParams.set("text", oldText + "\n\n" + extraLines.join("\n"));
+      return url.href;
+    } catch (error) {
+      return urlValue;
+    }
+  }
+
+  function injectCustomerUi() {
+    var categories = document.getElementById("cats");
+    if (categories && !document.getElementById("quickServices")) {
+      categories.insertAdjacentHTML("beforebegin",
+        '<section id="quickServices" class="quickServices" aria-label="خدمات المنيو">' +
+          '<button id="favoritesService" class="quickService" type="button" onclick="toggleFavoriteView()">❤️ <span>المفضلة</span></button>' +
+          '<button id="repeatService" class="quickService" type="button" onclick="repeatLastOrder()">🔁 <span>إعادة الطلب</span></button>' +
+          '<button id="trackingService" class="quickService" type="button" onclick="openTrackingModal()">🚚 <span>تتبّع الطلب</span></button>' +
+          '<button id="branchesService" class="quickService" type="button" onclick="openBranchesModal()">📍 <span>الفروع</span></button>' +
+          '<button id="installService" class="quickService" type="button" onclick="installOliveMenu()">📱 <span>تثبيت المنيو</span></button>' +
+        '</section><section id="offersStrip" class="offersStrip" aria-label="العروض"></section>');
+    }
+
+    if (!document.getElementById("enhancementModal")) {
+      document.body.insertAdjacentHTML("beforeend",
+        '<div id="enhancementModal" class="modal enhancementModal" role="dialog" aria-modal="true">' +
+          '<div class="shade" onclick="closeEnhancementModal()"></div>' +
+          '<div class="enhancementDialog"><button class="close" type="button" onclick="closeEnhancementModal()">✕</button>' +
+            '<div id="enhancementModalBody"></div>' +
+          '</div>' +
+        '</div>');
+    }
+
+    var areaInput = document.getElementById("area");
+    if (areaInput && !document.getElementById("deliveryZonesList")) {
+      areaInput.setAttribute("list", "deliveryZonesList");
+      areaInput.insertAdjacentHTML("afterend", '<datalist id="deliveryZonesList"></datalist>');
+    }
+
+    var form = document.querySelector("#drawer .form");
+    if (form && !document.getElementById("checkoutExtras")) {
+      var sendButton = form.querySelector("button.send");
+      var extras =
+        '<section id="checkoutExtras" class="checkoutExtras">' +
+          '<h4>🚚 <span id="deliveryScheduleTitle">موعد التوصيل والكوبون</span></h4>' +
+          '<div id="deliveryScheduleFields">' +
+            '<div class="field"><label id="deliveryDateLabel" for="deliveryDate">تاريخ التوصيل</label><input id="deliveryDate" type="date"></div>' +
+            '<div class="field"><label id="deliverySlotLabel" for="deliverySlot">الفترة المناسبة</label><select id="deliverySlot"></select></div>' +
+          '</div>' +
+          '<div class="field"><label id="couponLabel" for="couponCode">كود الخصم</label>' +
+            '<div class="couponLine"><input id="couponCode" type="text" autocomplete="off" placeholder="اكتب الكود">' +
+            '<button id="couponApplyButton" type="button" onclick="applyMenuCoupon()">تطبيق</button></div>' +
+            '<div id="couponState" class="couponState"></div>' +
+          '</div>' +
+        '</section>';
+      if (sendButton) sendButton.insertAdjacentHTML("beforebegin", extras);
+      else form.insertAdjacentHTML("beforeend", extras);
+      var dateInput = document.getElementById("deliveryDate");
+      if (dateInput) {
+        dateInput.min = todayValue();
+        dateInput.value = todayValue();
+      }
+    }
+  }
+
+  function injectAdminUi() {
+    var adminSide = document.querySelector("#productsTab .adminSide");
+    if (!adminSide || document.getElementById("adminEnhancements")) return;
+    adminSide.insertAdjacentHTML("beforeend",
+      '<section id="adminEnhancements" class="adminEnhancements">' +
+        '<h3>إعدادات المناطق والمواعيد والعروض والفروع</h3>' +
+        '<div class="notice">هذه الإعدادات تُحفظ لكل الزبائن على نفس الرابط.</div>' +
+        '<h3>مناطق التوصيل</h3><div class="muted">المنطقة • الرسوم • الحد الأدنى</div><div id="zoneConfigRows" class="configRows"></div>' +
+        '<button class="secondary addConfigRow" type="button" onclick="addEnhancementRow(\'zone\')">+ إضافة منطقة</button>' +
+        '<h3>فترات التوصيل</h3><textarea id="timeSlotsConfig" class="configTextarea" placeholder="كل فترة في سطر، ويمكن كتابة العربي || English"></textarea>' +
+        '<h3>كوبونات الخصم</h3><div class="muted">الكود • النسبة % • الحد الأدنى • تاريخ الانتهاء</div><div id="couponConfigRows" class="configRows"></div>' +
+        '<button class="secondary addConfigRow" type="button" onclick="addEnhancementRow(\'coupon\')">+ إضافة كوبون</button>' +
+        '<h3>الباقات المجمعة</h3><div class="muted">اسم الباقة • أرقام المنتجات مفصولة بفاصلة • سعر الباقة</div><div id="bundleConfigRows" class="configRows"></div>' +
+        '<button class="secondary addConfigRow" type="button" onclick="addEnhancementRow(\'bundle\')">+ إضافة باقة</button>' +
+        '<h3>الفروع ونقاط البيع</h3><div class="muted">اسم الفرع • رابط خرائط Google</div><div id="branchConfigRows" class="configRows"></div>' +
+        '<button class="secondary addConfigRow" type="button" onclick="addEnhancementRow(\'branch\')">+ إضافة فرع</button>' +
+        '<button id="saveEnhancementsButton" class="primary" style="width:100%;margin-top:14px" type="button" onclick="saveMenuEnhancements()">حفظ الإضافات لكل الزبائن</button>' +
+      '</section>');
+  }
+
+  function zoneRow(item) {
+    item = item || {};
+    return '<div class="configRow zoneConfigRow">' +
+      '<input class="zoneName" placeholder="أبوظبي || Abu Dhabi" value="' + html(item.name || "") + '">' +
+      '<input class="zoneFee" type="number" min="0" step="0.01" placeholder="الرسوم" value="' + html(item.fee == null ? "" : item.fee) + '">' +
+      '<input class="zoneMinimum" type="number" min="0" step="0.01" placeholder="الحد الأدنى" value="' + html(item.minimum == null ? "" : item.minimum) + '">' +
+      '<button type="button" onclick="removeConfigRow(this)">✕</button></div>';
+  }
+
+  function couponRow(item) {
+    item = item || {};
+    return '<div class="configRow couponConfig couponConfigRow">' +
+      '<input class="couponAdminCode" placeholder="OLIVE10" value="' + html(item.code || "") + '">' +
+      '<input class="couponPercent" type="number" min="1" max="100" step="0.01" placeholder="%" value="' + html(item.percent == null ? "" : item.percent) + '">' +
+      '<input class="couponMinimum" type="number" min="0" step="0.01" placeholder="الحد الأدنى" value="' + html(item.minimum == null ? "" : item.minimum) + '">' +
+      '<input class="couponExpires" type="date" value="' + html(item.expires || "") + '">' +
+      '<button type="button" onclick="removeConfigRow(this)">✕</button></div>';
+  }
+
+  function bundleRow(item) {
+    item = item || {};
+    return '<div class="configRow bundleConfig bundleConfigRow">' +
+      '<input class="bundleName" placeholder="باقة البيت || Home Bundle" value="' + html(item.name || "") + '">' +
+      '<input class="bundleProducts" placeholder="1001,1002,1003" value="' + html((item.productIds || []).join(",")) + '">' +
+      '<input class="bundlePrice" type="number" min="0" step="0.01" placeholder="السعر" value="' + html(item.price == null ? "" : item.price) + '">' +
+      '<button type="button" onclick="removeConfigRow(this)">✕</button></div>';
+  }
+
+  function branchRow(item) {
+    item = item || {};
+    return '<div class="configRow branchConfig branchConfigRow">' +
+      '<input class="branchName" placeholder="اسم الفرع || Branch name" value="' + html(item.name || "") + '">' +
+      '<input class="branchMap" type="url" placeholder="https://maps.google.com/..." value="' + html(item.map || "") + '">' +
+      '<button type="button" onclick="removeConfigRow(this)">✕</button></div>';
+  }
+
+  function renderAdminConfig() {
+    injectAdminUi();
+    var zoneBox = document.getElementById("zoneConfigRows");
+    var couponBox = document.getElementById("couponConfigRows");
+    var bundleBox = document.getElementById("bundleConfigRows");
+    var branchBox = document.getElementById("branchConfigRows");
+    var slots = document.getElementById("timeSlotsConfig");
+    if (zoneBox) zoneBox.innerHTML = (enhancementConfig.zones.length ? enhancementConfig.zones : [{}]).map(zoneRow).join("");
+    if (couponBox) couponBox.innerHTML = (enhancementConfig.coupons.length ? enhancementConfig.coupons : [{}]).map(couponRow).join("");
+    if (bundleBox) bundleBox.innerHTML = (enhancementConfig.bundles.length ? enhancementConfig.bundles : [{}]).map(bundleRow).join("");
+    if (branchBox) branchBox.innerHTML = (enhancementConfig.branches.length ? enhancementConfig.branches : [{}]).map(branchRow).join("");
+    if (slots) slots.value = enhancementConfig.timeSlots.join("\n");
+  }
+
+  window.addEnhancementRow = function (type) {
+    var map = {
+      zone: ["zoneConfigRows", zoneRow],
+      coupon: ["couponConfigRows", couponRow],
+      bundle: ["bundleConfigRows", bundleRow],
+      branch: ["branchConfigRows", branchRow]
+    };
+    var item = map[type];
+    var box = item && document.getElementById(item[0]);
+    if (box) box.insertAdjacentHTML("beforeend", item[1]({}));
+  };
+
+  window.removeConfigRow = function (button) {
+    var row = button && button.closest(".configRow");
+    if (row) row.remove();
+  };
+
+  function collectConfig() {
+    var zones = Array.prototype.slice.call(document.querySelectorAll(".zoneConfigRow")).map(function (row) {
+      return {
+        name: row.querySelector(".zoneName").value.trim(),
+        fee: Number(row.querySelector(".zoneFee").value || 0),
+        minimum: Number(row.querySelector(".zoneMinimum").value || 0)
+      };
+    }).filter(function (item) { return item.name; });
+
+    var coupons = Array.prototype.slice.call(document.querySelectorAll(".couponConfigRow")).map(function (row) {
+      return {
+        code: row.querySelector(".couponAdminCode").value.trim().toUpperCase(),
+        percent: Number(row.querySelector(".couponPercent").value || 0),
+        minimum: Number(row.querySelector(".couponMinimum").value || 0),
+        expires: row.querySelector(".couponExpires").value
+      };
+    }).filter(function (item) { return item.code && item.percent > 0; });
+
+    var bundles = Array.prototype.slice.call(document.querySelectorAll(".bundleConfigRow")).map(function (row) {
+      return {
+        name: row.querySelector(".bundleName").value.trim(),
+        productIds: row.querySelector(".bundleProducts").value.split(",").map(function (value) {
+          return value.trim();
+        }).filter(Boolean),
+        price: Number(row.querySelector(".bundlePrice").value || 0)
+      };
+    }).filter(function (item) { return item.name && item.productIds.length && item.price > 0; });
+
+    var branches = Array.prototype.slice.call(document.querySelectorAll(".branchConfigRow")).map(function (row) {
+      return {
+        name: row.querySelector(".branchName").value.trim(),
+        map: row.querySelector(".branchMap").value.trim()
+      };
+    }).filter(function (item) { return item.name && item.map; });
+
+    var slotValue = document.getElementById("timeSlotsConfig");
+    var timeSlots = safe(slotValue && slotValue.value).split(/\r?\n/).map(function (value) {
+      return value.trim();
+    }).filter(Boolean);
+
+    return mergeConfig({
+      version: 1,
+      zones: zones,
+      timeSlots: timeSlots.length ? timeSlots : defaultConfig().timeSlots,
+      coupons: coupons,
+      bundles: bundles,
+      branches: branches
+    });
+  }
+
+  window.saveMenuEnhancements = function () {
+    var button = document.getElementById("saveEnhancementsButton");
+    var oldText = button ? button.textContent : "";
+    enhancementConfig = collectConfig();
+    saveJson(CONFIG_STORAGE_KEY, enhancementConfig);
+    if (!window.gsPost || !window.gsUrl || !window.gsUrl()) {
+      alert("تعذر الاتصال بقاعدة المنيو.");
+      return;
+    }
+    if (button) {
+      button.disabled = true;
+      button.textContent = "جاري الحفظ للجميع...";
+    }
+    window.gsPost({
+      action: "saveProduct",
+      id: configMarkerId || 0,
+      name: CONFIG_MARKER,
+      desc: JSON.stringify(enhancementConfig),
+      price: "",
+      cat: "labneh",
+      visible: false,
+      imageData: "",
+      existingImage: ""
+    }).then(function (result) {
+      if (!result || !result.ok) throw new Error((result && result.error) || "FAILED");
+      return window.loadCloudProducts();
+    }).then(function () {
+      refreshEnhancementUi();
+      alert("تم حفظ المناطق والمواعيد والكوبونات والباقات والفروع لكل الزبائن.");
+    }).catch(function (error) {
+      alert("تعذر حفظ الإضافات: " + error.message);
+    }).then(function () {
+      if (button) {
+        button.disabled = false;
+        button.textContent = oldText || "حفظ الإضافات لكل الزبائن";
+      }
+    });
+  };
+
+  function extractCloudMarkers() {
+    var nextProducts = [];
+    var foundConfig = null;
+    statusMarkers = {};
+    (window.products || []).forEach(function (product) {
+      var name = safe(product.name).trim();
+      if (name === CONFIG_MARKER) {
+        configMarkerId = Number(product.id || 0);
+        try {
+          foundConfig = JSON.parse(safe(product.desc) || "{}");
+        } catch (error) {}
+        return;
+      }
+      if (name.indexOf(STATUS_MARKER_PREFIX) === 0) {
+        var number = name.slice(STATUS_MARKER_PREFIX.length);
+        try {
+          statusMarkers[String(number)] = {
+            id: Number(product.id || 0),
+            data: JSON.parse(safe(product.desc) || "{}")
+          };
+        } catch (error) {}
+        return;
+      }
+      nextProducts.push(product);
+    });
+    window.products = nextProducts;
+    if (foundConfig) {
+      enhancementConfig = mergeConfig(foundConfig);
+      saveJson(CONFIG_STORAGE_KEY, enhancementConfig);
+    }
+  }
+
+  function renderDeliveryOptions() {
+    var dataList = document.getElementById("deliveryZonesList");
+    if (dataList) {
+      dataList.innerHTML = enhancementConfig.zones.map(function (zone) {
+        return '<option value="' + html(shown(zone.name)) + '"></option>';
+      }).join("");
+    }
+    var slot = document.getElementById("deliverySlot");
+    if (slot) {
+      var old = slot.value;
+      slot.innerHTML = enhancementConfig.timeSlots.map(function (value) {
+        return '<option value="' + html(value) + '">' + html(shown(value)) + '</option>';
+      }).join("");
+      if (old) slot.value = old;
+    }
+    var areaInput = document.getElementById("area");
+    if (areaInput) {
+      areaInput.placeholder = enhancementConfig.zones.length
+        ? text("اختر أو اكتب منطقة التوصيل", "Choose or type delivery area")
+        : text("المنطقة / العنوان", "Area / address");
+    }
+  }
+
+  function renderOffers() {
+    var strip = document.getElementById("offersStrip");
+    if (!strip) return;
+    var cards = [];
+    enhancementConfig.coupons.forEach(function (coupon) {
+      if (coupon.expires && safe(coupon.expires) < todayValue()) return;
+      cards.push('<article class="offerCard"><b>🎁 ' + text("خصم خاص", "Special discount") + " " + html(coupon.percent) + '%</b>' +
+        '<span>' + text("استخدم الكود عند إنهاء الطلب", "Use the code at checkout") + '</span>' +
+        '<div class="offerCode">' + html(coupon.code) + '</div>' +
+        (Number(coupon.minimum || 0) ? '<div class="muted">' + text("للطلبات من ", "For orders from ") + html(moneyValue(coupon.minimum)) + " " + text("درهم", "AED") + '</div>' : '') +
+        '</article>');
+    });
+    enhancementConfig.bundles.forEach(function (bundle, index) {
+      cards.push('<article class="offerCard"><b>🧺 ' + html(shown(bundle.name)) + '</b>' +
+        '<span>' + text("باقة منتجات مختارة بسعر ", "Selected bundle for ") + html(moneyValue(bundle.price)) + " " + text("درهم", "AED") + '</span>' +
+        '<button type="button" onclick="addMenuBundle(' + index + ')">' + text("أضف الباقة للسلة", "Add bundle to cart") + '</button></article>');
+    });
+    strip.innerHTML = cards.join("");
+  }
+
+  window.addMenuBundle = function (index) {
+    var bundle = enhancementConfig.bundles[index];
+    if (!bundle) return;
+    var bundleProducts = bundle.productIds.map(function (id) {
+      return (window.products || []).find(function (product) {
+        return String(product.id) === String(id);
+      });
+    });
+    if (bundleProducts.some(function (product) { return !product || product.visible === false || product.available === false; })) {
+      alert(text("بعض منتجات هذه الباقة غير متوفرة الآن.", "Some products in this bundle are currently unavailable."));
+      return;
+    }
+    var first = bundleProducts[0];
+    var bundleId = 970000000 + Number(index || 0);
+    var oldQuantity = window.cart[bundleId] ? Number(window.cart[bundleId].qty || 0) : 0;
+    window.cart[bundleId] = {
+      id: bundleId,
+      productId: first.id,
+      selectedSizeKey: "bundle",
+      isBundle: true,
+      bundleProductIds: bundle.productIds.slice(),
+      name: bundle.name,
+      desc: bundleProducts.map(function (product) { return shown(product.name); }).join("، "),
+      image: first.image,
+      price: Number(bundle.price || 0),
+      visible: true,
+      available: true,
+      qty: oldQuantity + 1
+    };
+    window.saveCart();
+    window.render();
+    window.renderCart();
+    window.openCart();
+  };
+
+  function productForCard(card, unused) {
+    var pick = card.querySelector(".pick");
+    var match = safe(pick && pick.getAttribute("onclick")).match(/add\((\d+)\)/);
+    if (match) {
+      return (window.products || []).find(function (product) {
+        return String(product.id) === String(match[1]);
+      }) || null;
+    }
+    var cardName = normalize(card.querySelector(".name") && card.querySelector(".name").textContent);
+    var matchIndex = -1;
+    unused.some(function (product, index) {
+      if (normalize(shown(product.name)) === cardName) {
+        matchIndex = index;
+        return true;
+      }
+      return false;
+    });
+    return matchIndex >= 0 ? unused.splice(matchIndex, 1)[0] : null;
+  }
+
+  function augmentProductCards() {
+    var cards = Array.prototype.slice.call(document.querySelectorAll("#grid .card"));
+    var unused = (window.products || []).filter(function (product) {
+      return product.visible !== false;
+    }).slice();
+    var visibleCount = 0;
+    cards.forEach(function (card) {
+      var product = productForCard(card, unused);
+      if (!product) return;
+      card.setAttribute("data-product-id", product.id);
+      var picture = card.querySelector(".pic");
+      if (picture && !picture.querySelector(".productUtility")) {
+        picture.insertAdjacentHTML("beforeend",
+          '<div class="productUtility">' +
+            '<button class="' + (isFavorite(product.id) ? "favoriteOn" : "") + '" type="button" aria-label="' + text("المفضلة", "Favorite") + '" onclick="toggleProductFavorite(' + Number(product.id) + ',event)">' + (isFavorite(product.id) ? "♥" : "♡") + '</button>' +
+            '<button type="button" aria-label="' + text("مشاركة المنتج", "Share product") + '" onclick="shareMenuProduct(' + Number(product.id) + ',event)">↗</button>' +
+          '</div>');
+      }
+      if (product.available === false) {
+        var actions = card.querySelector(".actions");
+        if (actions && !actions.querySelector(".notifyStock")) {
+          actions.insertAdjacentHTML("beforeend", '<button class="notifyStock" type="button" onclick="notifyProductAvailability(' + Number(product.id) + ')">🔔 ' + text("أخبرني عند التوفر", "Tell me when available") + '</button>');
+        }
+      }
+      if (favoriteOnly && !isFavorite(product.id)) {
+        card.style.display = "none";
+      } else {
+        visibleCount += 1;
+      }
+    });
+    var oldEmpty = document.querySelector("#grid .favoriteEmpty");
+    if (oldEmpty) oldEmpty.remove();
+    if (favoriteOnly && !visibleCount) {
+      document.getElementById("grid").insertAdjacentHTML("beforeend", '<div class="favoriteEmpty">❤️ ' + text("لم تحفظ أي منتجات في المفضلة بعد.", "You have not saved any favorites yet.") + '</div>');
+    }
+    focusDeepLinkedProduct();
+  }
+
+  window.toggleProductFavorite = function (productId, event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    var key = String(productId);
+    var index = currentFavorites().indexOf(key);
+    if (index >= 0) favorites.splice(index, 1);
+    else favorites.push(key);
+    saveFavorites();
+    window.render();
+  };
+
+  window.toggleFavoriteView = function () {
+    favoriteOnly = !favoriteOnly;
+    updateFavoriteButton();
+    window.render();
+  };
+
+  function updateFavoriteButton() {
+    var button = document.getElementById("favoritesService");
+    if (!button) return;
+    button.classList.toggle("active", favoriteOnly);
+    var label = button.querySelector("span");
+    if (label) {
+      label.textContent = favoriteOnly
+        ? text("عرض الكل", "Show all")
+        : text("المفضلة", "Favorites") + (favorites.length ? " (" + favorites.length + ")" : "");
+    }
+  }
+
+  function customerProductUrl(productId) {
+    var url = new URL(location.href);
+    url.searchParams.delete("owner_access");
+    url.searchParams.set("v", "27-customer-final");
+    url.searchParams.set("product", String(productId));
+    return url.href;
+  }
+
+  window.shareMenuProduct = function (productId, event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+    }
+    var product = (window.products || []).find(function (item) {
+      return String(item.id) === String(productId);
+    });
+    if (!product) return;
+    var url = customerProductUrl(productId);
+    var message = text("شاهد هذا المنتج من غصن الزيتون للتجارة: ", "See this product from Olive Branch Trading: ") + shown(product.name) + "\n" + url;
+    if (navigator.share) {
+      navigator.share({ title: shown(product.name), text: message, url: url }).catch(function (error) {
+        if (error && error.name !== "AbortError") openDirectWhatsapp(message);
+      });
+    } else {
+      openDirectWhatsapp(message);
+    }
+  };
+
+  function openDirectWhatsapp(message) {
+    var phone = digits(window.settings && window.settings.phone);
+    var query = "phone=" + encodeURIComponent(phone) + "&text=" + encodeURIComponent(message);
+    var userAgent = safe(navigator.userAgent);
+    if (/Android/i.test(userAgent)) {
+      location.assign("intent://send?" + query + "#Intent;scheme=whatsapp;package=com.whatsapp;end");
+    } else if (/iPhone|iPad|iPod/i.test(userAgent)) {
+      location.assign("whatsapp://send?" + query);
+    } else {
+      window.open("https://wa.me/" + phone + "?text=" + encodeURIComponent(message), "_blank");
+    }
+  }
+
+  window.notifyProductAvailability = function (productId) {
+    var product = (window.products || []).find(function (item) {
+      return String(item.id) === String(productId);
+    });
+    if (!product) return;
+    openDirectWhatsapp(text(
+      "مرحبًا، أريد معرفة موعد توفر المنتج التالي:\n",
+      "Hello, please tell me when this product is available:\n"
+    ) + shown(product.name) + "\n" + customerProductUrl(productId));
+  };
+
+  function focusDeepLinkedProduct() {
+    if (deepLinkHandled) return;
+    var productId = new URLSearchParams(location.search).get("product");
+    if (!productId) return;
+    var card = document.querySelector('#grid .card[data-product-id="' + safe(productId).replace(/"/g, "") + '"]');
+    if (!card) return;
+    deepLinkHandled = true;
+    card.classList.add("deepLinkFocus");
+    window.setTimeout(function () {
+      card.scrollIntoView({ behavior: "smooth", block: "center" });
+    }, 300);
+  }
+
+  function itemNoteFor(item, index) {
+    var values = Object.values(window.cart || {});
+    var exact = values.find(function (savedItem) {
+      return String(savedItem.id) === String(item.id);
+    });
+    return safe((exact || values[index] || {}).note).trim();
+  }
+
+  function augmentCartItems() {
+    var boxes = Array.prototype.slice.call(document.querySelectorAll("#cart .cartItem"));
+    var values = Object.values(window.cart || {});
+    boxes.forEach(function (box, index) {
+      var item = values[index];
+      if (!item || box.querySelector(".itemNote")) return;
+      var note = document.createElement("textarea");
+      note.className = "itemNote";
+      note.placeholder = text("ملاحظة لهذا المنتج مثل: بدون حار", "Item note, e.g. no chili");
+      note.value = safe(item.note);
+      note.addEventListener("change", function () {
+        if (window.cart[item.id]) {
+          window.cart[item.id].note = note.value.trim();
+          window.saveCart();
+        }
+      });
+      box.appendChild(note);
+    });
+  }
+
+  window.applyMenuCoupon = function () {
+    var input = document.getElementById("couponCode");
+    var state = document.getElementById("couponState");
+    var code = safe(input && input.value).trim().toUpperCase();
+    var coupon = validCoupon(code);
+    if (!coupon) {
+      appliedCouponCode = "";
+      saveJson(APPLIED_COUPON_KEY, "");
+      if (state) {
+        state.className = "couponState bad";
+        state.textContent = text("الكود غير صحيح أو انتهت صلاحيته.", "Invalid or expired coupon.");
+      }
+      window.renderCart();
+      return;
+    }
+    appliedCouponCode = code;
+    saveJson(APPLIED_COUPON_KEY, code);
+    if (input) input.value = code;
+    var subtotal = baseGetOrderTotals().subtotal;
+    if (Number(subtotal || 0) < Number(coupon.minimum || 0)) {
+      if (state) {
+        state.className = "couponState bad";
+        state.textContent = text("الكود صحيح، ويعمل عند وصول الطلب إلى ", "Valid code; it applies when the order reaches ") + moneyValue(coupon.minimum) + " " + text("درهم.", "AED.");
+      }
+      window.renderCart();
+      return;
+    }
+    if (state) {
+      state.className = "couponState ok";
+      state.textContent = text("تم تطبيق خصم ", "Discount applied: ") + coupon.percent + "%";
+    }
+    window.renderCart();
+  };
+
+  function updateCheckoutExtras(totals) {
+    var scheduleFields = document.getElementById("deliveryScheduleFields");
+    if (scheduleFields) scheduleFields.hidden = totals.deliveryType !== "delivery";
+    var input = document.getElementById("couponCode");
+    if (input && !input.value && appliedCouponCode) input.value = appliedCouponCode;
+    var state = document.getElementById("couponState");
+    var coupon = appliedCoupon(totals);
+    if (state && coupon) {
+      state.className = "couponState ok";
+      state.textContent = text("خصم ", "Discount ") + coupon.percent + "% " + text("مطبق.", "applied.");
+    }
+    var summary = document.getElementById("summary");
+    if (summary) {
+      var old = summary.querySelector(".enhancementSummary");
+      if (old) old.remove();
+      var metadata = checkoutMetadata();
+      var details = [];
+      var zone = activeZone();
+      if (totals.deliveryType === "delivery" && zone) {
+        details.push(text("منطقة التوصيل: ", "Delivery zone: ") + shown(zone.name));
+        if (Number(zone.minimum || 0)) details.push(text("الحد الأدنى للمنطقة: ", "Zone minimum: ") + moneyValue(zone.minimum) + " " + text("درهم", "AED"));
+      }
+      if (metadata.deliveryDate) details.push(text("تاريخ التوصيل: ", "Delivery date: ") + metadata.deliveryDate);
+      if (metadata.deliverySlot) details.push(text("الفترة: ", "Time: ") + shown(metadata.deliverySlot));
+      if (metadata.couponCode) details.push(text("الكوبون: ", "Coupon: ") + metadata.couponCode + " (" + metadata.couponPercent + "%)");
+      if (details.length) summary.insertAdjacentHTML("beforeend", '<div class="enhancementSummary">' + details.map(html).join("<br>") + '</div>');
+      var discountRow = summary.querySelector(".discountRow span");
+      if (discountRow && metadata.couponCode && coupon) {
+        discountRow.textContent = text("كوبون ", "Coupon ") + metadata.couponCode + " (" + coupon.percent + "%)";
+      }
+    }
+  }
+
+  window.getOrderTotals = function () {
+    var totals = baseGetOrderTotals();
+    var zone = activeZone();
+    if (totals.deliveryType === "delivery" && zone) {
+      totals.delivery = Number(zone.fee || 0);
+      totals.zoneMinimum = Number(zone.minimum || 0);
+    } else {
+      totals.zoneMinimum = 0;
+    }
+    var coupon = appliedCoupon(totals);
+    if (coupon) {
+      var couponDiscount = Number(totals.subtotal || 0) * Number(coupon.percent || 0) / 100;
+      totals.discount = Math.max(Number(totals.discount || 0), couponDiscount);
+      totals.couponCode = safe(coupon.code).toUpperCase();
+      totals.couponPercent = Number(coupon.percent || 0);
+    }
+    totals.total = Math.max(0, Number(totals.subtotal || 0) + Number(totals.delivery || 0) - Number(totals.discount || 0));
+    return totals;
+  };
+
+  window.render = function () {
+    baseRender();
+    augmentProductCards();
+  };
+
+  window.renderCart = function () {
+    baseRenderCart();
+    injectCustomerUi();
+    renderDeliveryOptions();
+    augmentCartItems();
+    updateCheckoutExtras(window.getOrderTotals());
+  };
+
+  function refreshEnhancementUi() {
+    injectCustomerUi();
+    renderDeliveryOptions();
+    renderOffers();
+    updateFavoriteButton();
+    translateEnhancementUi();
+    if (document.getElementById("adminModal") && document.getElementById("adminModal").classList.contains("open")) {
+      renderAdminConfig();
+    }
+  }
+
+  window.loadCloudProducts = function () {
+    var result = baseLoadCloudProducts.apply(this, arguments);
+    if (!result || typeof result.then !== "function") {
+      extractCloudMarkers();
+      refreshEnhancementUi();
+      window.render();
+      return result;
+    }
+    return result.then(function (value) {
+      extractCloudMarkers();
+      refreshEnhancementUi();
+      window.render();
+      window.renderCart();
+      return value;
+    });
+  };
+
+  window.openAdmin = function () {
+    var result = baseOpenAdmin.apply(this, arguments);
+    renderAdminConfig();
+    return result;
+  };
+
+  window.gsPost = function (payload) {
+    var updated = Object.assign({}, payload || {});
+    if (updated.action === "createOrder") {
+      var metadata = checkoutMetadata();
+      var values = Object.values(window.cart || {});
+      updated.notes = [safe(updated.notes), checkoutNotesText(metadata)].filter(Boolean).join(" | ");
+      updated.items = (updated.items || []).map(function (item, index) {
+        return Object.assign({}, item, { notes: itemNoteFor(values[index] || item, index) });
+      });
+    }
+    return baseGsPost(updated);
+  };
+
+  window.sendWA = function () {
+    var totals = window.getOrderTotals();
+    if (totals.deliveryType === "delivery") {
+      if (Number(totals.zoneMinimum || 0) > 0 && Number(totals.subtotal || 0) < Number(totals.zoneMinimum)) {
+        alert(text("الحد الأدنى للطلب في هذه المنطقة ", "Minimum order for this area is ") + moneyValue(totals.zoneMinimum) + " " + text("درهم", "AED"));
+        return;
+      }
+      var schedule = selectedSchedule();
+      if (!schedule.date || !schedule.slot) {
+        alert(text("اختر تاريخ وفترة التوصيل.", "Choose a delivery date and time."));
+        return;
+      }
+    }
+    return baseSendWA.apply(this, arguments);
+  };
+
+  window.completeCustomerOrderReceiptFlow = function (order) {
+    if (!order) return baseCompleteReceipt(order);
+    var values = Object.values(window.cart || {});
+    order.items = (order.items || []).map(function (item, index) {
+      return Object.assign({}, item, { note: itemNoteFor(item, index) || safe(values[index] && values[index].note) });
+    });
+    order.enhancements = checkoutMetadata();
+    order.whatsappUrl = appendWhatsappText(order.whatsappUrl, whatsappExtras(order));
+    saveOrderHistory(JSON.parse(JSON.stringify(order)));
+    return baseCompleteReceipt(order);
+  };
+
+  window.repeatLastOrder = function () {
+    var history = orderHistory();
+    if (!history.length) {
+      alert(text("لا يوجد طلب سابق محفوظ على هذا الهاتف.", "No previous order is saved on this device."));
+      return;
+    }
+    var previous = history[0];
+    var added = 0;
+    var skipped = 0;
+    (previous.items || []).forEach(function (item) {
+      var sourceId = item.productId || item.id;
+      var fresh = (window.products || []).find(function (product) {
+        return String(product.id) === String(sourceId);
+      });
+      if (!fresh || fresh.visible === false || fresh.available === false) {
+        skipped += 1;
+        return;
+      }
+      var key = item.id;
+      window.cart[key] = Object.assign({}, fresh, item, {
+        id: key,
+        productId: sourceId,
+        qty: Number(item.qty || 1)
+      });
+      added += 1;
+    });
+    if (!added) {
+      alert(text("منتجات الطلب السابق غير متوفرة حاليًا.", "Items from the previous order are currently unavailable."));
+      return;
+    }
+    window.saveCart();
+    window.render();
+    window.renderCart();
+    window.openCart();
+    if (skipped) {
+      alert(text("تمت إعادة المنتجات المتوفرة فقط، وبعض المنتجات غير متاحة الآن.", "Available items were restored; some items are unavailable."));
+    }
+  };
+
+  window.closeEnhancementModal = function () {
+    var modal = document.getElementById("enhancementModal");
+    if (modal) modal.classList.remove("open");
+  };
+
+  function openEnhancementHtml(content) {
+    var body = document.getElementById("enhancementModalBody");
+    var modal = document.getElementById("enhancementModal");
+    if (body) body.innerHTML = content;
+    if (modal) modal.classList.add("open");
+  }
+
+  function phoneHash(phone) {
+    var value = "olive-branch-status-v1|" + digits(phone);
+    if (window.crypto && window.crypto.subtle && window.TextEncoder) {
+      return window.crypto.subtle.digest("SHA-256", new TextEncoder().encode(value)).then(function (buffer) {
+        return Array.prototype.map.call(new Uint8Array(buffer), function (byte) {
+          return byte.toString(16).padStart(2, "0");
+        }).join("");
+      });
+    }
+    var hash = 2166136261;
+    for (var index = 0; index < value.length; index += 1) {
+      hash ^= value.charCodeAt(index);
+      hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
+    }
+    return Promise.resolve("fallback-" + (hash >>> 0).toString(16));
+  }
+
+  window.openTrackingModal = function () {
+    var latest = orderHistory()[0] || {};
+    var latestPhone = latest.record && latest.record.phone || "";
+    openEnhancementHtml(
+      '<h2>🚚 ' + text("تتبّع الطلب", "Track order") + '</h2>' +
+      '<div class="field"><label for="trackingOrderNo">' + text("رقم الطلب", "Order number") + '</label><input id="trackingOrderNo" inputmode="numeric" value="' + html(latest.orderNo || "") + '"></div>' +
+      '<div class="field"><label for="trackingPhone">' + text("رقم الهاتف المستخدم في الطلب", "Phone number used for the order") + '</label><input id="trackingPhone" inputmode="tel" value="' + html(latestPhone) + '"></div>' +
+      '<button class="primary" style="width:100%" type="button" onclick="checkOrderTracking()">' + text("عرض حالة الطلب", "Show order status") + '</button>' +
+      '<div id="trackingResult" class="trackingResult" hidden></div>');
+  };
+
+  function statusIndex(status) {
+    var value = safe(status);
+    if (value === "تم التسليم") return 4;
+    if (value === "خرج للتوصيل" || value === "جاهز" || value === "جاهز للاستلام") return 3;
+    if (value === "قيد التجهيز" || value === "جاري التجهيز") return 2;
+    if (value === "تم التأكيد") return 1;
+    return 0;
+  }
+
+  function trackingMarkup(orderNo, status) {
+    if (status === "ملغي") {
+      return '<div class="trackingHeadline" style="color:#9b1c15">' + text("تم إلغاء الطلب", "Order cancelled") + '</div>';
+    }
+    var labels = isEnglish()
+      ? ["New", "Confirmed", "Preparing", "Out for delivery", "Delivered"]
+      : ["جديد", "تم التأكيد", "جاري التجهيز", "خرج للتوصيل", "تم التسليم"];
+    var currentIndex = statusIndex(status);
+    return '<div class="trackingHeadline">' + text("الطلب رقم #", "Order #") + html(orderNo) + '</div>' +
+      '<p>' + text("الحالة الحالية: ", "Current status: ") + '<b>' + html(status || text("جديد", "New")) + '</b></p>' +
+      '<div class="statusSteps">' + labels.map(function (label, index) {
+        return '<div class="statusStep ' + (index < currentIndex ? "done" : index === currentIndex ? "current" : "") + '">' + html(label) + '</div>';
+      }).join("") + '</div>';
+  }
+
+  window.checkOrderTracking = function () {
+    var orderNo = safe(document.getElementById("trackingOrderNo") && document.getElementById("trackingOrderNo").value).trim();
+    var phone = safe(document.getElementById("trackingPhone") && document.getElementById("trackingPhone").value).trim();
+    var result = document.getElementById("trackingResult");
+    if (!orderNo || digits(phone).length < 8) {
+      alert(text("اكتب رقم الطلب ورقم الهاتف الصحيح.", "Enter the order number and a valid phone number."));
+      return;
+    }
+    phoneHash(phone).then(function (hash) {
+      var marker = statusMarkers[String(orderNo)];
+      var localOrder = orderHistory().find(function (order) {
+        return String(order.orderNo) === String(orderNo) && digits(order.record && order.record.phone) === digits(phone);
+      });
+      if (marker && marker.data && marker.data.phoneHash === hash) {
+        result.innerHTML = trackingMarkup(orderNo, marker.data.status);
+      } else if (localOrder && !marker) {
+        result.innerHTML = trackingMarkup(orderNo, text("جديد", "New"));
+      } else {
+        result.innerHTML = '<div class="trackingHeadline" style="color:#9b1c15">' + text("لم نجد طلبًا مطابقًا لهذه البيانات.", "No matching order was found.") + '</div>';
+      }
+      result.hidden = false;
+    });
+  };
+
+  function savePublicStatus(orderNumber, status) {
+    var order = (window.orders || []).find(function (item) {
+      return String(item.orderNo) === String(orderNumber);
+    });
+    if (!order || !order.phone) return Promise.resolve();
+    return phoneHash(order.phone).then(function (hash) {
+      var marker = statusMarkers[String(orderNumber)];
+      return window.gsPost({
+        action: "saveProduct",
+        id: marker ? marker.id : 0,
+        name: STATUS_MARKER_PREFIX + String(orderNumber),
+        desc: JSON.stringify({
+          orderNo: String(orderNumber),
+          status: status,
+          phoneHash: hash,
+          updatedAt: new Date().toISOString()
+        }),
+        price: "",
+        cat: "labneh",
+        visible: false,
+        imageData: "",
+        existingImage: ""
+      });
+    }).then(function (response) {
+      if (!response || !response.ok) throw new Error((response && response.error) || "STATUS_SYNC_FAILED");
+      return window.loadCloudProducts();
+    });
+  }
+
+  window.updateOrderStatus = function (number, status) {
+    var result = baseUpdateOrderStatus.apply(this, arguments);
+    return Promise.resolve(result).then(function () {
+      return savePublicStatus(number, status);
+    }).catch(function (error) {
+      console.error("Customer tracking sync failed", error);
+      alert("تم تحديث الطلب، لكن تعذر تحديث شاشة التتبع للزبون. حاول مرة أخرى.");
+    });
+  };
+
+  window.renderOrders = function () {
+    baseRenderOrders.apply(this, arguments);
+    var statuses = ["جديد", "تم التأكيد", "جاري التجهيز", "جاهز للاستلام", "خرج للتوصيل", "تم التسليم", "ملغي"];
+    Array.prototype.slice.call(document.querySelectorAll("#ordersBody .statusSelect")).forEach(function (select) {
+      var currentStatus = select.value;
+      select.innerHTML = statuses.map(function (status) {
+        return '<option value="' + html(status) + '"' + (status === currentStatus ? " selected" : "") + '>' + html(status) + '</option>';
+      }).join("");
+    });
+  };
+
+  function parseCoordinates(urlValue) {
+    var value = safe(urlValue);
+    var match = value.match(/@(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/) ||
+      value.match(/[?&](?:q|query)=(-?\d+(?:\.\d+)?),(-?\d+(?:\.\d+)?)/);
+    return match ? { lat: Number(match[1]), lng: Number(match[2]) } : null;
+  }
+
+  function distanceKm(first, second) {
+    var radians = function (value) { return value * Math.PI / 180; };
+    var earth = 6371;
+    var deltaLat = radians(second.lat - first.lat);
+    var deltaLng = radians(second.lng - first.lng);
+    var a = Math.sin(deltaLat / 2) * Math.sin(deltaLat / 2) +
+      Math.cos(radians(first.lat)) * Math.cos(radians(second.lat)) *
+      Math.sin(deltaLng / 2) * Math.sin(deltaLng / 2);
+    return earth * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
+
+  function branchCards(branches, position) {
+    return branches.map(function (branch) {
+      var coordinates = parseCoordinates(branch.map);
+      var distance = position && coordinates ? distanceKm(position, coordinates) : null;
+      return {
+        branch: branch,
+        distance: distance
+      };
+    }).sort(function (first, second) {
+      if (first.distance == null && second.distance == null) return 0;
+      if (first.distance == null) return 1;
+      if (second.distance == null) return -1;
+      return first.distance - second.distance;
+    }).map(function (item, index) {
+      return '<article class="branchCard"><b>' + (index === 0 && item.distance != null ? "⭐ " : "") + html(shown(item.branch.name)) + '</b>' +
+        (item.distance != null ? '<div class="muted">' + text("يبعد تقريبًا ", "About ") + item.distance.toFixed(1) + " " + text("كم", "km away") + '</div>' : '') +
+        '<br><a href="' + html(item.branch.map) + '" target="_blank" rel="noopener">' + text("فتح الاتجاهات", "Open directions") + '</a></article>';
+    }).join("");
+  }
+
+  window.openBranchesModal = function () {
+    if (!enhancementConfig.branches.length) {
+      var searchUrl = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent("غصن الزيتون للتجارة الإمارات");
+      openEnhancementHtml('<h2>📍 ' + text("الفروع ونقاط البيع", "Branches and stores") + '</h2>' +
+        '<div class="installHint">' + text("سيتم إضافة عناوين الفروع هنا من لوحة الإدارة. يمكنك الآن البحث عنها على خرائط Google.", "Branch addresses can be added from Admin. You can search Google Maps now.") + '</div>' +
+        '<a class="primary" style="display:block;margin-top:12px;text-align:center;text-decoration:none" href="' + searchUrl + '" target="_blank" rel="noopener">' + text("البحث في خرائط Google", "Search Google Maps") + '</a>');
+      return;
+    }
+    openEnhancementHtml('<h2>📍 ' + text("الفروع ونقاط البيع", "Branches and stores") + '</h2>' +
+      '<button class="secondary" style="width:100%;margin-bottom:12px" type="button" onclick="findNearestBranch()">🎯 ' + text("رتّب حسب الأقرب لي", "Sort by nearest") + '</button>' +
+      '<div id="branchList" class="branchList">' + branchCards(enhancementConfig.branches) + '</div>');
+  };
+
+  window.findNearestBranch = function () {
+    var box = document.getElementById("branchList");
+    if (!navigator.geolocation) {
+      alert(text("تحديد الموقع غير مدعوم على هذا الجهاز.", "Location is not supported on this device."));
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(function (position) {
+      if (box) box.innerHTML = branchCards(enhancementConfig.branches, {
+        lat: position.coords.latitude,
+        lng: position.coords.longitude
+      });
+    }, function () {
+      alert(text("اسمح للمنيو باستخدام موقعك لعرض أقرب فرع.", "Allow location access to find the nearest branch."));
+    }, { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 });
+  };
+
+  window.installOliveMenu = function () {
+    if (installPromptEvent) {
+      installPromptEvent.prompt();
+      installPromptEvent.userChoice.then(function () {
+        installPromptEvent = null;
+      });
+      return;
+    }
+    var apple = /iPhone|iPad|iPod/i.test(safe(navigator.userAgent));
+    var message = apple
+      ? text("اضغط زر المشاركة في المتصفح ثم اختر «إضافة إلى الشاشة الرئيسية».", "Tap Share, then choose “Add to Home Screen”.")
+      : text("افتح قائمة المتصفح واختر «تثبيت التطبيق» أو «إضافة إلى الشاشة الرئيسية».", "Open the browser menu and choose “Install app” or “Add to Home screen”.");
+    openEnhancementHtml('<h2>📱 ' + text("تثبيت المنيو", "Install menu") + '</h2><div class="installHint">' + html(message) + '</div>');
+  };
+
+  function translateEnhancementUi() {
+    var labels = {
+      favoritesService: ["المفضلة", "Favorites"],
+      repeatService: ["إعادة الطلب", "Reorder"],
+      trackingService: ["تتبّع الطلب", "Track order"],
+      branchesService: ["الفروع", "Branches"],
+      installService: ["تثبيت المنيو", "Install menu"]
+    };
+    Object.keys(labels).forEach(function (id) {
+      var button = document.getElementById(id);
+      var span = button && button.querySelector("span");
+      if (span && !(id === "favoritesService" && favoriteOnly)) span.textContent = text(labels[id][0], labels[id][1]);
+    });
+    var map = {
+      deliveryScheduleTitle: ["موعد التوصيل والكوبون", "Delivery time and coupon"],
+      deliveryDateLabel: ["تاريخ التوصيل", "Delivery date"],
+      deliverySlotLabel: ["الفترة المناسبة", "Preferred time"],
+      couponLabel: ["كود الخصم", "Discount code"],
+      couponApplyButton: ["تطبيق", "Apply"]
+    };
+    Object.keys(map).forEach(function (id) {
+      var element = document.getElementById(id);
+      if (element) element.textContent = text(map[id][0], map[id][1]);
+    });
+    var couponInput = document.getElementById("couponCode");
+    if (couponInput) couponInput.placeholder = text("اكتب الكود", "Enter code");
+    renderOffers();
+    updateFavoriteButton();
+  }
+
+  window.setMenuLanguage = function (language) {
+    var result = baseSetMenuLanguage.apply(this, arguments);
+    refreshEnhancementUi();
+    window.render();
+    window.renderCart();
+    return result;
+  };
+
+  window.addEventListener("beforeinstallprompt", function (event) {
+    event.preventDefault();
+    installPromptEvent = event;
+    var button = document.getElementById("installService");
+    if (button) button.hidden = false;
+  });
+
+  window.addEventListener("appinstalled", function () {
+    installPromptEvent = null;
+    var button = document.getElementById("installService");
+    if (button) button.hidden = true;
+  });
+
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+      navigator.serviceWorker.register("./sw.js").catch(function (error) {
+        console.warn("Service worker registration failed", error);
+      });
+    });
+  }
+
+  document.addEventListener("keydown", function (event) {
+    if (event.key === "Escape") window.closeEnhancementModal();
+  });
+
+  document.addEventListener("change", function (event) {
+    if (event.target && (event.target.id === "area" || event.target.name === "deliveryType")) {
+      window.renderCart();
+    }
+  });
+
+  injectCustomerUi();
+  injectAdminUi();
+  renderDeliveryOptions();
+  renderOffers();
+  translateEnhancementUi();
+  window.render();
+  window.renderCart();
+})();
