@@ -1,4 +1,4 @@
-var CACHE_NAME = "olive-branch-menu-v31";
+var CACHE_NAME = "olive-branch-menu-v32";
 var STATIC_FILES = [
   "./",
   "./index.html",
@@ -8,7 +8,7 @@ var STATIC_FILES = [
   "./apple-touch-icon.png",
   "./order-receipt.js?v=7-performance-fix",
   "./menu-enhancements.css?v=3-status-sync",
-  "./menu-enhancements.js?v=4-status-display"
+  "./menu-enhancements.js?v=5-tracking-source"
 ];
 
 self.addEventListener("install", function (event) {
