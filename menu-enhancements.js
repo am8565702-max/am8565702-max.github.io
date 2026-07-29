@@ -16,6 +16,7 @@
   var statusCollection = { version: 2, orders: {} };
   var statusSaveQueue = Promise.resolve();
   var statusMarkers = {};
+  var statusMarkersLoaded = false;
   var favoriteOnly = false;
   var installPromptEvent = null;
   var deepLinkHandled = false;
@@ -538,6 +539,7 @@
         data: statusCollection.orders[number]
       };
     });
+    statusMarkersLoaded = true;
   }
 
   function renderDeliveryOptions() {
@@ -921,6 +923,7 @@
     }
     return result.then(function (value) {
       extractCloudMarkers();
+      applyTrackedStatusesToCurrentOrders();
       refreshEnhancementUi();
       window.render();
       window.renderCart();
@@ -1225,17 +1228,28 @@
     });
   }
 
-  function loadOrdersDirectly() {
+  function applyTrackedStatusesToCurrentOrders() {
+    (window.orders || []).forEach(function (order) {
+      var marker = statusMarkers[String(order.orderNo)];
+      if (marker && marker.data && marker.data.status) {
+        order.status = marker.data.status;
+      }
+    });
+  }
+
+  function loadOrdersDirectly(applyTrackingStatus) {
     return directJsonp("orders", { session: adminSession() }).then(function (result) {
       if (!Array.isArray(result.orders)) throw new Error("INVALID_ORDERS");
+      if (applyTrackingStatus === false) return result.orders;
       window.orders = result.orders;
+      applyTrackedStatusesToCurrentOrders();
       window.renderOrders();
       return result.orders;
     });
   }
 
   function remoteOrderHasStatus(orderNumber, status) {
-    return loadOrdersDirectly().then(function (orders) {
+    return loadOrdersDirectly(false).then(function (orders) {
       return orders.some(function (order) {
         return String(order.orderNo) === String(orderNumber) && safe(order.status) === safe(status);
       });
@@ -1244,11 +1258,19 @@
     });
   }
 
+  function backendCompatibleStatus(status) {
+    var value = safe(status);
+    if (value === "تم التأكيد" || value === "جاري التجهيز") return "قيد التجهيز";
+    if (value === "جاهز للاستلام" || value === "خرج للتوصيل") return "جاهز";
+    return value;
+  }
+
   function updateRemoteOrderStatus(orderNumber, status) {
+    var remoteStatus = backendCompatibleStatus(status);
     var payload = {
       action: "updateStatus",
       orderNo: orderNumber,
-      status: status
+      status: remoteStatus
     };
     var firstError = null;
     return window.gsPost(payload).then(function (response) {
@@ -1257,13 +1279,13 @@
     }).catch(function (error) {
       firstError = error;
       return wait(500).then(function () {
-        return remoteOrderHasStatus(orderNumber, status);
+        return remoteOrderHasStatus(orderNumber, remoteStatus);
       }).then(function (alreadySaved) {
         if (alreadySaved) return { ok: true, recovered: true };
         return postWithoutCors(payload).then(function () {
           return wait(900);
         }).then(function () {
-          return remoteOrderHasStatus(orderNumber, status);
+          return remoteOrderHasStatus(orderNumber, remoteStatus);
         }).then(function (saved) {
           if (!saved) throw firstError;
           return { ok: true, recovered: true };
@@ -1478,7 +1500,16 @@
     return statusSaveQueue;
   };
 
-  function autoSyncOrderStatuses() {
+  function autoSyncOrderStatuses(attempt) {
+    var currentAttempt = Number(attempt || 0);
+    if (!statusMarkersLoaded && currentAttempt < 5) {
+      window.setTimeout(function () {
+        autoSyncOrderStatuses(currentAttempt + 1);
+      }, 500);
+      return;
+    }
+    applyTrackedStatusesToCurrentOrders();
+    window.renderOrders();
     var signature = ordersStatusSignature();
     var previous = "";
     try { previous = localStorage.getItem(STATUS_SYNC_SIGNATURE_KEY) || ""; } catch (error) {}
@@ -1508,23 +1539,24 @@
     if (order) order.status = status;
     window.renderOrders();
     setStatusSyncState("جاري تحديث الطلب #" + number + "...", false);
-    return updateRemoteOrderStatus(number, status).then(function () {
-      statusSaveQueue = statusSaveQueue.then(function () {
-        return savePublicStatus(number, status);
-      }).then(function () {
-        try { localStorage.setItem(STATUS_SYNC_SIGNATURE_KEY, ordersStatusSignature()); } catch (error) {}
-        setStatusSyncState("تم تحديث الطلب والتتبّع", false);
-      }).catch(function (trackingError) {
-        console.error("Customer tracking sync failed", trackingError);
-        setStatusSyncState("تم تحديث الطلب، وتعذّرت مزامنة التتبّع", true);
+    statusSaveQueue = statusSaveQueue.then(function () {
+      return savePublicStatus(number, status);
+    }).then(function () {
+      try { localStorage.setItem(STATUS_SYNC_SIGNATURE_KEY, ordersStatusSignature()); } catch (error) {}
+      setStatusSyncState("تم تحديث الطلب والتتبّع", false);
+      updateRemoteOrderStatus(number, status).catch(function (sheetError) {
+        console.warn("Orders sheet status update deferred", sheetError);
       });
-      return statusSaveQueue;
-    }).catch(function (error) {
-      if (order) order.status = oldStatus;
+      return true;
+    }).catch(function (trackingError) {
+      console.error("Customer tracking sync failed", trackingError);
+      setStatusSyncState("تعذّر حفظ حالة التتبّع — حاول مرة أخرى", true);
+      alert("تعذّر حفظ حالة التتبّع. حاول اختيار الحالة مرة أخرى.");
+      if (order && !statusMarkers[String(number)]) order.status = oldStatus;
       window.renderOrders();
-      console.error("Order status update failed", error);
-      alert("تعذر تحديث حالة الطلب. تأكد من الإنترنت ثم حاول مرة أخرى.");
+      return false;
     });
+    return statusSaveQueue;
   };
 
   window.renderOrders = function () {
