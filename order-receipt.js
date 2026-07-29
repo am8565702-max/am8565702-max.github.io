@@ -365,6 +365,19 @@
     context.font = "20px Arial, sans-serif";
     context.fillText(safeText(order.record && order.record.dateText), 86, 422);
 
+    var enhancements = order.enhancements || {};
+    if (enhancements.deliveryDate || enhancements.deliverySlot || enhancements.couponCode) {
+      context.fillStyle = muted;
+      context.font = "16px Tahoma, Arial, sans-serif";
+      context.textAlign = "right";
+      context.direction = "rtl";
+      var deliveryDetails = [];
+      if (enhancements.deliveryDate) deliveryDetails.push("التوصيل: " + safeText(enhancements.deliveryDate));
+      if (enhancements.deliverySlot) deliveryDetails.push(productNames(enhancements.deliverySlot).ar);
+      if (enhancements.couponCode) deliveryDetails.push("كوبون: " + safeText(enhancements.couponCode));
+      context.fillText(deliveryDetails.join("  •  "), PDF_WIDTH - 86, 450);
+    }
+
     var startY = 488;
     var rowHeight = 184;
     pageItems.forEach(function (item, index) {
@@ -402,6 +415,14 @@
       context.direction = "ltr";
       context.font = "20px Arial, sans-serif";
       context.fillText(names.en, PDF_WIDTH - 266, y + 116);
+
+      if (safeText(item.note, "") !== "-") {
+        context.fillStyle = "#8a5b14";
+        context.textAlign = "right";
+        context.direction = "rtl";
+        context.font = "bold 16px Tahoma, Arial, sans-serif";
+        drawWrappedText(context, "ملاحظة: " + safeText(item.note), PDF_WIDTH - 266, y + 144, 600, 20, 1);
+      }
 
       context.textAlign = "left";
       context.direction = "rtl";
