@@ -1434,9 +1434,11 @@ function gsUrl() {
 }
 function jsonp(action) {
   var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
-  return new Promise(function (resolve, reject) {
-    var url = gsUrl();
-    if (!url) return reject(new Error("NO_URL"));
+  var url = gsUrl();
+  if (!url) return Promise.reject(new Error("NO_URL"));
+
+  function scriptRequest() {
+    return new Promise(function (resolve, reject) {
     var cb = "gs_cb_" + Date.now() + "_" + Math.random().toString(36).slice(2);
     var s = document.createElement("script");
     var timer = setTimeout(function () {
@@ -1463,7 +1465,58 @@ function jsonp(action) {
       reject(new Error("NETWORK"));
     };
     document.head.appendChild(s);
-  });
+    });
+  }
+
+  function fetchRequest() {
+    return new Promise(function (resolve, reject) {
+      if (typeof fetch !== "function") return reject(new Error("FETCH_UNAVAILABLE"));
+      var finished = false;
+      var timer = setTimeout(function () {
+        if (finished) return;
+        finished = true;
+        reject(new Error("FETCH_TIMEOUT"));
+      }, 2e4);
+      var q = new URLSearchParams(__spreadValues({
+        action: action,
+        _t: Date.now()
+      }, params));
+      fetch(url + (url.includes("?") ? "&" : "?") + q.toString(), {
+        method: "GET",
+        cache: "no-store",
+        redirect: "follow"
+      }).then(function (response) {
+        if (!response.ok) throw new Error("HTTP_" + response.status);
+        return response.json();
+      }).then(function (data) {
+        if (finished) return;
+        finished = true;
+        clearTimeout(timer);
+        data && data.ok ? resolve(data) : reject(new Error((data == null ? void 0 : data.error) || "FAILED"));
+      }).catch(function (error) {
+        if (finished) return;
+        finished = true;
+        clearTimeout(timer);
+        reject(error);
+      });
+    });
+  }
+
+  // Some mobile browsers or networks block one of the two Google Apps Script
+  // transports. During the first product load, accept whichever transport
+  // succeeds first so the menu never depends on JSONP alone.
+  if (action === "products" && !products.length) {
+    return new Promise(function (resolve, reject) {
+      var failures = [];
+      [fetchRequest(), scriptRequest()].forEach(function (request) {
+        request.then(resolve).catch(function (error) {
+          failures.push(error);
+          if (failures.length === 2) reject(failures[0]);
+        });
+      });
+    });
+  }
+  return scriptRequest();
 }
 function gsPost(_x7) {
   return _gsPost.apply(this, arguments);
@@ -1812,10 +1865,17 @@ function _updateOrderStatus() {
 function retryMenuProducts() {
   productLoadAttempts += 1;
   render();
+  var slowNotice = setTimeout(function () {
+    if (!products.length) {
+      productLoadAttempts = Math.max(productLoadAttempts, 4);
+      render();
+    }
+  }, 12e3);
   Promise.all([
     Promise.resolve(loadCloudCategories()).catch(function () {}),
     Promise.resolve(loadCloudProducts()).catch(function () {})
   ]).then(function () {
+    clearTimeout(slowNotice);
     if (!products.length && productLoadAttempts < 4) {
       setTimeout(retryMenuProducts, 2500);
     } else {
