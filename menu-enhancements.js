@@ -1380,6 +1380,63 @@
     });
   }
 
+  function directFetch(action, params) {
+    return new Promise(function (resolve, reject) {
+      if (!window.gsUrl || !window.gsUrl()) {
+        reject(new Error("NO_URL"));
+        return;
+      }
+      if (typeof window.fetch !== "function") {
+        reject(new Error("FETCH_UNAVAILABLE"));
+        return;
+      }
+      var finished = false;
+      var timer = window.setTimeout(function () {
+        if (finished) return;
+        finished = true;
+        reject(new Error("FETCH_TIMEOUT"));
+      }, 15000);
+      var query = new URLSearchParams(Object.assign({
+        action: action,
+        _t: Date.now()
+      }, params || {}));
+      window.fetch(window.gsUrl() + (window.gsUrl().indexOf("?") === -1 ? "?" : "&") + query.toString(), {
+        method: "GET",
+        cache: "no-store",
+        redirect: "follow"
+      }).then(function (response) {
+        if (!response.ok) throw new Error("HTTP_" + response.status);
+        return response.json();
+      }).then(function (result) {
+        if (finished) return;
+        finished = true;
+        window.clearTimeout(timer);
+        if (!result || result.ok === false) {
+          reject(new Error(result && result.error || "FAILED"));
+          return;
+        }
+        resolve(result);
+      }).catch(function (error) {
+        if (finished) return;
+        finished = true;
+        window.clearTimeout(timer);
+        reject(error);
+      });
+    });
+  }
+
+  function directPublicRequest(action, params) {
+    return new Promise(function (resolve, reject) {
+      var failures = [];
+      [directFetch(action, params), directJsonp(action, params)].forEach(function (request) {
+        request.then(resolve).catch(function (error) {
+          failures.push(error);
+          if (failures.length === 2) reject(failures[0]);
+        });
+      });
+    });
+  }
+
   function fallbackPayload(payload) {
     var updated = Object.assign({}, payload || {});
     delete updated.pin;
@@ -1466,7 +1523,7 @@
   }
 
   function readRemoteStatusCollection() {
-    return directJsonp("products").then(function (result) {
+    return directPublicRequest("products").then(function (result) {
       var bestMarker = null;
       (result.products || []).forEach(function (product) {
         if (safe(product.name).trim() !== STATUS_COLLECTION_MARKER) return;
