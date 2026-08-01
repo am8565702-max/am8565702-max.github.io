@@ -585,6 +585,12 @@
     statusMarkersLoaded = true;
   }
 
+  function cacheCustomerProducts() {
+    try {
+      localStorage.setItem("oliveMenuProductsCloudV7", JSON.stringify(window.products || []));
+    } catch (error) {}
+  }
+
   function renderDeliveryOptions() {
     setMinimumDeliveryDate();
     var dataList = document.getElementById("deliveryZonesList");
@@ -961,12 +967,14 @@
     var result = baseLoadCloudProducts.apply(this, arguments);
     if (!result || typeof result.then !== "function") {
       extractCloudMarkers();
+      cacheCustomerProducts();
       refreshEnhancementUi();
       window.render();
       return result;
     }
     return result.then(function (value) {
       extractCloudMarkers();
+      cacheCustomerProducts();
       applyTrackedStatusesToCurrentOrders();
       refreshEnhancementUi();
       window.render();
