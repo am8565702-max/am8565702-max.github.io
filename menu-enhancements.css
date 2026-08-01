@@ -25,6 +25,7 @@ html[dir="ltr"] .enhancementDialog h2{margin:2px 0 14px 48px}
 .trackingOrderCard{margin-top:10px;padding:14px;border:1px solid #e1d4bd;border-radius:14px;background:#fff}
 .trackingOrderCard:first-of-type{margin-top:0}.trackingMeta{margin:5px 0;color:var(--muted);font-size:12px}
 .trackingHeadline{font-size:19px;font-weight:900;color:var(--green)}
+.trackingLiveState{margin-top:9px;min-height:20px;text-align:center;color:var(--green);font-size:12px;font-weight:900}.trackingLiveState.failed{color:#9b1c15}
 .statusSyncState{align-self:center;min-height:20px;color:var(--green);font-size:12px;font-weight:900}
 .statusSyncState.failed{color:#9b1c15}
 .statusSteps{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:14px}
