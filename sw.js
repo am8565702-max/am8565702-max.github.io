@@ -1,4 +1,4 @@
-var CACHE_NAME = "olive-branch-menu-v34";
+var CACHE_NAME = "olive-branch-menu-v35";
 var STATIC_FILES = [
   "./",
   "./index.html",
@@ -8,7 +8,7 @@ var STATIC_FILES = [
   "./apple-touch-icon.png",
   "./order-receipt.js?v=7-performance-fix",
   "./menu-enhancements.css?v=7-live-tracking",
-  "./menu-enhancements.js?v=7-live-tracking"
+  "./menu-enhancements.js?v=8-forced-update"
 ];
 
 self.addEventListener("install", function (event) {
@@ -31,6 +31,13 @@ self.addEventListener("activate", function (event) {
       }));
     }).then(function () {
       return self.clients.claim();
+    }).then(function () {
+      return self.clients.matchAll({ type: "window", includeUncontrolled: true });
+    }).then(function (clientList) {
+      return Promise.all(clientList.map(function (client) {
+        if (!client.url || typeof client.navigate !== "function") return Promise.resolve();
+        return client.navigate(client.url).catch(function () {});
+      }));
     })
   );
 });
