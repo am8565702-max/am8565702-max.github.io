@@ -17,6 +17,7 @@
   var statusSaveQueue = Promise.resolve();
   var statusMarkers = {};
   var statusMarkersLoaded = false;
+  var adminConfigDirty = false;
   var favoriteOnly = false;
   var installPromptEvent = null;
   var deepLinkHandled = false;
@@ -124,10 +125,28 @@
   }
 
   function todayValue() {
+    return dateValueAfterDays(0);
+  }
+
+  function dateValueAfterDays(days) {
     var date = new Date();
+    date.setHours(12, 0, 0, 0);
+    date.setDate(date.getDate() + Number(days || 0));
     var month = String(date.getMonth() + 1).padStart(2, "0");
     var day = String(date.getDate()).padStart(2, "0");
     return date.getFullYear() + "-" + month + "-" + day;
+  }
+
+  function minimumDeliveryDateValue() {
+    return dateValueAfterDays(3);
+  }
+
+  function setMinimumDeliveryDate() {
+    var dateInput = document.getElementById("deliveryDate");
+    if (!dateInput) return;
+    var minimum = minimumDeliveryDateValue();
+    dateInput.min = minimum;
+    if (!dateInput.value || dateInput.value < minimum) dateInput.value = minimum;
   }
 
   function moneyValue(value) {
@@ -298,6 +317,7 @@
             '<div class="field"><label id="deliveryDateLabel" for="deliveryDate">تاريخ التوصيل</label><input id="deliveryDate" type="date"></div>' +
             '<div class="field"><label id="deliverySlotLabel" for="deliverySlot">الفترة المناسبة</label><select id="deliverySlot"></select></div>' +
           '</div>' +
+          '<div id="deliveryMinimumHint" class="deliveryMinimumHint">أقرب موعد توصيل متاح بعد 3 أيام من تاريخ الطلب.</div>' +
           '<div class="field"><label id="couponLabel" for="couponCode">كود الخصم</label>' +
             '<div class="couponLine"><input id="couponCode" type="text" autocomplete="off" placeholder="اكتب الكود">' +
             '<button id="couponApplyButton" type="button" onclick="applyMenuCoupon()">تطبيق</button></div>' +
@@ -306,11 +326,7 @@
         '</section>';
       if (sendButton) sendButton.insertAdjacentHTML("beforebegin", extras);
       else form.insertAdjacentHTML("beforeend", extras);
-      var dateInput = document.getElementById("deliveryDate");
-      if (dateInput) {
-        dateInput.min = todayValue();
-        dateInput.value = todayValue();
-      }
+      setMinimumDeliveryDate();
     }
   }
 
@@ -324,14 +340,23 @@
         '<h3>مناطق التوصيل</h3><div class="muted">المنطقة • الرسوم • الحد الأدنى</div><div id="zoneConfigRows" class="configRows"></div>' +
         '<button class="secondary addConfigRow" type="button" onclick="addEnhancementRow(\'zone\')">+ إضافة منطقة</button>' +
         '<h3>فترات التوصيل</h3><textarea id="timeSlotsConfig" class="configTextarea" placeholder="كل فترة في سطر، ويمكن كتابة العربي || English"></textarea>' +
-        '<h3>كوبونات الخصم</h3><div class="muted">الكود • النسبة % • الحد الأدنى • تاريخ الانتهاء</div><div id="couponConfigRows" class="configRows"></div>' +
+        '<h3>كوبونات الخصم</h3><div class="muted">سجّل بيانات كل كوبون في الخانات الكبيرة التالية.</div><div id="couponConfigRows" class="configRows couponConfigRows"></div>' +
         '<button class="secondary addConfigRow" type="button" onclick="addEnhancementRow(\'coupon\')">+ إضافة كوبون</button>' +
         '<h3>الباقات المجمعة</h3><div class="muted">اسم الباقة • أرقام المنتجات مفصولة بفاصلة • سعر الباقة</div><div id="bundleConfigRows" class="configRows"></div>' +
         '<button class="secondary addConfigRow" type="button" onclick="addEnhancementRow(\'bundle\')">+ إضافة باقة</button>' +
-        '<h3>الفروع ونقاط البيع</h3><div class="muted">اسم الفرع • رابط خرائط Google</div><div id="branchConfigRows" class="configRows"></div>' +
-        '<button class="secondary addConfigRow" type="button" onclick="addEnhancementRow(\'branch\')">+ إضافة فرع</button>' +
+        '<h3>الفروع ونقاط البيع</h3><div class="muted">يمكنك إضافة أي عدد من الفروع، ولكل فرع اسم وعنوان ورابط خرائط مستقل.</div><div id="branchConfigRows" class="configRows branchConfigRows"></div>' +
+        '<button class="secondary addConfigRow branchAddButton" type="button" onclick="addEnhancementRow(\'branch\')">+ إضافة فرع آخر</button>' +
         '<button id="saveEnhancementsButton" class="primary" style="width:100%;margin-top:14px" type="button" onclick="saveMenuEnhancements()">حفظ الإضافات لكل الزبائن</button>' +
       '</section>');
+    var enhancementSection = document.getElementById("adminEnhancements");
+    if (enhancementSection) {
+      enhancementSection.addEventListener("input", function () {
+        adminConfigDirty = true;
+      });
+      enhancementSection.addEventListener("change", function () {
+        adminConfigDirty = true;
+      });
+    }
   }
 
   function zoneRow(item) {
@@ -346,10 +371,10 @@
   function couponRow(item) {
     item = item || {};
     return '<div class="configRow couponConfig couponConfigRow">' +
-      '<input class="couponAdminCode" placeholder="OLIVE10" value="' + html(item.code || "") + '">' +
-      '<input class="couponPercent" type="number" min="1" max="100" step="0.01" placeholder="%" value="' + html(item.percent == null ? "" : item.percent) + '">' +
-      '<input class="couponMinimum" type="number" min="0" step="0.01" placeholder="الحد الأدنى" value="' + html(item.minimum == null ? "" : item.minimum) + '">' +
-      '<input class="couponExpires" type="date" value="' + html(item.expires || "") + '">' +
+      '<label class="configField couponCodeField"><span>كود الكوبون</span><input class="couponAdminCode" placeholder="مثال: OLIVE10" value="' + html(item.code || "") + '"></label>' +
+      '<label class="configField"><span>نسبة الخصم %</span><input class="couponPercent" type="number" min="1" max="100" step="0.01" placeholder="مثال: 10" value="' + html(item.percent == null ? "" : item.percent) + '"></label>' +
+      '<label class="configField"><span>الحد الأدنى للطلب</span><input class="couponMinimum" type="number" min="0" step="0.01" placeholder="مثال: 100 درهم" value="' + html(item.minimum == null ? "" : item.minimum) + '"></label>' +
+      '<label class="configField"><span>تاريخ الانتهاء</span><input class="couponExpires" type="date" value="' + html(item.expires || "") + '"></label>' +
       '<button type="button" onclick="removeConfigRow(this)">✕</button></div>';
   }
 
@@ -365,13 +390,15 @@
   function branchRow(item) {
     item = item || {};
     return '<div class="configRow branchConfig branchConfigRow">' +
-      '<input class="branchName" placeholder="اسم الفرع || Branch name" value="' + html(item.name || "") + '">' +
-      '<input class="branchMap" type="url" placeholder="https://maps.google.com/..." value="' + html(item.map || "") + '">' +
+      '<label class="configField"><span>اسم الفرع</span><input class="branchName" placeholder="اسم الفرع || Branch name" value="' + html(item.name || "") + '"></label>' +
+      '<label class="configField"><span>عنوان الفرع</span><input class="branchAddress" placeholder="المنطقة والعنوان || Address" value="' + html(item.address || "") + '"></label>' +
+      '<label class="configField branchMapField"><span>رابط خرائط Google</span><input class="branchMap" type="url" placeholder="الصق رابط الفرع من خرائط Google" value="' + html(item.map || "") + '"></label>' +
       '<button type="button" onclick="removeConfigRow(this)">✕</button></div>';
   }
 
-  function renderAdminConfig() {
+  function renderAdminConfig(force) {
     injectAdminUi();
+    if (adminConfigDirty && force !== true) return;
     var zoneBox = document.getElementById("zoneConfigRows");
     var couponBox = document.getElementById("couponConfigRows");
     var bundleBox = document.getElementById("bundleConfigRows");
@@ -393,12 +420,22 @@
     };
     var item = map[type];
     var box = item && document.getElementById(item[0]);
-    if (box) box.insertAdjacentHTML("beforeend", item[1]({}));
+    if (box) {
+      adminConfigDirty = true;
+      box.insertAdjacentHTML("beforeend", item[1]({}));
+      var rows = box.querySelectorAll(".configRow");
+      var lastRow = rows[rows.length - 1];
+      var firstInput = lastRow && lastRow.querySelector("input");
+      if (firstInput) firstInput.focus();
+    }
   };
 
   window.removeConfigRow = function (button) {
     var row = button && button.closest(".configRow");
-    if (row) row.remove();
+    if (row) {
+      adminConfigDirty = true;
+      row.remove();
+    }
   };
 
   function collectConfig() {
@@ -432,6 +469,7 @@
     var branches = Array.prototype.slice.call(document.querySelectorAll(".branchConfigRow")).map(function (row) {
       return {
         name: row.querySelector(".branchName").value.trim(),
+        address: row.querySelector(".branchAddress").value.trim(),
         map: row.querySelector(".branchMap").value.trim()
       };
     }).filter(function (item) { return item.name && item.map; });
@@ -478,6 +516,7 @@
       if (!result || !result.ok) throw new Error((result && result.error) || "FAILED");
       return window.loadCloudProducts();
     }).then(function () {
+      adminConfigDirty = false;
       refreshEnhancementUi();
       alert("تم حفظ المناطق والمواعيد والكوبونات والباقات والفروع لكل الزبائن.");
     }).catch(function (error) {
@@ -543,6 +582,7 @@
   }
 
   function renderDeliveryOptions() {
+    setMinimumDeliveryDate();
     var dataList = document.getElementById("deliveryZonesList");
     if (dataList) {
       dataList.innerHTML = enhancementConfig.zones.map(function (zone) {
@@ -960,6 +1000,11 @@
       var schedule = selectedSchedule();
       if (!schedule.date || !schedule.slot) {
         alert(text("اختر تاريخ وفترة التوصيل.", "Choose a delivery date and time."));
+        return;
+      }
+      if (schedule.date < minimumDeliveryDateValue()) {
+        setMinimumDeliveryDate();
+        alert(text("أقرب موعد توصيل متاح بعد 3 أيام من تاريخ الطلب.", "The earliest available delivery date is 3 days after ordering."));
         return;
       }
     }
@@ -1623,6 +1668,7 @@
       return first.distance - second.distance;
     }).map(function (item, index) {
       return '<article class="branchCard"><b>' + (index === 0 && item.distance != null ? "⭐ " : "") + html(shown(item.branch.name)) + '</b>' +
+        (item.branch.address ? '<div class="branchAddress">' + html(shown(item.branch.address)) + '</div>' : '') +
         (item.distance != null ? '<div class="muted">' + text("يبعد تقريبًا ", "About ") + item.distance.toFixed(1) + " " + text("كم", "km away") + '</div>' : '') +
         '<br><a href="' + html(item.branch.map) + '" target="_blank" rel="noopener">' + text("فتح الاتجاهات", "Open directions") + '</a></article>';
     }).join("");
@@ -1689,6 +1735,7 @@
       deliveryScheduleTitle: ["موعد التوصيل والكوبون", "Delivery time and coupon"],
       deliveryDateLabel: ["تاريخ التوصيل", "Delivery date"],
       deliverySlotLabel: ["الفترة المناسبة", "Preferred time"],
+      deliveryMinimumHint: ["أقرب موعد توصيل متاح بعد 3 أيام من تاريخ الطلب.", "The earliest available delivery date is 3 days after ordering."],
       couponLabel: ["كود الخصم", "Discount code"],
       couponApplyButton: ["تطبيق", "Apply"]
     };
