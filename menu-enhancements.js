@@ -17,6 +17,10 @@
   var statusSaveQueue = Promise.resolve();
   var statusMarkers = {};
   var statusMarkersLoaded = false;
+  var trackingRefreshTimer = 0;
+  var trackingRefreshPromise = null;
+  var trackingRefreshGeneration = 0;
+  var TRACKING_REFRESH_MS = 5000;
   var adminConfigDirty = false;
   var favoriteOnly = false;
   var installPromptEvent = null;
@@ -1063,6 +1067,7 @@
   };
 
   window.closeEnhancementModal = function () {
+    stopLiveTracking();
     var modal = document.getElementById("enhancementModal");
     if (modal) modal.classList.remove("open");
   };
@@ -1092,12 +1097,14 @@
   }
 
   window.openTrackingModal = function () {
+    stopLiveTracking();
     var latest = orderHistory()[0] || {};
     var latestPhone = latest.record && latest.record.phone || "";
     openEnhancementHtml(
       '<h2>🚚 ' + text("تتبّع الطلب", "Track order") + '</h2>' +
       '<div class="field"><label for="trackingPhone">' + text("رقم الهاتف المستخدم في الطلب", "Phone number used for the order") + '</label><input id="trackingPhone" inputmode="tel" value="' + html(latestPhone) + '"></div>' +
-      '<button class="primary" style="width:100%" type="button" onclick="checkOrderTracking()">' + text("عرض كل طلباتي", "Show all my orders") + '</button>' +
+      '<button class="primary" style="width:100%" type="button" onclick="checkOrderTracking()">' + text("تحديث وعرض كل طلباتي", "Refresh and show all my orders") + '</button>' +
+      '<div id="trackingLiveState" class="trackingLiveState" aria-live="polite">' + text("يتم تحديث الحالة تلقائيًا كل 5 ثوانٍ.", "Status refreshes automatically every 5 seconds.") + '</div>' +
       '<div id="trackingResult" class="trackingResult" hidden></div>');
   };
 
@@ -1137,14 +1144,55 @@
       }).join("") + '</div></article>';
   }
 
-  window.checkOrderTracking = function () {
-    var phone = safe(document.getElementById("trackingPhone") && document.getElementById("trackingPhone").value).trim();
+  function setTrackingLiveState(message, failed) {
+    var state = document.getElementById("trackingLiveState");
+    if (!state) return;
+    state.textContent = message || "";
+    state.classList.toggle("failed", !!failed);
+  }
+
+  function trackingModalIsOpen() {
+    var modal = document.getElementById("enhancementModal");
+    return !!(modal && modal.classList.contains("open") && document.getElementById("trackingPhone"));
+  }
+
+  function stopLiveTracking() {
+    trackingRefreshGeneration += 1;
+    if (trackingRefreshTimer) window.clearTimeout(trackingRefreshTimer);
+    trackingRefreshTimer = 0;
+  }
+
+  function applyRemoteStatusCollection(remote) {
+    if (!remote || !remote.collection || !remote.collection.orders) return false;
+    statusCollectionMarkerId = Number(remote.id || statusCollectionMarkerId || 0);
+    statusCollection = remote.collection;
+    Object.keys(statusCollection.orders).forEach(function (number) {
+      statusMarkers[String(number)] = {
+        id: statusCollectionMarkerId,
+        data: statusCollection.orders[number]
+      };
+    });
+    statusMarkersLoaded = true;
+    return true;
+  }
+
+  function refreshTrackingStatusesFromCloud() {
+    if (trackingRefreshPromise) return trackingRefreshPromise;
+    trackingRefreshPromise = readRemoteStatusCollection().then(function (remote) {
+      applyRemoteStatusCollection(remote);
+      trackingRefreshPromise = null;
+      return remote;
+    }, function (error) {
+      trackingRefreshPromise = null;
+      throw error;
+    });
+    return trackingRefreshPromise;
+  }
+
+  function renderTrackingResults(phone) {
     var result = document.getElementById("trackingResult");
-    if (digits(phone).length < 8) {
-      alert(text("اكتب رقم الهاتف الصحيح.", "Enter a valid phone number."));
-      return;
-    }
-    phoneHash(phone).then(function (hash) {
+    if (!result) return Promise.resolve(false);
+    return phoneHash(phone).then(function (hash) {
       var matches = {};
       Object.keys(statusMarkers).forEach(function (number) {
         var marker = statusMarkers[number];
@@ -1185,6 +1233,51 @@
         result.innerHTML = '<div class="trackingHeadline" style="color:#9b1c15">' + text("لم نجد طلبًا مطابقًا لهذه البيانات.", "No matching order was found.") + '</div>';
       }
       result.hidden = false;
+      return ordersForPhone.length > 0;
+    });
+  }
+
+  function scheduleLiveTracking(phone, generation) {
+    if (generation !== trackingRefreshGeneration || !trackingModalIsOpen()) return;
+    if (trackingRefreshTimer) window.clearTimeout(trackingRefreshTimer);
+    trackingRefreshTimer = window.setTimeout(function () {
+      runLiveTrackingRefresh(phone, generation);
+    }, TRACKING_REFRESH_MS);
+  }
+
+  function runLiveTrackingRefresh(phone, generation) {
+    if (generation !== trackingRefreshGeneration || !trackingModalIsOpen()) return Promise.resolve(false);
+    var input = document.getElementById("trackingPhone");
+    if (!input || digits(input.value) !== digits(phone)) return Promise.resolve(false);
+    setTrackingLiveState(text("جارٍ جلب أحدث حالة...", "Loading latest status..."), false);
+    return refreshTrackingStatusesFromCloud().then(function () {
+      if (generation !== trackingRefreshGeneration || !trackingModalIsOpen()) return false;
+      return renderTrackingResults(phone).then(function () {
+        setTrackingLiveState(text("✓ الحالة محدثة الآن — تحديث تلقائي كل 5 ثوانٍ", "✓ Status is live — refreshing every 5 seconds"), false);
+        return true;
+      });
+    }).catch(function () {
+      if (generation === trackingRefreshGeneration && trackingModalIsOpen()) {
+        setTrackingLiveState(text("تعذر الاتصال مؤقتًا — ستتم المحاولة تلقائيًا", "Temporarily offline — retrying automatically"), true);
+      }
+      return false;
+    }).then(function (updated) {
+      scheduleLiveTracking(phone, generation);
+      return updated;
+    });
+  }
+
+  window.checkOrderTracking = function () {
+    var phone = safe(document.getElementById("trackingPhone") && document.getElementById("trackingPhone").value).trim();
+    if (digits(phone).length < 8) {
+      alert(text("اكتب رقم الهاتف الصحيح.", "Enter a valid phone number."));
+      return Promise.resolve(false);
+    }
+    stopLiveTracking();
+    var generation = trackingRefreshGeneration;
+    setTrackingLiveState(text("جارٍ عرض الطلبات وجلب أحدث حالة...", "Showing orders and loading latest status..."), false);
+    return renderTrackingResults(phone).then(function () {
+      return runLiveTrackingRefresh(phone, generation);
     });
   };
 
