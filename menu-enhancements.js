@@ -1087,21 +1087,46 @@
     if (modal) modal.classList.add("open");
   }
 
-  function phoneHash(phone) {
-    var value = "olive-branch-status-v1|" + digits(phone);
+  function normalizedPhoneDigits(phone) {
+    var value = digits(phone);
+    if (value.indexOf("00971") === 0) value = value.slice(5);
+    else if (value.indexOf("971") === 0) value = value.slice(3);
+    if (value.length === 10 && value.charAt(0) === "0") value = value.slice(1);
+    return value;
+  }
+
+  function hashPhoneDigits(value) {
+    var hashValue = "olive-branch-status-v1|" + safe(value);
     if (window.crypto && window.crypto.subtle && window.TextEncoder) {
-      return window.crypto.subtle.digest("SHA-256", new TextEncoder().encode(value)).then(function (buffer) {
+      return window.crypto.subtle.digest("SHA-256", new TextEncoder().encode(hashValue)).then(function (buffer) {
         return Array.prototype.map.call(new Uint8Array(buffer), function (byte) {
           return byte.toString(16).padStart(2, "0");
         }).join("");
       });
     }
     var hash = 2166136261;
-    for (var index = 0; index < value.length; index += 1) {
-      hash ^= value.charCodeAt(index);
+    for (var index = 0; index < hashValue.length; index += 1) {
+      hash ^= hashValue.charCodeAt(index);
       hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
     }
     return Promise.resolve("fallback-" + (hash >>> 0).toString(16));
+  }
+
+  function phoneHash(phone) {
+    return hashPhoneDigits(normalizedPhoneDigits(phone));
+  }
+
+  function phoneHashCandidates(phone) {
+    var raw = digits(phone);
+    var normalized = normalizedPhoneDigits(phone);
+    var values = [normalized, raw];
+    if (normalized.length === 9) {
+      values.push("0" + normalized, "971" + normalized, "00971" + normalized);
+    }
+    values = values.filter(function (value, index, all) {
+      return value && all.indexOf(value) === index;
+    });
+    return Promise.all(values.map(hashPhoneDigits));
   }
 
   window.openTrackingModal = function () {
@@ -1200,11 +1225,11 @@
   function renderTrackingResults(phone) {
     var result = document.getElementById("trackingResult");
     if (!result) return Promise.resolve(false);
-    return phoneHash(phone).then(function (hash) {
+    return phoneHashCandidates(phone).then(function (hashes) {
       var matches = {};
       Object.keys(statusMarkers).forEach(function (number) {
         var marker = statusMarkers[number];
-        if (marker && marker.data && marker.data.phoneHash === hash) {
+        if (marker && marker.data && hashes.indexOf(marker.data.phoneHash) !== -1) {
           matches[String(number)] = {
             orderNo: String(number),
             status: marker.data.status || text("جديد", "New"),
@@ -1214,7 +1239,7 @@
         }
       });
       orderHistory().forEach(function (order) {
-        if (digits(order.record && order.record.phone) !== digits(phone)) return;
+        if (normalizedPhoneDigits(order.record && order.record.phone) !== normalizedPhoneDigits(phone)) return;
         var number = String(order.orderNo);
         var current = matches[number] || {};
         matches[number] = {
