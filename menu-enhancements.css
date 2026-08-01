@@ -34,9 +34,10 @@ html[dir="ltr"] .enhancementDialog h2{margin:2px 0 14px 48px}
 .statusStep.done:before,.statusStep.current:before{background:var(--green);box-shadow:0 0 0 3px #dcecdf}
 .statusStep.current:before{background:var(--gold);box-shadow:0 0 0 4px #f4e8d2}
 .branchList{display:grid;gap:9px}.branchCard{padding:13px;border:1px solid #eadfcd;border-radius:13px;background:#faf7f1}
-.branchCard b{color:var(--green)}.branchCard a{display:inline-block;margin-top:7px;color:var(--green);font-weight:900}
+.branchCard b{color:var(--green)}.branchCard .branchAddress{margin-top:5px;color:var(--muted);line-height:1.6}.branchCard a{display:inline-block;margin-top:7px;color:var(--green);font-weight:900}
 .checkoutExtras{margin:12px 0;padding:12px;border:1px solid #eadfcd;border-radius:14px;background:#faf7f1}
 .checkoutExtras h4{margin:0 0 10px;color:var(--green)}
+.deliveryMinimumHint{margin:-2px 0 10px;padding:8px 10px;border-radius:9px;background:#fff4d8;color:#6b4d00;font-size:12px;font-weight:800}
 .checkoutExtras .field{margin-bottom:9px}.checkoutExtras input,.checkoutExtras select{width:100%;min-height:45px;padding:10px;border:1px solid #d8ccb8;border-radius:10px;background:#fff}
 .couponLine{display:grid;grid-template-columns:1fr auto;gap:7px}.couponLine button{min-width:92px;border:0;border-radius:10px;background:var(--green);color:#fff;font-weight:900;cursor:pointer}
 .couponState{min-height:20px;margin-top:5px;font-size:12px;font-weight:800}.couponState.ok{color:#1f5a30}.couponState.bad{color:#9b1c15}
@@ -45,12 +46,13 @@ html[dir="ltr"] .enhancementDialog h2{margin:2px 0 14px 48px}
 .adminEnhancements{margin-top:18px;padding-top:16px;border-top:2px solid #eee}
 .adminEnhancements h3{margin:14px 0 8px;color:var(--green)}
 .configRows{display:grid;gap:8px}.configRow{display:grid;grid-template-columns:1.3fr .7fr .7fr auto;gap:7px;align-items:center;padding:8px;border:1px solid #eadfcd;border-radius:11px;background:#faf7f1}
-.configRow.branchConfig{grid-template-columns:1fr 1.6fr auto}.configRow.couponConfig{grid-template-columns:1fr .65fr .75fr 1fr auto}.configRow.bundleConfig{grid-template-columns:1.2fr 1fr .65fr auto}
+.configRow.branchConfig{grid-template-columns:1fr 1.2fr 1.6fr auto}.configRow.couponConfig{grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}.configRow.bundleConfig{grid-template-columns:1.2fr 1fr .65fr auto}
 .configRow input{width:100%;min-height:40px;padding:8px;border:1px solid #d8ccb8;border-radius:8px}
+.configField{display:grid;gap:5px;min-width:0;color:var(--green);font-size:12px;font-weight:900}.configField input{min-height:49px;background:#fff;font-size:15px}.couponConfig{padding:13px}.couponConfig .couponCodeField{grid-column:1/-1}.couponConfig .couponCodeField input{direction:ltr;text-align:left;min-height:54px;font-size:18px;font-weight:900;letter-spacing:.4px}.couponConfig>button{grid-column:2;justify-self:end}.branchConfig{padding:13px}.branchConfig .branchMapField input{direction:ltr;text-align:left}.branchAddButton{min-height:48px;font-size:15px;font-weight:900}
 .configRow button{width:39px;height:39px;border:0;border-radius:9px;background:#fee4e2;color:var(--danger);font-weight:900;cursor:pointer}
 .addConfigRow{width:100%;margin-top:7px}
 .configTextarea{width:100%;min-height:86px;padding:10px;border:1px solid #d8ccb8;border-radius:9px;resize:vertical}
 .installHint{padding:12px;border:1px solid #d8c6a8;border-radius:12px;background:#fffaf0;color:#6b4d00;line-height:1.7}
 .deepLinkFocus{animation:deepLinkPulse 1.8s ease 2}@keyframes deepLinkPulse{50%{box-shadow:0 0 0 6px rgba(202,165,106,.4),0 12px 32px rgba(40,91,53,.2)}}
-@media(max-width:800px){.quickServices{grid-template-columns:repeat(3,1fr);padding:0 12px}.quickService{font-size:13px}.configRow,.configRow.branchConfig,.configRow.couponConfig,.configRow.bundleConfig{grid-template-columns:1fr 1fr}.configRow button{grid-column:2}.statusSteps{grid-template-columns:repeat(5,minmax(58px,1fr));overflow:auto}}
+@media(max-width:800px){.quickServices{grid-template-columns:repeat(3,1fr);padding:0 12px}.quickService{font-size:13px}.configRow,.configRow.branchConfig,.configRow.couponConfig,.configRow.bundleConfig{grid-template-columns:1fr}.configRow button,.couponConfig>button{grid-column:1;justify-self:end}.statusSteps{grid-template-columns:repeat(5,minmax(58px,1fr));overflow:auto}}
 @media(max-width:430px){.quickServices{grid-template-columns:repeat(2,1fr);gap:7px}.quickService{min-height:48px}.enhancementDialog{padding:18px 14px}.productUtility button{width:36px;height:36px}.offerCard{flex-basis:90vw}}
