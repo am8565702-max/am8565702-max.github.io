@@ -1915,22 +1915,10 @@
           '<button class="secondary" type="button" onclick="openGoogleMapsForDelivery()">🗺️ ' + text("فتح Google Maps", "Open Google Maps") + '</button>' +
           '<button class="secondary" type="button" onclick="pasteDeliveryGoogleMapsLink()">📋 ' + text("لصق الرابط", "Paste link") + '</button>' +
         '</div><small>' + text("افتح Google Maps، اختر المكان، اضغط مشاركة ثم انسخ الرابط والصقه هنا.", "Open Google Maps, choose the place, tap Share, then copy and paste the link here.") + '</small></div>' +
-      '<div class="mapAddressSearch">' +
-        '<label for="mapAddressSearchInput">🔎 ' + text("أو ابحث هنا بالعربي أو الإنجليزي لتحديده تلقائيًا", "Or search here in Arabic or English to locate it automatically") + '</label>' +
-        '<div class="mapAddressSearchLine"><input id="mapAddressSearchInput" type="search" autocomplete="off" dir="auto" placeholder="' + text("الشارقة سوبر ماركت / Sharjah supermarket", "Sharjah supermarket / الشارقة سوبر ماركت") + '" onkeydown="if(event.key===\'Enter\'){event.preventDefault();searchDeliveryAddress()}">' +
-          '<button id="mapAddressSearchButton" class="primary" type="button" onclick="searchDeliveryAddress()">' + text("بحث", "Search") + '</button></div>' +
-        '<div id="mapSearchResults" class="mapSearchResults" aria-live="polite"></div>' +
-        '<div class="mapSearchCredit">' + text("بحث عربي وإنجليزي من ", "Arabic and English search by ") + '<a href="https://photon.komoot.io" target="_blank" rel="noopener">Photon</a> / <a href="https://nominatim.org" target="_blank" rel="noopener">Nominatim</a> / <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a></div>' +
-      '</div>' +
-      '<div class="mapPickerHint">' + text("يمكنك لصق رابط Google Maps بالأعلى، أو وضع العلامة على الخريطة وسننشئ الرابط تلقائيًا.", "Paste a Google Maps link above, or place the pin and we will create the link automatically.") + '</div>' +
-      '<button id="mapCurrentLocationButton" class="secondary mapCurrentLocation" type="button" onclick="centerDeliveryMapOnCurrentLocation()">🎯 ' + text("استخدم موقعي الحالي كبداية", "Use my current location as a starting point") + '</button>' +
-      '<div id="deliveryMapPicker" class="deliveryMapPicker" role="application" aria-label="' + text("خريطة اختيار موقع التوصيل", "Delivery location map") + '"></div>' +
-      '<div id="deliveryMapState" class="deliveryMapState">' + text("اضغط على الخريطة لوضع علامة التوصيل.", "Tap the map to place the delivery pin.") + '</div>' +
       '<div class="field mapAddressField"><label for="deliveryAddressNotes">' + text("تفاصيل إضافية (اختياري)", "Additional details (optional)") + '</label>' +
         '<textarea id="deliveryAddressNotes" maxlength="240" placeholder="' + text("اسم الشارع، الطابق، علامة مميزة", "Street, floor, nearby landmark") + '">' + html(address.notes || "") + '</textarea></div>' +
       '<button id="confirmMapAddressButton" class="primary addressModalAction" type="button" onclick="confirmDeliveryMapLocation()">' + (addressEditId ? text("حفظ التعديلات", "Save changes") : text("إضافة العنوان", "Add address")) + '</button>');
     window.updateDeliveryDistrictOptions(districtValue);
-    window.setTimeout(initializeDeliveryMapPicker, 80);
   };
 
   window.selectDeliveryAddressType = function (type, button) {
