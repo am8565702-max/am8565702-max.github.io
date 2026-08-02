@@ -1,4 +1,4 @@
-var CACHE_NAME = "olive-branch-menu-v42";
+var CACHE_NAME = "olive-branch-menu-v43";
 var STATIC_FILES = [
   "./",
   "./index.html",
@@ -10,7 +10,7 @@ var STATIC_FILES = [
   "./leaflet.css?v=1.9.4",
   "./leaflet.js?v=1.9.4",
   "./menu-enhancements.css?v=9-saved-addresses",
-  "./menu-enhancements.js?v=13-saved-addresses"
+  "./menu-enhancements.js?v=14-saved-addresses"
 ];
 
 self.addEventListener("install", function (event) {

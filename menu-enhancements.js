@@ -312,7 +312,10 @@
     if (!value) return null;
     return enhancementConfig.zones.find(function (zone) {
       var names = bilingual(zone.name);
-      return value === normalize(names.ar) || value === normalize(names.en);
+      return [names.ar, names.en].some(function (name) {
+        var normalizedName = normalize(name);
+        return normalizedName && (value === normalizedName || value.indexOf(normalizedName) !== -1);
+      });
     }) || null;
   }
 
