@@ -35,6 +35,7 @@
   var deliveryMapInstance = null;
   var deliveryMapMarker = null;
   var deliveryMapSelection = null;
+  var pendingAddressType = "home";
   var baseGetOrderTotals = window.getOrderTotals;
   var baseRender = window.render;
   var baseRenderCart = window.renderCart;
@@ -247,6 +248,18 @@
     return address.label + " — " + address.area;
   }
 
+  function addressTypeIcon(label) {
+    var value = normalize(label);
+    if (value.indexOf("بيت") !== -1 || value.indexOf("منزل") !== -1 || value.indexOf("home") !== -1) return "🏠";
+    if (value.indexOf("مكتب") !== -1 || value.indexOf("office") !== -1 || value.indexOf("work") !== -1) return "🏢";
+    return "📍";
+  }
+
+  function addressTypeLabel(type) {
+    if (type === "office") return text("المكتب", "Office");
+    return text("البيت", "Home");
+  }
+
   function showChosenLocation(url, message) {
     var status = document.getElementById("locationStatus");
     var statusText = document.getElementById("locationStatusText");
@@ -278,12 +291,26 @@
       addresses.map(function (address) {
         return '<option value="' + html(address.id) + '"' + (address.id === selectedAddressId ? " selected" : "") + ">" + html(addressOptionLabel(address)) + "</option>";
       }).join("");
+    var quickList = document.getElementById("savedAddressQuickList");
+    if (quickList) {
+      quickList.innerHTML = addresses.map(function (address) {
+        var selected = address.id === selectedAddressId;
+        return '<button class="quickAddressCard' + (selected ? " active" : "") + '" type="button" aria-pressed="' + (selected ? "true" : "false") + '" onclick="applySavedDeliveryAddress(\'' + html(address.id) + '\')">' +
+          '<span class="quickAddressIcon" aria-hidden="true">' + addressTypeIcon(address.label) + '</span>' +
+          '<span class="quickAddressText"><b>' + html(address.label) + '</b><small>' + html(address.area) + '</small></span>' +
+          (selected ? '<span class="quickAddressCheck" aria-hidden="true">✓</span>' : "") +
+        '</button>';
+      }).join("");
+      quickList.hidden = !addresses.length;
+    }
     var count = document.getElementById("savedAddressCount");
     if (count) {
       count.textContent = addresses.length
-        ? text("محفوظ ", "Saved: ") + addresses.length
-        : text("لا توجد عناوين محفوظة بعد", "No saved addresses yet");
+        ? addresses.length + text(" عناوين محفوظة", " saved addresses")
+        : text("أضف البيت أو المكتب مرة واحدة", "Add home or office once");
     }
+    var manageButton = document.getElementById("manageAddressButton");
+    if (manageButton) manageButton.hidden = !addresses.length;
   }
 
   function updateAddressBookVisibility(totals) {
@@ -439,15 +466,12 @@
     if (areaInput && !document.getElementById("customerAddressBook")) {
       areaInput.insertAdjacentHTML("beforebegin",
         '<section id="customerAddressBook" class="customerAddressBook" hidden>' +
-          '<div class="addressBookHead"><h4 id="addressBookTitle">📍 عنوان التوصيل</h4><span id="savedAddressCount"></span></div>' +
-          '<label id="savedAddressLabel" for="savedAddressSelect">العناوين المحفوظة</label>' +
-          '<select id="savedAddressSelect" onchange="applySavedDeliveryAddress(this.value)"></select>' +
-          '<div class="addressBookButtons">' +
-            '<button id="saveAddressButton" type="button" onclick="saveCurrentDeliveryAddress()">💾 حفظ العنوان الحالي</button>' +
-            '<button id="manageAddressButton" type="button" onclick="openSavedAddressManager()">⚙️ إدارة العناوين</button>' +
-          '</div>' +
-          '<button id="chooseMapAddressButton" class="chooseMapAddress" type="button" onclick="openDeliveryMapPicker()">🗺️ اختيار موقع توصيل مختلف على الخريطة</button>' +
-          '<div id="addressBookHint" class="addressBookHint">يمكنك اختيار مكان غير موقعك الحالي، مثل البيت أو المكتب أو عنوان شخص آخر.</div>' +
+          '<div class="addressBookHead"><div class="addressBookTitleGroup"><h4 id="addressBookTitle">🚚 أين نوصل طلبك؟</h4><span id="savedAddressCount"></span></div>' +
+            '<button id="manageAddressButton" class="addressManageLink" type="button" onclick="openSavedAddressManager()" hidden>إدارة</button></div>' +
+          '<div id="savedAddressQuickList" class="savedAddressQuickList" hidden></div>' +
+          '<select id="savedAddressSelect" class="savedAddressSelect" onchange="applySavedDeliveryAddress(this.value)" hidden aria-hidden="true"></select>' +
+          '<button id="chooseMapAddressButton" class="chooseMapAddress" type="button" onclick="openDeliveryMapPicker()">＋ إضافة عنوان توصيل جديد</button>' +
+          '<div id="addressBookHint" class="addressBookHint">احفظ أكثر من عنوان واختره بلمسة واحدة.</div>' +
         '</section>');
     }
     if (areaInput && !document.getElementById("deliveryZonesList")) {
@@ -1371,11 +1395,11 @@
   function savedAddressCards() {
     var addresses = savedAddresses();
     if (!addresses.length) {
-      return '<div class="installHint">' + text("لا توجد عناوين محفوظة بعد. حدد عنوانًا ثم اضغط «حفظ العنوان الحالي».", "No addresses are saved yet. Choose a location, then tap “Save current address”.") + '</div>';
+      return '<div class="installHint">' + text("لا توجد عناوين محفوظة بعد.", "No addresses are saved yet.") + '</div>';
     }
     return '<div class="savedAddressList">' + addresses.map(function (address) {
       return '<article class="savedAddressCard' + (address.id === selectedAddressId ? " active" : "") + '">' +
-        '<div><b>📍 ' + html(address.label) + '</b><p>' + html(address.area) + '</p>' +
+        '<div><b>' + addressTypeIcon(address.label) + ' ' + html(address.label) + '</b><p>' + html(address.area) + '</p>' +
           '<a href="' + html(address.location) + '" target="_blank" rel="noopener">' + text("فتح على الخريطة", "Open in Maps") + '</a></div>' +
         '<div class="savedAddressActions">' +
           '<button class="primary" type="button" onclick="useManagedDeliveryAddress(\'' + html(address.id) + '\')">' + text("استخدام", "Use") + '</button>' +
@@ -1473,17 +1497,40 @@
   }
 
   window.openDeliveryMapPicker = function () {
+    addressEditId = "";
+    pendingAddressType = "home";
     var areaInput = document.getElementById("area");
     openEnhancementHtml(
-      '<h2>🗺️ ' + text("اختيار موقع التوصيل", "Choose delivery location") + '</h2>' +
-      '<div class="mapPickerHint">' + text("حرّك الخريطة واضغط على مكان التوصيل، أو اسحب العلامة. لا يلزم أن تكون موجودًا في هذا المكان الآن.", "Move the map and tap the delivery point, or drag the pin. You do not need to be at that location now.") + '</div>' +
+      '<h2>📍 ' + text("إضافة عنوان توصيل", "Add delivery address") + '</h2>' +
+      '<div class="addressTypeTitle">' + text("سمِّ هذا العنوان", "Name this address") + '</div>' +
+      '<div class="addressTypeOptions" role="group" aria-label="' + text("نوع العنوان", "Address type") + '">' +
+        '<button class="addressTypeButton active" type="button" aria-pressed="true" onclick="selectDeliveryAddressType(\'home\',this)">🏠 ' + text("البيت", "Home") + '</button>' +
+        '<button class="addressTypeButton" type="button" aria-pressed="false" onclick="selectDeliveryAddressType(\'office\',this)">🏢 ' + text("المكتب", "Office") + '</button>' +
+        '<button class="addressTypeButton" type="button" aria-pressed="false" onclick="selectDeliveryAddressType(\'other\',this)">📍 ' + text("عنوان آخر", "Other") + '</button>' +
+      '</div>' +
+      '<input id="customAddressLabel" class="customAddressLabel" maxlength="40" placeholder="' + text("مثال: بيت الوالد", "Example: Parents' home") + '" hidden>' +
+      '<div class="mapPickerHint">' + text("اضغط مكان التوصيل على الخريطة. يمكن أن يكون بعيدًا عن مكانك الحالي.", "Tap the delivery point on the map. It can be different from your current location.") + '</div>' +
       '<button id="mapCurrentLocationButton" class="secondary mapCurrentLocation" type="button" onclick="centerDeliveryMapOnCurrentLocation()">🎯 ' + text("استخدم موقعي الحالي كبداية", "Use my current location as a starting point") + '</button>' +
       '<div id="deliveryMapPicker" class="deliveryMapPicker" role="application" aria-label="' + text("خريطة اختيار موقع التوصيل", "Delivery location map") + '"></div>' +
       '<div id="deliveryMapState" class="deliveryMapState">' + text("اضغط على الخريطة لوضع علامة التوصيل.", "Tap the map to place the delivery pin.") + '</div>' +
       '<div class="field mapAddressField"><label for="mapAddressText">' + text("وصف العنوان بالتفصيل", "Address details") + '</label>' +
         '<textarea id="mapAddressText" maxlength="240" placeholder="' + text("المنطقة، الشارع، المبنى، الطابق", "Area, street, building, floor") + '">' + html(areaInput && areaInput.value || "") + '</textarea></div>' +
-      '<button id="confirmMapAddressButton" class="primary addressModalAction" type="button" onclick="confirmDeliveryMapLocation()" disabled>' + text("استخدام هذا الموقع للتوصيل", "Use this delivery location") + '</button>');
+      '<button id="confirmMapAddressButton" class="primary addressModalAction" type="button" onclick="confirmDeliveryMapLocation()" disabled>' + text("حفظ واستخدام العنوان", "Save and use address") + '</button>');
     window.setTimeout(initializeDeliveryMapPicker, 80);
+  };
+
+  window.selectDeliveryAddressType = function (type, button) {
+    pendingAddressType = type === "office" || type === "other" ? type : "home";
+    document.querySelectorAll(".addressTypeButton").forEach(function (item) {
+      var selected = item === button;
+      item.classList.toggle("active", selected);
+      item.setAttribute("aria-pressed", selected ? "true" : "false");
+    });
+    var customLabel = document.getElementById("customAddressLabel");
+    if (customLabel) {
+      customLabel.hidden = pendingAddressType !== "other";
+      if (!customLabel.hidden) customLabel.focus();
+    }
   };
 
   window.centerDeliveryMapOnCurrentLocation = function () {
@@ -1506,8 +1553,17 @@
 
   window.confirmDeliveryMapLocation = function () {
     var addressText = safe(document.getElementById("mapAddressText") && document.getElementById("mapAddressText").value).trim();
+    var customLabel = document.getElementById("customAddressLabel");
+    var label = pendingAddressType === "other"
+      ? safe(customLabel && customLabel.value).trim()
+      : addressTypeLabel(pendingAddressType);
     if (!deliveryMapSelection) {
       alert(text("اضغط على مكان التوصيل في الخريطة أولًا.", "Tap the delivery point on the map first."));
+      return;
+    }
+    if (!label) {
+      alert(text("اكتب اسمًا للعنوان.", "Enter a name for this address."));
+      if (customLabel) customLabel.focus();
       return;
     }
     if (!addressText) {
@@ -1519,16 +1575,26 @@
     var latitude = Number(deliveryMapSelection.lat).toFixed(6);
     var longitude = Number(deliveryMapSelection.lng).toFixed(6);
     var url = "https://maps.google.com/?q=" + latitude + "," + longitude;
+    var addresses = savedAddresses();
+    var savedAddress = {
+      id: "address-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 7),
+      label: label,
+      area: addressText,
+      location: url,
+      updatedAt: Date.now()
+    };
+    addresses.unshift(savedAddress);
+    saveAddresses(addresses);
+    setSelectedAddressId(savedAddress.id);
     var areaInput = document.getElementById("area");
     var locationInput = document.getElementById("location");
     applyingSavedAddress = true;
     if (areaInput) areaInput.value = addressText;
     if (locationInput) locationInput.value = url;
     applyingSavedAddress = false;
-    setSelectedAddressId("");
     window.closeEnhancementModal();
     renderSavedAddressOptions();
-    showChosenLocation(url, text("تم اختيار موقع التوصيل على الخريطة", "Delivery location selected on the map"));
+    showChosenLocation(url, text("تم حفظ واختيار عنوان «", "Saved and selected “") + savedAddress.label + "»");
     window.renderCart();
   };
 
@@ -2374,12 +2440,11 @@
       if (span && !(id === "favoritesService" && favoriteOnly)) span.textContent = text(labels[id][0], labels[id][1]);
     });
     var map = {
-      addressBookTitle: ["📍 عنوان التوصيل", "📍 Delivery address"],
-      savedAddressLabel: ["العناوين المحفوظة", "Saved addresses"],
-      saveAddressButton: ["💾 حفظ العنوان الحالي", "💾 Save current address"],
-      manageAddressButton: ["⚙️ إدارة العناوين", "⚙️ Manage addresses"],
-      chooseMapAddressButton: ["🗺️ اختيار موقع توصيل مختلف على الخريطة", "🗺️ Choose a different location on the map"],
-      addressBookHint: ["يمكنك اختيار مكان غير موقعك الحالي، مثل البيت أو المكتب أو عنوان شخص آخر.", "Choose anywhere—not only your current location—such as home, office, or someone else's address."],
+      addressBookTitle: ["🚚 أين نوصل طلبك؟", "🚚 Where should we deliver?"],
+      manageAddressButton: ["إدارة", "Manage"],
+      chooseMapAddressButton: ["＋ إضافة عنوان توصيل جديد", "＋ Add a new delivery address"],
+      addressBookHint: ["احفظ أكثر من عنوان واختره بلمسة واحدة.", "Save multiple addresses and choose one with a tap."],
+      gpsButton: ["📍 توصيل لموقعي الحالي الآن", "📍 Deliver to my current location now"],
       deliveryScheduleTitle: ["موعد التوصيل والكوبون", "Delivery time and coupon"],
       deliveryDateLabel: ["تاريخ التوصيل", "Delivery date"],
       deliverySlotLabel: ["الفترة المناسبة", "Preferred time"],
