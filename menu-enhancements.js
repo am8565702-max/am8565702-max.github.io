@@ -8,9 +8,12 @@
   var FAVORITES_KEY = "oliveMenuFavoritesV1";
   var HISTORY_KEY = "oliveMenuOrderHistoryV1";
   var APPLIED_COUPON_KEY = "oliveMenuAppliedCouponV1";
+  var ADDRESS_BOOK_KEY = "oliveMenuSavedAddressesV1";
+  var SELECTED_ADDRESS_KEY = "oliveMenuSelectedAddressV1";
   var STATUS_SYNC_SIGNATURE_KEY = "oliveMenuStatusSyncSignatureV2";
   var ADMIN_SESSION_KEY = "oliveMenuAdminSessionV2";
   var MAX_HISTORY = 10;
+  var MAX_SAVED_ADDRESSES = 12;
   var configMarkerId = 0;
   var statusCollectionMarkerId = 0;
   var statusCollection = { version: 2, orders: {} };
@@ -25,6 +28,13 @@
   var favoriteOnly = false;
   var installPromptEvent = null;
   var deepLinkHandled = false;
+  var selectedAddressId = "";
+  var addressEditId = "";
+  var applyingSavedAddress = false;
+  var savedAddressRestored = false;
+  var deliveryMapInstance = null;
+  var deliveryMapMarker = null;
+  var deliveryMapSelection = null;
   var baseGetOrderTotals = window.getOrderTotals;
   var baseRender = window.render;
   var baseRenderCart = window.renderCart;
@@ -37,6 +47,7 @@
   var baseUpdateOrderStatus = window.updateOrderStatus;
   var baseRenderOrders = window.renderOrders;
   var baseLoadCloudOrders = window.loadCloudOrders;
+  var baseGetGPS = window.getGPS;
 
   function defaultConfig() {
     return {
@@ -96,6 +107,7 @@
   };
   var favorites = safeJson(FAVORITES_KEY, []);
   var appliedCouponCode = String(safeJson(APPLIED_COUPON_KEY, "") || "").toUpperCase();
+  selectedAddressId = String(safeJson(SELECTED_ADDRESS_KEY, "") || "");
 
   function isEnglish() {
     return document.documentElement.lang === "en";
@@ -200,6 +212,100 @@
     saveJson(HISTORY_KEY, history.slice(0, MAX_HISTORY));
   }
 
+  function savedAddresses() {
+    var addresses = safeJson(ADDRESS_BOOK_KEY, []);
+    if (!Array.isArray(addresses)) return [];
+    return addresses.filter(function (address) {
+      return address && safe(address.id) && safe(address.label) && safe(address.area) && safe(address.location);
+    }).slice(0, MAX_SAVED_ADDRESSES).map(function (address) {
+      return {
+        id: safe(address.id),
+        label: safe(address.label).trim(),
+        area: safe(address.area).trim(),
+        location: safe(address.location).trim(),
+        updatedAt: Number(address.updatedAt || 0)
+      };
+    });
+  }
+
+  function saveAddresses(addresses) {
+    saveJson(ADDRESS_BOOK_KEY, addresses.slice(0, MAX_SAVED_ADDRESSES));
+  }
+
+  function selectedSavedAddress() {
+    return savedAddresses().find(function (address) {
+      return address.id === selectedAddressId;
+    }) || null;
+  }
+
+  function setSelectedAddressId(value) {
+    selectedAddressId = safe(value);
+    saveJson(SELECTED_ADDRESS_KEY, selectedAddressId);
+  }
+
+  function addressOptionLabel(address) {
+    return address.label + " — " + address.area;
+  }
+
+  function showChosenLocation(url, message) {
+    var status = document.getElementById("locationStatus");
+    var statusText = document.getElementById("locationStatusText");
+    var mapLink = document.getElementById("locationMapLink");
+    if (!status || !statusText || !mapLink) return;
+    status.hidden = false;
+    status.className = "locationStatus";
+    statusText.textContent = "✓ " + message;
+    mapLink.href = url;
+    mapLink.textContent = text("فتح موقع التوصيل على الخريطة", "Open delivery location in Maps");
+    mapLink.hidden = false;
+  }
+
+  function clearLocationStatus() {
+    var status = document.getElementById("locationStatus");
+    var mapLink = document.getElementById("locationMapLink");
+    if (status) status.hidden = true;
+    if (mapLink) mapLink.hidden = true;
+  }
+
+  function renderSavedAddressOptions() {
+    var select = document.getElementById("savedAddressSelect");
+    if (!select) return;
+    var addresses = savedAddresses();
+    if (selectedAddressId && !addresses.some(function (address) { return address.id === selectedAddressId; })) {
+      setSelectedAddressId("");
+    }
+    select.innerHTML = '<option value="">' + text("عنوان جديد / اختر عنوانًا محفوظًا", "New address / choose a saved address") + "</option>" +
+      addresses.map(function (address) {
+        return '<option value="' + html(address.id) + '"' + (address.id === selectedAddressId ? " selected" : "") + ">" + html(addressOptionLabel(address)) + "</option>";
+      }).join("");
+    var count = document.getElementById("savedAddressCount");
+    if (count) {
+      count.textContent = addresses.length
+        ? text("محفوظ ", "Saved: ") + addresses.length
+        : text("لا توجد عناوين محفوظة بعد", "No saved addresses yet");
+    }
+  }
+
+  function updateAddressBookVisibility(totals) {
+    var section = document.getElementById("customerAddressBook");
+    if (section) section.hidden = totals.deliveryType !== "delivery";
+  }
+
+  function restoreSelectedAddressIntoCheckout() {
+    if (savedAddressRestored) return;
+    var address = selectedSavedAddress();
+    var areaInput = document.getElementById("area");
+    var locationInput = document.getElementById("location");
+    if (!areaInput || !locationInput) return;
+    savedAddressRestored = true;
+    if (!address || areaInput.value || locationInput.value) return;
+    applyingSavedAddress = true;
+    areaInput.value = address.area;
+    locationInput.value = address.location;
+    applyingSavedAddress = false;
+    showChosenLocation(address.location, text("تم اختيار عنوان «", "Selected “") + address.label + text("» للتوصيل", "” for delivery"));
+  }
+
   function activeZone() {
     var areaInput = document.getElementById("area");
     var value = normalize(areaInput && areaInput.value);
@@ -242,10 +348,12 @@
     var schedule = selectedSchedule();
     var coupon = appliedCoupon(totals);
     var zone = activeZone();
+    var address = totals.deliveryType === "delivery" ? selectedSavedAddress() : null;
     return {
       zone: zone ? safe(zone.name) : "",
       deliveryDate: totals.deliveryType === "delivery" ? schedule.date : "",
       deliverySlot: totals.deliveryType === "delivery" ? schedule.slot : "",
+      addressLabel: address ? safe(address.label) : "",
       couponCode: coupon ? safe(coupon.code).toUpperCase() : "",
       couponPercent: coupon ? Number(coupon.percent || 0) : 0,
       zoneMinimum: zone ? Number(zone.minimum || 0) : 0
@@ -254,6 +362,7 @@
 
   function checkoutNotesText(metadata) {
     var lines = [];
+    if (metadata.addressLabel) lines.push("Saved address: " + metadata.addressLabel);
     if (metadata.deliveryDate) lines.push("Delivery date: " + metadata.deliveryDate);
     if (metadata.deliverySlot) lines.push("Delivery slot: " + shown(metadata.deliverySlot));
     if (metadata.couponCode) lines.push("Coupon: " + metadata.couponCode + " (" + metadata.couponPercent + "%)");
@@ -264,6 +373,9 @@
   function whatsappExtras(order) {
     var metadata = order.enhancements || {};
     var lines = [];
+    if (metadata.addressLabel) {
+      lines.push(text("📍 اسم العنوان المحفوظ: ", "📍 Saved address: ") + metadata.addressLabel);
+    }
     if (metadata.deliveryDate) {
       lines.push(text("📅 تاريخ التوصيل: ", "📅 Delivery date: ") + metadata.deliveryDate);
     }
@@ -321,6 +433,20 @@
     }
 
     var areaInput = document.getElementById("area");
+    if (areaInput && !document.getElementById("customerAddressBook")) {
+      areaInput.insertAdjacentHTML("beforebegin",
+        '<section id="customerAddressBook" class="customerAddressBook" hidden>' +
+          '<div class="addressBookHead"><h4 id="addressBookTitle">📍 عنوان التوصيل</h4><span id="savedAddressCount"></span></div>' +
+          '<label id="savedAddressLabel" for="savedAddressSelect">العناوين المحفوظة</label>' +
+          '<select id="savedAddressSelect" onchange="applySavedDeliveryAddress(this.value)"></select>' +
+          '<div class="addressBookButtons">' +
+            '<button id="saveAddressButton" type="button" onclick="saveCurrentDeliveryAddress()">💾 حفظ العنوان الحالي</button>' +
+            '<button id="manageAddressButton" type="button" onclick="openSavedAddressManager()">⚙️ إدارة العناوين</button>' +
+          '</div>' +
+          '<button id="chooseMapAddressButton" class="chooseMapAddress" type="button" onclick="openDeliveryMapPicker()">🗺️ اختيار موقع توصيل مختلف على الخريطة</button>' +
+          '<div id="addressBookHint" class="addressBookHint">يمكنك اختيار مكان غير موقعك الحالي، مثل البيت أو المكتب أو عنوان شخص آخر.</div>' +
+        '</section>');
+    }
     if (areaInput && !document.getElementById("deliveryZonesList")) {
       areaInput.setAttribute("list", "deliveryZonesList");
       areaInput.insertAdjacentHTML("afterend", '<datalist id="deliveryZonesList"></datalist>');
@@ -347,6 +473,8 @@
       else form.insertAdjacentHTML("beforeend", extras);
       setMinimumDeliveryDate();
     }
+    renderSavedAddressOptions();
+    restoreSelectedAddressIntoCheckout();
   }
 
   function injectAdminUi() {
@@ -921,6 +1049,7 @@
   };
 
   function updateCheckoutExtras(totals) {
+    updateAddressBookVisibility(totals);
     var scheduleFields = document.getElementById("deliveryScheduleFields");
     if (scheduleFields) scheduleFields.hidden = totals.deliveryType !== "delivery";
     var input = document.getElementById("couponCode");
@@ -938,6 +1067,10 @@
       var metadata = checkoutMetadata();
       var details = [];
       var zone = activeZone();
+      var selectedAddress = selectedSavedAddress();
+      if (totals.deliveryType === "delivery" && selectedAddress) {
+        details.push(text("عنوان التوصيل: ", "Delivery address: ") + selectedAddress.label);
+      }
       if (totals.deliveryType === "delivery" && zone) {
         details.push(text("منطقة التوصيل: ", "Delivery zone: ") + shown(zone.name));
         if (Number(zone.minimum || 0)) details.push(text("الحد الأدنى للمنطقة: ", "Zone minimum: ") + moneyValue(zone.minimum) + " " + text("درهم", "AED"));
@@ -1039,6 +1172,17 @@
   window.sendWA = function () {
     var totals = window.getOrderTotals();
     if (totals.deliveryType === "delivery") {
+      var deliveryArea = document.getElementById("area");
+      var deliveryLocation = document.getElementById("location");
+      if (!deliveryArea || !deliveryArea.value.trim()) {
+        alert(text("اكتب وصف عنوان التوصيل.", "Enter the delivery address details."));
+        if (deliveryArea) deliveryArea.focus();
+        return;
+      }
+      if (!deliveryLocation || !deliveryLocation.value.trim()) {
+        alert(text("حدد موقع التوصيل بالـ GPS أو اختره على الخريطة.", "Choose the delivery location using GPS or the map."));
+        return;
+      }
       if (Number(totals.zoneMinimum || 0) > 0 && Number(totals.subtotal || 0) < Number(totals.zoneMinimum)) {
         alert(text("الحد الأدنى للطلب في هذه المنطقة ", "Minimum order for this area is ") + moneyValue(totals.zoneMinimum) + " " + text("درهم", "AED"));
         return;
@@ -1055,6 +1199,12 @@
       }
     }
     return baseSendWA.apply(this, arguments);
+  };
+
+  window.getGPS = function () {
+    setSelectedAddressId("");
+    renderSavedAddressOptions();
+    return baseGetGPS.apply(this, arguments);
   };
 
   window.completeCustomerOrderReceiptFlow = function (order) {
@@ -1108,8 +1258,280 @@
     }
   };
 
+  window.applySavedDeliveryAddress = function (addressId) {
+    var previous = selectedSavedAddress();
+    var areaInput = document.getElementById("area");
+    var locationInput = document.getElementById("location");
+    var address = savedAddresses().find(function (item) {
+      return item.id === safe(addressId);
+    });
+    if (!address) {
+      setSelectedAddressId("");
+      if (previous) {
+        if (areaInput && areaInput.value === previous.area) areaInput.value = "";
+        if (locationInput && locationInput.value === previous.location) locationInput.value = "";
+        clearLocationStatus();
+      }
+      renderSavedAddressOptions();
+      window.renderCart();
+      return;
+    }
+    applyingSavedAddress = true;
+    setSelectedAddressId(address.id);
+    if (areaInput) areaInput.value = address.area;
+    if (locationInput) locationInput.value = address.location;
+    applyingSavedAddress = false;
+    renderSavedAddressOptions();
+    showChosenLocation(address.location, text("تم اختيار عنوان «", "Selected “") + address.label + text("» للتوصيل", "” for delivery"));
+    window.renderCart();
+  };
+
+  function openAddressEditor(address) {
+    address = address || {};
+    addressEditId = safe(address.id);
+    var currentArea = safe(address.area || (document.getElementById("area") && document.getElementById("area").value)).trim();
+    var currentLocation = safe(address.location || (document.getElementById("location") && document.getElementById("location").value)).trim();
+    if (!currentArea || !currentLocation) {
+      alert(text("اكتب وصف العنوان وحدد اللوكيشن أولًا، ثم اضغط حفظ العنوان.", "Enter the address and choose its map location first, then save it."));
+      return;
+    }
+    openEnhancementHtml(
+      '<h2>💾 ' + (addressEditId ? text("تعديل العنوان المحفوظ", "Edit saved address") : text("حفظ عنوان التوصيل", "Save delivery address")) + '</h2>' +
+      '<div class="field"><label for="addressLabelInput">' + text("اسم العنوان", "Address name") + '</label>' +
+        '<input id="addressLabelInput" maxlength="40" value="' + html(address.label || "") + '" placeholder="' + text("مثال: البيت أو المكتب", "Example: Home or Office") + '"></div>' +
+      '<div class="field"><label for="savedAreaInput">' + text("وصف العنوان بالتفصيل", "Address details") + '</label>' +
+        '<textarea id="savedAreaInput" maxlength="240" placeholder="' + text("المنطقة، الشارع، المبنى، الطابق", "Area, street, building, floor") + '">' + html(currentArea) + '</textarea></div>' +
+      '<div class="field"><label for="addressLocationValue">' + text("رابط الموقع", "Map location") + '</label>' +
+        '<input id="addressLocationValue" dir="ltr" readonly value="' + html(currentLocation) + '"></div>' +
+      '<button class="primary addressModalAction" type="button" onclick="confirmSaveDeliveryAddress()">' + text("حفظ واستخدام هذا العنوان", "Save and use this address") + '</button>');
+    window.setTimeout(function () {
+      var labelInput = document.getElementById("addressLabelInput");
+      if (labelInput) labelInput.focus();
+    }, 80);
+  }
+
+  window.saveCurrentDeliveryAddress = function () {
+    openAddressEditor(null);
+  };
+
+  window.editSavedDeliveryAddress = function (addressId) {
+    var address = savedAddresses().find(function (item) { return item.id === safe(addressId); });
+    if (address) openAddressEditor(address);
+  };
+
+  window.confirmSaveDeliveryAddress = function () {
+    var labelInput = document.getElementById("addressLabelInput");
+    var areaInput = document.getElementById("savedAreaInput");
+    var locationInput = document.getElementById("addressLocationValue");
+    var label = safe(labelInput && labelInput.value).trim();
+    var addressArea = safe(areaInput && areaInput.value).trim();
+    var addressLocation = safe(locationInput && locationInput.value).trim();
+    if (!label) {
+      alert(text("اكتب اسمًا للعنوان مثل البيت أو المكتب.", "Name the address, for example Home or Office."));
+      if (labelInput) labelInput.focus();
+      return;
+    }
+    if (!addressArea || !addressLocation) {
+      alert(text("وصف العنوان واللوكيشن مطلوبان.", "Address details and map location are required."));
+      return;
+    }
+    var addresses = savedAddresses();
+    var editIndex = addresses.findIndex(function (item) { return item.id === addressEditId; });
+    if (editIndex < 0) {
+      editIndex = addresses.findIndex(function (item) {
+        return normalize(item.label) === normalize(label);
+      });
+    }
+    var savedAddress = {
+      id: editIndex >= 0 ? addresses[editIndex].id : "address-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 7),
+      label: label,
+      area: addressArea,
+      location: addressLocation,
+      updatedAt: Date.now()
+    };
+    if (editIndex >= 0) addresses.splice(editIndex, 1);
+    addresses.unshift(savedAddress);
+    saveAddresses(addresses);
+    setSelectedAddressId(savedAddress.id);
+    var checkoutArea = document.getElementById("area");
+    var checkoutLocation = document.getElementById("location");
+    applyingSavedAddress = true;
+    if (checkoutArea) checkoutArea.value = savedAddress.area;
+    if (checkoutLocation) checkoutLocation.value = savedAddress.location;
+    applyingSavedAddress = false;
+    window.closeEnhancementModal();
+    renderSavedAddressOptions();
+    showChosenLocation(savedAddress.location, text("تم حفظ واختيار عنوان «", "Saved and selected “") + savedAddress.label + "»");
+    window.renderCart();
+  };
+
+  function savedAddressCards() {
+    var addresses = savedAddresses();
+    if (!addresses.length) {
+      return '<div class="installHint">' + text("لا توجد عناوين محفوظة بعد. حدد عنوانًا ثم اضغط «حفظ العنوان الحالي».", "No addresses are saved yet. Choose a location, then tap “Save current address”.") + '</div>';
+    }
+    return '<div class="savedAddressList">' + addresses.map(function (address) {
+      return '<article class="savedAddressCard' + (address.id === selectedAddressId ? " active" : "") + '">' +
+        '<div><b>📍 ' + html(address.label) + '</b><p>' + html(address.area) + '</p>' +
+          '<a href="' + html(address.location) + '" target="_blank" rel="noopener">' + text("فتح على الخريطة", "Open in Maps") + '</a></div>' +
+        '<div class="savedAddressActions">' +
+          '<button class="primary" type="button" onclick="useManagedDeliveryAddress(\'' + html(address.id) + '\')">' + text("استخدام", "Use") + '</button>' +
+          '<button class="secondary" type="button" onclick="editSavedDeliveryAddress(\'' + html(address.id) + '\')">' + text("تعديل", "Edit") + '</button>' +
+          '<button class="danger" type="button" onclick="deleteSavedDeliveryAddress(\'' + html(address.id) + '\')">' + text("حذف", "Delete") + '</button>' +
+        '</div></article>';
+    }).join("") + "</div>";
+  }
+
+  window.openSavedAddressManager = function () {
+    openEnhancementHtml('<h2>⚙️ ' + text("عناويني المحفوظة", "My saved addresses") + '</h2>' + savedAddressCards());
+  };
+
+  window.useManagedDeliveryAddress = function (addressId) {
+    window.applySavedDeliveryAddress(addressId);
+    window.closeEnhancementModal();
+  };
+
+  window.deleteSavedDeliveryAddress = function (addressId) {
+    var address = savedAddresses().find(function (item) { return item.id === safe(addressId); });
+    if (!address) return;
+    if (!window.confirm(text("حذف عنوان «", "Delete “") + address.label + text("»؟", "”?"))) return;
+    var wasSelected = address.id === selectedAddressId;
+    saveAddresses(savedAddresses().filter(function (item) { return item.id !== address.id; }));
+    if (wasSelected) {
+      setSelectedAddressId("");
+      var checkoutArea = document.getElementById("area");
+      var checkoutLocation = document.getElementById("location");
+      if (checkoutArea && checkoutArea.value === address.area) checkoutArea.value = "";
+      if (checkoutLocation && checkoutLocation.value === address.location) checkoutLocation.value = "";
+      clearLocationStatus();
+    }
+    renderSavedAddressOptions();
+    window.openSavedAddressManager();
+  };
+
+  function destroyDeliveryMap() {
+    if (deliveryMapInstance) {
+      try { deliveryMapInstance.remove(); } catch (error) {}
+    }
+    deliveryMapInstance = null;
+    deliveryMapMarker = null;
+    deliveryMapSelection = null;
+  }
+
+  function setDeliveryMapPoint(latitude, longitude, centerMap) {
+    if (!deliveryMapInstance || !window.L) return;
+    var point = [Number(latitude), Number(longitude)];
+    deliveryMapSelection = { lat: point[0], lng: point[1] };
+    if (!deliveryMapMarker) {
+      var icon = window.L.divIcon({
+        className: "deliveryMapPinIcon",
+        html: '<span aria-hidden="true">📍</span>',
+        iconSize: [42, 48],
+        iconAnchor: [21, 44]
+      });
+      deliveryMapMarker = window.L.marker(point, { icon: icon, draggable: true }).addTo(deliveryMapInstance);
+      deliveryMapMarker.on("dragend", function () {
+        var position = deliveryMapMarker.getLatLng();
+        deliveryMapSelection = { lat: position.lat, lng: position.lng };
+      });
+    } else {
+      deliveryMapMarker.setLatLng(point);
+    }
+    if (centerMap) deliveryMapInstance.setView(point, Math.max(deliveryMapInstance.getZoom(), 16));
+    var button = document.getElementById("confirmMapAddressButton");
+    if (button) button.disabled = false;
+    var state = document.getElementById("deliveryMapState");
+    if (state) state.textContent = text("✓ تم وضع العلامة. يمكنك سحبها لضبط المكان.", "✓ Pin placed. Drag it to fine-tune the location.");
+  }
+
+  function initializeDeliveryMapPicker() {
+    var mapElement = document.getElementById("deliveryMapPicker");
+    if (!mapElement) return;
+    if (!window.L) {
+      mapElement.innerHTML = '<div class="mapUnavailable">' + text("تعذر تحميل الخريطة. أغلق النافذة واستخدم زر GPS.", "The map could not load. Close this window and use GPS.") + '</div>';
+      return;
+    }
+    var currentLocation = document.getElementById("location");
+    var existing = parseCoordinates(currentLocation && currentLocation.value);
+    var initial = existing || { lat: 24.4539, lng: 54.3773 };
+    destroyDeliveryMap();
+    deliveryMapInstance = window.L.map(mapElement, { zoomControl: true }).setView([initial.lat, initial.lng], existing ? 16 : 8);
+    window.L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      maxZoom: 19,
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>'
+    }).addTo(deliveryMapInstance);
+    deliveryMapInstance.on("click", function (event) {
+      setDeliveryMapPoint(event.latlng.lat, event.latlng.lng, false);
+    });
+    if (existing) setDeliveryMapPoint(existing.lat, existing.lng, false);
+    window.setTimeout(function () {
+      if (deliveryMapInstance) deliveryMapInstance.invalidateSize();
+    }, 180);
+  }
+
+  window.openDeliveryMapPicker = function () {
+    var areaInput = document.getElementById("area");
+    openEnhancementHtml(
+      '<h2>🗺️ ' + text("اختيار موقع التوصيل", "Choose delivery location") + '</h2>' +
+      '<div class="mapPickerHint">' + text("حرّك الخريطة واضغط على مكان التوصيل، أو اسحب العلامة. لا يلزم أن تكون موجودًا في هذا المكان الآن.", "Move the map and tap the delivery point, or drag the pin. You do not need to be at that location now.") + '</div>' +
+      '<button id="mapCurrentLocationButton" class="secondary mapCurrentLocation" type="button" onclick="centerDeliveryMapOnCurrentLocation()">🎯 ' + text("استخدم موقعي الحالي كبداية", "Use my current location as a starting point") + '</button>' +
+      '<div id="deliveryMapPicker" class="deliveryMapPicker" role="application" aria-label="' + text("خريطة اختيار موقع التوصيل", "Delivery location map") + '"></div>' +
+      '<div id="deliveryMapState" class="deliveryMapState">' + text("اضغط على الخريطة لوضع علامة التوصيل.", "Tap the map to place the delivery pin.") + '</div>' +
+      '<div class="field mapAddressField"><label for="mapAddressText">' + text("وصف العنوان بالتفصيل", "Address details") + '</label>' +
+        '<textarea id="mapAddressText" maxlength="240" placeholder="' + text("المنطقة، الشارع، المبنى، الطابق", "Area, street, building, floor") + '">' + html(areaInput && areaInput.value || "") + '</textarea></div>' +
+      '<button id="confirmMapAddressButton" class="primary addressModalAction" type="button" onclick="confirmDeliveryMapLocation()" disabled>' + text("استخدام هذا الموقع للتوصيل", "Use this delivery location") + '</button>');
+    window.setTimeout(initializeDeliveryMapPicker, 80);
+  };
+
+  window.centerDeliveryMapOnCurrentLocation = function () {
+    var button = document.getElementById("mapCurrentLocationButton");
+    var state = document.getElementById("deliveryMapState");
+    if (!navigator.geolocation) {
+      if (state) state.textContent = text("تحديد الموقع غير مدعوم على هذا الجهاز.", "Location is not supported on this device.");
+      return;
+    }
+    if (button) button.disabled = true;
+    if (state) state.textContent = text("جارٍ تحديد موقعك...", "Getting your location...");
+    navigator.geolocation.getCurrentPosition(function (position) {
+      if (button) button.disabled = false;
+      setDeliveryMapPoint(position.coords.latitude, position.coords.longitude, true);
+    }, function () {
+      if (button) button.disabled = false;
+      if (state) state.textContent = text("تعذر تحديد موقعك. يمكنك اختيار المكان يدويًا على الخريطة.", "Could not get your location. You can still choose a point manually.");
+    }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+  };
+
+  window.confirmDeliveryMapLocation = function () {
+    var addressText = safe(document.getElementById("mapAddressText") && document.getElementById("mapAddressText").value).trim();
+    if (!deliveryMapSelection) {
+      alert(text("اضغط على مكان التوصيل في الخريطة أولًا.", "Tap the delivery point on the map first."));
+      return;
+    }
+    if (!addressText) {
+      alert(text("اكتب وصف العنوان بالتفصيل.", "Enter the address details."));
+      var field = document.getElementById("mapAddressText");
+      if (field) field.focus();
+      return;
+    }
+    var latitude = Number(deliveryMapSelection.lat).toFixed(6);
+    var longitude = Number(deliveryMapSelection.lng).toFixed(6);
+    var url = "https://maps.google.com/?q=" + latitude + "," + longitude;
+    var areaInput = document.getElementById("area");
+    var locationInput = document.getElementById("location");
+    applyingSavedAddress = true;
+    if (areaInput) areaInput.value = addressText;
+    if (locationInput) locationInput.value = url;
+    applyingSavedAddress = false;
+    setSelectedAddressId("");
+    window.closeEnhancementModal();
+    renderSavedAddressOptions();
+    showChosenLocation(url, text("تم اختيار موقع التوصيل على الخريطة", "Delivery location selected on the map"));
+    window.renderCart();
+  };
+
   window.closeEnhancementModal = function () {
     stopLiveTracking();
+    destroyDeliveryMap();
     var modal = document.getElementById("enhancementModal");
     if (modal) modal.classList.remove("open");
   };
@@ -1949,6 +2371,12 @@
       if (span && !(id === "favoritesService" && favoriteOnly)) span.textContent = text(labels[id][0], labels[id][1]);
     });
     var map = {
+      addressBookTitle: ["📍 عنوان التوصيل", "📍 Delivery address"],
+      savedAddressLabel: ["العناوين المحفوظة", "Saved addresses"],
+      saveAddressButton: ["💾 حفظ العنوان الحالي", "💾 Save current address"],
+      manageAddressButton: ["⚙️ إدارة العناوين", "⚙️ Manage addresses"],
+      chooseMapAddressButton: ["🗺️ اختيار موقع توصيل مختلف على الخريطة", "🗺️ Choose a different location on the map"],
+      addressBookHint: ["يمكنك اختيار مكان غير موقعك الحالي، مثل البيت أو المكتب أو عنوان شخص آخر.", "Choose anywhere—not only your current location—such as home, office, or someone else's address."],
       deliveryScheduleTitle: ["موعد التوصيل والكوبون", "Delivery time and coupon"],
       deliveryDateLabel: ["تاريخ التوصيل", "Delivery date"],
       deliverySlotLabel: ["الفترة المناسبة", "Preferred time"],
@@ -1962,6 +2390,7 @@
     });
     var couponInput = document.getElementById("couponCode");
     if (couponInput) couponInput.placeholder = text("اكتب الكود", "Enter code");
+    renderSavedAddressOptions();
     renderOffers();
     updateFavoriteButton();
   }
@@ -2006,6 +2435,13 @@
   document.addEventListener("change", function (event) {
     if (event.target && (event.target.id === "area" || event.target.name === "deliveryType")) {
       window.renderCart();
+    }
+  });
+
+  document.addEventListener("input", function (event) {
+    if (!applyingSavedAddress && event.target && event.target.id === "area" && selectedAddressId) {
+      setSelectedAddressId("");
+      renderSavedAddressOptions();
     }
   });
 
