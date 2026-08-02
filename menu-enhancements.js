@@ -49,7 +49,12 @@
       ],
       coupons: [],
       bundles: [],
-      branches: []
+      branches: [],
+      bank: {
+        bankName: "بنك أبو ظبي التجاري",
+        iban: "AE100030011434864820002",
+        beneficiary: "OLIVE BRANCH TRADING L L C"
+      }
     };
   }
 
@@ -74,11 +79,21 @@
     ["zones", "timeSlots", "coupons", "bundles", "branches"].forEach(function (key) {
       if (Array.isArray(source[key])) base[key] = source[key];
     });
+    if (source.bank && typeof source.bank === "object") {
+      base.bank = {
+        bankName: safe(source.bank.bankName || base.bank.bankName).trim(),
+        iban: safe(source.bank.iban || base.bank.iban).replace(/\s+/g, "").toUpperCase(),
+        beneficiary: safe(source.bank.beneficiary || base.bank.beneficiary).trim()
+      };
+    }
     base.version = Number(source.version || 1);
     return base;
   }
 
   var enhancementConfig = mergeConfig(safeJson(CONFIG_STORAGE_KEY, null));
+  window.getBankTransferDetails = function () {
+    return Object.assign({}, enhancementConfig.bank || defaultConfig().bank);
+  };
   var favorites = safeJson(FAVORITES_KEY, []);
   var appliedCouponCode = String(safeJson(APPLIED_COUPON_KEY, "") || "").toUpperCase();
 
@@ -344,6 +359,12 @@
         '<h3>مناطق التوصيل</h3><div class="muted">المنطقة • الرسوم • الحد الأدنى</div><div id="zoneConfigRows" class="configRows"></div>' +
         '<button class="secondary addConfigRow" type="button" onclick="addEnhancementRow(\'zone\')">+ إضافة منطقة</button>' +
         '<h3>فترات التوصيل</h3><textarea id="timeSlotsConfig" class="configTextarea" placeholder="كل فترة في سطر، ويمكن كتابة العربي || English"></textarea>' +
+        '<h3>بيانات التحويل البنكي</h3><div class="muted">تظهر هذه البيانات للزبون عند اختيار التحويل البنكي.</div>' +
+        '<div class="bankAdminConfig">' +
+          '<label class="configField"><span>اسم البنك</span><input id="bankNameConfig" placeholder="بنك أبو ظبي التجاري"></label>' +
+          '<label class="configField"><span>رقم الآيبان IBAN</span><input id="bankIbanConfig" dir="ltr" placeholder="AE100030011434864820002"></label>' +
+          '<label class="configField"><span>اسم المستفيد</span><input id="bankBeneficiaryConfig" dir="ltr" placeholder="OLIVE BRANCH TRADING L L C"></label>' +
+        '</div>' +
         '<h3>كوبونات الخصم</h3><div class="muted">سجّل بيانات كل كوبون في الخانات الكبيرة التالية.</div><div id="couponConfigRows" class="configRows couponConfigRows"></div>' +
         '<button class="secondary addConfigRow" type="button" onclick="addEnhancementRow(\'coupon\')">+ إضافة كوبون</button>' +
         '<h3>الباقات المجمعة</h3><div class="muted">اسم الباقة • أرقام المنتجات مفصولة بفاصلة • سعر الباقة</div><div id="bundleConfigRows" class="configRows"></div>' +
@@ -408,11 +429,17 @@
     var bundleBox = document.getElementById("bundleConfigRows");
     var branchBox = document.getElementById("branchConfigRows");
     var slots = document.getElementById("timeSlotsConfig");
+    var bankName = document.getElementById("bankNameConfig");
+    var bankIban = document.getElementById("bankIbanConfig");
+    var bankBeneficiary = document.getElementById("bankBeneficiaryConfig");
     if (zoneBox) zoneBox.innerHTML = (enhancementConfig.zones.length ? enhancementConfig.zones : [{}]).map(zoneRow).join("");
     if (couponBox) couponBox.innerHTML = (enhancementConfig.coupons.length ? enhancementConfig.coupons : [{}]).map(couponRow).join("");
     if (bundleBox) bundleBox.innerHTML = (enhancementConfig.bundles.length ? enhancementConfig.bundles : [{}]).map(bundleRow).join("");
     if (branchBox) branchBox.innerHTML = (enhancementConfig.branches.length ? enhancementConfig.branches : [{}]).map(branchRow).join("");
     if (slots) slots.value = enhancementConfig.timeSlots.join("\n");
+    if (bankName) bankName.value = enhancementConfig.bank.bankName || "";
+    if (bankIban) bankIban.value = enhancementConfig.bank.iban || "";
+    if (bankBeneficiary) bankBeneficiary.value = enhancementConfig.bank.beneficiary || "";
   }
 
   window.addEnhancementRow = function (type) {
@@ -483,13 +510,20 @@
       return value.trim();
     }).filter(Boolean);
 
+    var bank = {
+      bankName: safe(document.getElementById("bankNameConfig") && document.getElementById("bankNameConfig").value).trim() || defaultConfig().bank.bankName,
+      iban: safe(document.getElementById("bankIbanConfig") && document.getElementById("bankIbanConfig").value).replace(/\s+/g, "").toUpperCase() || defaultConfig().bank.iban,
+      beneficiary: safe(document.getElementById("bankBeneficiaryConfig") && document.getElementById("bankBeneficiaryConfig").value).trim() || defaultConfig().bank.beneficiary
+    };
+
     return mergeConfig({
-      version: 1,
+      version: 2,
       zones: zones,
       timeSlots: timeSlots.length ? timeSlots : defaultConfig().timeSlots,
       coupons: coupons,
       bundles: bundles,
-      branches: branches
+      branches: branches,
+      bank: bank
     });
   }
 
@@ -522,7 +556,7 @@
     }).then(function () {
       adminConfigDirty = false;
       refreshEnhancementUi();
-      alert("تم حفظ المناطق والمواعيد والكوبونات والباقات والفروع لكل الزبائن.");
+      alert("تم حفظ المناطق والمواعيد وبيانات البنك والكوبونات والباقات والفروع لكل الزبائن.");
     }).catch(function (error) {
       alert("تعذر حفظ الإضافات: " + error.message);
     }).then(function () {
