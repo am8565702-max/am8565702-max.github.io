@@ -1,4 +1,4 @@
-var CACHE_NAME = "olive-branch-menu-v45";
+var CACHE_NAME = "olive-branch-menu-v46";
 var STATIC_FILES = [
   "./",
   "./index.html",
@@ -33,8 +33,12 @@ self.addEventListener("install", function (event) {
 });
 
 self.addEventListener("activate", function (event) {
+  var shouldRefreshClients = false;
   event.waitUntil(
     caches.keys().then(function (keys) {
+      shouldRefreshClients = keys.some(function (key) {
+        return key.indexOf("olive-branch-menu-") === 0 && key !== CACHE_NAME;
+      });
       return Promise.all(keys.filter(function (key) {
         return key !== CACHE_NAME;
       }).map(function (key) {
@@ -45,6 +49,7 @@ self.addEventListener("activate", function (event) {
     }).then(function () {
       return self.clients.matchAll({ type: "window", includeUncontrolled: true });
     }).then(function (clients) {
+      if (!shouldRefreshClients) return null;
       var visibleClient = null;
       var fallbackClient = null;
       clients.forEach(function (client) {
