@@ -1,4 +1,4 @@
-var CACHE_NAME = "olive-branch-menu-v44";
+var CACHE_NAME = "olive-branch-menu-v45";
 var STATIC_FILES = [
   "./",
   "./index.html",
@@ -45,12 +45,17 @@ self.addEventListener("activate", function (event) {
     }).then(function () {
       return self.clients.matchAll({ type: "window", includeUncontrolled: true });
     }).then(function (clients) {
-      return Promise.all(clients.map(function (client) {
-        if (!client || typeof client.navigate !== "function") return null;
+      var visibleClient = null;
+      var fallbackClient = null;
+      clients.forEach(function (client) {
+        if (!client || typeof client.navigate !== "function") return;
         var clientUrl = new URL(client.url);
-        if (clientUrl.origin !== self.location.origin) return null;
-        return client.navigate(client.url);
-      }));
+        if (clientUrl.origin !== self.location.origin) return;
+        if (!fallbackClient) fallbackClient = client;
+        if (!visibleClient && client.visibilityState === "visible") visibleClient = client;
+      });
+      var targetClient = visibleClient || fallbackClient;
+      return targetClient ? targetClient.navigate(targetClient.url) : null;
     })
   );
 });
