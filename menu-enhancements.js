@@ -1520,6 +1520,10 @@
     return { lat: 24.4539, lng: 54.3773 };
   }
 
+  function deliveryAddressSearchLanguage(value) {
+    return /[\u0600-\u06ff]/.test(safe(value)) ? "ar" : "en";
+  }
+
   function photonAddressText(properties) {
     properties = properties || {};
     var parts = [
@@ -1553,6 +1557,79 @@
     window.chooseDeliveryAddressSearchResult(0);
   }
 
+  function photonDeliveryAddressResults(payload, aliasTitle) {
+    return (payload && payload.features || []).filter(function (feature) {
+      return feature && feature.geometry && Array.isArray(feature.geometry.coordinates) &&
+        safe(feature.properties && feature.properties.countrycode).toUpperCase() === "AE";
+    }).slice(0, 6).map(function (feature, index) {
+      var properties = feature.properties || {};
+      var coordinates = feature.geometry.coordinates;
+      var address = photonAddressText(properties);
+      var originalTitle = safe(properties.name || properties.street || properties.city || address).trim();
+      var title = aliasTitle && index === 0 ? aliasTitle : originalTitle;
+      if (aliasTitle && index === 0 && safe(properties.name)) {
+        address = address.replace(safe(properties.name).trim(), aliasTitle);
+      }
+      return {
+        lat: Number(coordinates[1]),
+        lng: Number(coordinates[0]),
+        title: title,
+        address: address
+      };
+    }).filter(function (result) {
+      return Number.isFinite(result.lat) && Number.isFinite(result.lng) && result.address;
+    });
+  }
+
+  function nominatimDeliveryAddressResults(payload) {
+    return (Array.isArray(payload) ? payload : []).slice(0, 6).map(function (item) {
+      var address = safe(item && item.display_name).trim();
+      var details = item && item.address || {};
+      return {
+        lat: Number(item && item.lat),
+        lng: Number(item && item.lon),
+        title: safe(item && (item.name || details.shop || details.amenity || details.road || details.suburb || details.city) || address.split(",")[0]).trim(),
+        address: address
+      };
+    }).filter(function (result) {
+      return Number.isFinite(result.lat) && Number.isFinite(result.lng) && result.address;
+    });
+  }
+
+  function deliverySearchFetch(url, timeout) {
+    var controller = typeof AbortController === "function" ? new AbortController() : null;
+    var timer = window.setTimeout(function () {
+      if (controller) controller.abort();
+    }, timeout || 7000);
+    var options = { headers: { Accept: "application/json" } };
+    if (controller) options.signal = controller.signal;
+    return fetch(url, options).then(function (response) {
+      if (!response || !response.ok) throw new Error("ADDRESS_SEARCH_FAILED");
+      return response.json();
+    }).finally(function () {
+      window.clearTimeout(timer);
+    });
+  }
+
+  function fetchDeliveryAddressResults(query, rawQuery, bias, aliasTitle) {
+    var language = deliveryAddressSearchLanguage(rawQuery);
+    var endpoint = "https://photon.komoot.io/api/?limit=6&countrycode=AE&lat=" + bias.lat + "&lon=" + bias.lng +
+      "&zoom=11&location_bias_scale=0.15&q=" + encodeURIComponent(query);
+    // Photon currently rejects Arabic as a `lang` value. Omitting it keeps
+    // local Arabic names, while English results can be requested explicitly.
+    if (language === "en") endpoint += "&lang=en";
+    return deliverySearchFetch(endpoint, 6000).then(function (payload) {
+      var results = photonDeliveryAddressResults(payload, aliasTitle);
+      if (results.length) return results;
+      throw new Error("NO_PHOTON_RESULTS");
+    }).catch(function () {
+      var viewbox = [bias.lng - 1.4, bias.lat + 1.1, bias.lng + 1.4, bias.lat - 1.1].join(",");
+      var fallbackEndpoint = "https://nominatim.openstreetmap.org/search?format=jsonv2&limit=6&countrycodes=ae&addressdetails=1&namedetails=1&accept-language=" +
+        encodeURIComponent(language === "ar" ? "ar,en" : "en,ar") + "&viewbox=" + encodeURIComponent(viewbox) + "&q=" + encodeURIComponent(query);
+      return deliverySearchFetch(fallbackEndpoint, 7000).then(nominatimDeliveryAddressResults);
+    });
+  }
+
   window.searchDeliveryAddress = function () {
     var input = document.getElementById("mapAddressSearchInput");
     var button = document.getElementById("mapAddressSearchButton");
@@ -1576,32 +1653,7 @@
     }
     if (button) button.disabled = true;
     if (container) container.innerHTML = '<div class="mapSearchMessage loading">' + text("جارٍ البحث عن العنوان...", "Searching for the address...") + '</div>';
-    var endpoint = "https://photon.komoot.io/api/?limit=6&lat=" + bias.lat + "&lon=" + bias.lng + "&q=" + encodeURIComponent(query);
-    return fetch(endpoint, { headers: { Accept: "application/json" } }).then(function (response) {
-      if (!response || !response.ok) throw new Error("ADDRESS_SEARCH_FAILED");
-      return response.json();
-    }).then(function (payload) {
-      var results = (payload && payload.features || []).filter(function (feature) {
-        return feature && feature.geometry && Array.isArray(feature.geometry.coordinates) &&
-          safe(feature.properties && feature.properties.countrycode).toUpperCase() === "AE";
-      }).slice(0, 5).map(function (feature, index) {
-        var properties = feature.properties || {};
-        var coordinates = feature.geometry.coordinates;
-        var address = photonAddressText(properties);
-        var originalTitle = safe(properties.name || properties.street || properties.city || address).trim();
-        var title = aliasTitle && index === 0 ? aliasTitle : originalTitle;
-        if (aliasTitle && index === 0 && safe(properties.name)) {
-          address = address.replace(safe(properties.name).trim(), aliasTitle);
-        }
-        return {
-          lat: Number(coordinates[1]),
-          lng: Number(coordinates[0]),
-          title: title,
-          address: address
-        };
-      }).filter(function (result) {
-        return Number.isFinite(result.lat) && Number.isFinite(result.lng) && result.address;
-      });
+    return fetchDeliveryAddressResults(query, rawQuery, bias, aliasTitle).then(function (results) {
       deliveryAddressSearchCache[cacheKey] = results;
       showDeliveryAddressSearchResults(results);
       return results;
@@ -1621,7 +1673,15 @@
     var addressField = document.getElementById("mapAddressText");
     if (addressField) addressField.value = result.address;
     var container = document.getElementById("mapSearchResults");
-    if (container) container.innerHTML = '<div class="mapSearchMessage selected"><b>✓ ' + text("تم تحديد ", "Located ") + html(result.title) + '</b><small>' + html(result.address) + '</small></div>';
+    if (container) {
+      var alternatives = deliveryAddressSearchResults.map(function (item, itemIndex) {
+        if (itemIndex === Number(index)) return "";
+        return '<button class="mapSearchResult" type="button" onclick="chooseDeliveryAddressSearchResult(' + itemIndex + ')">' +
+          '<span>📍</span><span><b>' + html(item.title) + '</b><small>' + html(item.address) + '</small></span></button>';
+      }).join("");
+      container.innerHTML = '<div class="mapSearchMessage selected"><b>✓ ' + text("تم تحديد ", "Located ") + html(result.title) + '</b><small>' + html(result.address) + '</small></div>' +
+        (alternatives ? '<div class="mapSearchAlternativesTitle">' + text("لو مش هو المكان، اختر نتيجة أخرى:", "Not the right place? Choose another result:") + '</div>' + alternatives : "");
+    }
     var state = document.getElementById("deliveryMapState");
     if (state) state.textContent = text("✓ تم تحديد العنوان على الخريطة. أضف رقم المبنى أو الفيلا إن وجد.", "✓ Address located on the map. Add the building or villa number if needed.");
   };
@@ -1641,11 +1701,11 @@
       '</div>' +
       '<input id="customAddressLabel" class="customAddressLabel" maxlength="40" placeholder="' + text("مثال: بيت الوالد", "Example: Parents' home") + '" hidden>' +
       '<div class="mapAddressSearch">' +
-        '<label for="mapAddressSearchInput">🔎 ' + text("اكتب اسم المكان أو السوبرماركت أو العنوان", "Enter a place, supermarket, or address") + '</label>' +
-        '<div class="mapAddressSearchLine"><input id="mapAddressSearchInput" type="search" autocomplete="off" placeholder="' + text("مثال: سوبرماركت النور الشارقة", "Example: Al Noor Supermarket Sharjah") + '" onkeydown="if(event.key===\'Enter\'){event.preventDefault();searchDeliveryAddress()}">' +
+        '<label for="mapAddressSearchInput">🔎 ' + text("ابحث بالعربي أو الإنجليزي عن المكان أو العنوان", "Search in Arabic or English for a place or address") + '</label>' +
+        '<div class="mapAddressSearchLine"><input id="mapAddressSearchInput" type="search" autocomplete="off" dir="auto" placeholder="' + text("الشارقة سوبر ماركت / Sharjah supermarket", "Sharjah supermarket / الشارقة سوبر ماركت") + '" onkeydown="if(event.key===\'Enter\'){event.preventDefault();searchDeliveryAddress()}">' +
           '<button id="mapAddressSearchButton" class="primary" type="button" onclick="searchDeliveryAddress()">' + text("بحث", "Search") + '</button></div>' +
         '<div id="mapSearchResults" class="mapSearchResults" aria-live="polite"></div>' +
-        '<div class="mapSearchCredit">' + text("نتائج البحث من ", "Search results by ") + '<a href="https://photon.komoot.io" target="_blank" rel="noopener">Photon</a> / <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a></div>' +
+        '<div class="mapSearchCredit">' + text("بحث عربي وإنجليزي من ", "Arabic and English search by ") + '<a href="https://photon.komoot.io" target="_blank" rel="noopener">Photon</a> / <a href="https://nominatim.org" target="_blank" rel="noopener">Nominatim</a> / <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a></div>' +
       '</div>' +
       '<div class="mapPickerHint">' + text("اضغط بحث وسنحدد المكان مباشرة على الخريطة. وإذا احتجت يمكنك تحريك العلامة يدويًا.", "Tap Search and we will locate it directly on the map. You can move the pin if needed.") + '</div>' +
       '<button id="mapCurrentLocationButton" class="secondary mapCurrentLocation" type="button" onclick="centerDeliveryMapOnCurrentLocation()">🎯 ' + text("استخدم موقعي الحالي كبداية", "Use my current location as a starting point") + '</button>' +
