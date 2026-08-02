@@ -36,6 +36,8 @@
   var deliveryMapMarker = null;
   var deliveryMapSelection = null;
   var pendingAddressType = "home";
+  var deliveryAddressSearchResults = [];
+  var deliveryAddressSearchCache = {};
   var baseGetOrderTotals = window.getOrderTotals;
   var baseRender = window.render;
   var baseRenderCart = window.renderCart;
@@ -1496,9 +1498,127 @@
     }, 180);
   }
 
+  function deliveryAddressSearchQuery(value) {
+    var normalizedValue = normalize(value);
+    if (normalizedValue.indexOf("بين الجسرين") !== -1 || normalizedValue.indexOf("بين الجسران") !== -1) {
+      return "Bain al Jisrain Between the Bridges Abu Dhabi United Arab Emirates";
+    }
+    return value;
+  }
+
+  function photonAddressText(properties) {
+    properties = properties || {};
+    var parts = [
+      properties.name,
+      properties.housenumber && properties.street ? properties.housenumber + " " + properties.street : properties.street,
+      properties.district,
+      properties.city,
+      properties.county,
+      properties.state,
+      properties.postcode,
+      properties.country
+    ];
+    var used = {};
+    return parts.filter(function (part) {
+      var value = safe(part).trim();
+      var key = normalize(value);
+      if (!value || used[key]) return false;
+      used[key] = true;
+      return true;
+    }).join(text("، ", ", "));
+  }
+
+  function showDeliveryAddressSearchResults(results) {
+    deliveryAddressSearchResults = results;
+    var container = document.getElementById("mapSearchResults");
+    if (!container) return;
+    if (!results.length) {
+      container.innerHTML = '<div class="mapSearchMessage">' + text("لم نجد عنوانًا داخل الإمارات. جرّب اسم المنطقة والمدينة، أو اختر المكان يدويًا على الخريطة.", "No address was found in the UAE. Try the area and city, or choose the point manually on the map.") + '</div>';
+      return;
+    }
+    container.innerHTML = results.map(function (result, index) {
+      return '<button class="mapSearchResult" type="button" onclick="chooseDeliveryAddressSearchResult(' + index + ')">' +
+        '<span aria-hidden="true">📍</span><span><b>' + html(result.title) + '</b><small>' + html(result.address) + '</small></span>' +
+      '</button>';
+    }).join("");
+  }
+
+  window.searchDeliveryAddress = function () {
+    var input = document.getElementById("mapAddressSearchInput");
+    var button = document.getElementById("mapAddressSearchButton");
+    var container = document.getElementById("mapSearchResults");
+    var rawQuery = safe(input && input.value).trim();
+    if (rawQuery.length < 2) {
+      if (container) container.innerHTML = '<div class="mapSearchMessage">' + text("اكتب اسم المنطقة أو الشارع أولًا.", "Enter an area or street first.") + '</div>';
+      if (input) input.focus();
+      return Promise.resolve([]);
+    }
+    var query = deliveryAddressSearchQuery(rawQuery);
+    var normalizedRawQuery = normalize(rawQuery);
+    var aliasTitle = normalizedRawQuery.indexOf("بين الجسرين") !== -1 || normalizedRawQuery.indexOf("بين الجسران") !== -1
+      ? text("بين الجسرين", "Between Two Bridges")
+      : "";
+    var cacheKey = normalize(query);
+    if (deliveryAddressSearchCache[cacheKey]) {
+      showDeliveryAddressSearchResults(deliveryAddressSearchCache[cacheKey]);
+      return Promise.resolve(deliveryAddressSearchCache[cacheKey]);
+    }
+    if (button) button.disabled = true;
+    if (container) container.innerHTML = '<div class="mapSearchMessage loading">' + text("جارٍ البحث عن العنوان...", "Searching for the address...") + '</div>';
+    var endpoint = "https://photon.komoot.io/api/?limit=6&lat=24.4539&lon=54.3773&q=" + encodeURIComponent(query);
+    return fetch(endpoint, { headers: { Accept: "application/json" } }).then(function (response) {
+      if (!response || !response.ok) throw new Error("ADDRESS_SEARCH_FAILED");
+      return response.json();
+    }).then(function (payload) {
+      var results = (payload && payload.features || []).filter(function (feature) {
+        return feature && feature.geometry && Array.isArray(feature.geometry.coordinates) &&
+          safe(feature.properties && feature.properties.countrycode).toUpperCase() === "AE";
+      }).slice(0, 5).map(function (feature, index) {
+        var properties = feature.properties || {};
+        var coordinates = feature.geometry.coordinates;
+        var address = photonAddressText(properties);
+        var originalTitle = safe(properties.name || properties.street || properties.city || address).trim();
+        var title = aliasTitle && index === 0 ? aliasTitle : originalTitle;
+        if (aliasTitle && index === 0 && safe(properties.name)) {
+          address = address.replace(safe(properties.name).trim(), aliasTitle);
+        }
+        return {
+          lat: Number(coordinates[1]),
+          lng: Number(coordinates[0]),
+          title: title,
+          address: address
+        };
+      }).filter(function (result) {
+        return Number.isFinite(result.lat) && Number.isFinite(result.lng) && result.address;
+      });
+      deliveryAddressSearchCache[cacheKey] = results;
+      showDeliveryAddressSearchResults(results);
+      return results;
+    }).catch(function () {
+      if (container) container.innerHTML = '<div class="mapSearchMessage error">' + text("تعذر البحث الآن. يمكنك المحاولة مرة أخرى أو اختيار المكان يدويًا على الخريطة.", "Search is unavailable right now. Try again or choose the point manually on the map.") + '</div>';
+      return [];
+    }).then(function (results) {
+      if (button) button.disabled = false;
+      return results;
+    });
+  };
+
+  window.chooseDeliveryAddressSearchResult = function (index) {
+    var result = deliveryAddressSearchResults[Number(index)];
+    if (!result) return;
+    setDeliveryMapPoint(result.lat, result.lng, true);
+    var addressField = document.getElementById("mapAddressText");
+    if (addressField) addressField.value = result.address;
+    var container = document.getElementById("mapSearchResults");
+    if (container) container.innerHTML = '<div class="mapSearchMessage selected">✓ ' + text("تم اختيار ", "Selected ") + html(result.title) + '</div>';
+    var state = document.getElementById("deliveryMapState");
+    if (state) state.textContent = text("✓ تم تحديد العنوان على الخريطة. أضف رقم المبنى أو الفيلا إن وجد.", "✓ Address located on the map. Add the building or villa number if needed.");
+  };
+
   window.openDeliveryMapPicker = function () {
     addressEditId = "";
     pendingAddressType = "home";
+    deliveryAddressSearchResults = [];
     var areaInput = document.getElementById("area");
     openEnhancementHtml(
       '<h2>📍 ' + text("إضافة عنوان توصيل", "Add delivery address") + '</h2>' +
@@ -1509,7 +1629,14 @@
         '<button class="addressTypeButton" type="button" aria-pressed="false" onclick="selectDeliveryAddressType(\'other\',this)">📍 ' + text("عنوان آخر", "Other") + '</button>' +
       '</div>' +
       '<input id="customAddressLabel" class="customAddressLabel" maxlength="40" placeholder="' + text("مثال: بيت الوالد", "Example: Parents' home") + '" hidden>' +
-      '<div class="mapPickerHint">' + text("اضغط مكان التوصيل على الخريطة. يمكن أن يكون بعيدًا عن مكانك الحالي.", "Tap the delivery point on the map. It can be different from your current location.") + '</div>' +
+      '<div class="mapAddressSearch">' +
+        '<label for="mapAddressSearchInput">🔎 ' + text("ابحث عن المنطقة أو الشارع", "Search for an area or street") + '</label>' +
+        '<div class="mapAddressSearchLine"><input id="mapAddressSearchInput" type="search" autocomplete="off" placeholder="' + text("مثال: بين الجسرين أبوظبي", "Example: Between Two Bridges Abu Dhabi") + '" onkeydown="if(event.key===\'Enter\'){event.preventDefault();searchDeliveryAddress()}">' +
+          '<button id="mapAddressSearchButton" class="primary" type="button" onclick="searchDeliveryAddress()">' + text("بحث", "Search") + '</button></div>' +
+        '<div id="mapSearchResults" class="mapSearchResults" aria-live="polite"></div>' +
+        '<div class="mapSearchCredit">' + text("نتائج البحث من ", "Search results by ") + '<a href="https://photon.komoot.io" target="_blank" rel="noopener">Photon</a> / <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a></div>' +
+      '</div>' +
+      '<div class="mapPickerHint">' + text("اختر نتيجة البحث، أو اضغط مكان التوصيل على الخريطة يدويًا.", "Choose a search result, or tap the delivery point on the map manually.") + '</div>' +
       '<button id="mapCurrentLocationButton" class="secondary mapCurrentLocation" type="button" onclick="centerDeliveryMapOnCurrentLocation()">🎯 ' + text("استخدم موقعي الحالي كبداية", "Use my current location as a starting point") + '</button>' +
       '<div id="deliveryMapPicker" class="deliveryMapPicker" role="application" aria-label="' + text("خريطة اختيار موقع التوصيل", "Delivery location map") + '"></div>' +
       '<div id="deliveryMapState" class="deliveryMapState">' + text("اضغط على الخريطة لوضع علامة التوصيل.", "Tap the map to place the delivery pin.") + '</div>' +
