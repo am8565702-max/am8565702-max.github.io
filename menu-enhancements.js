@@ -35,6 +35,7 @@
   var deliveryMapInstance = null;
   var deliveryMapMarker = null;
   var deliveryMapSelection = null;
+  var deliveryMapInitialLocation = "";
   var pendingAddressType = "home";
   var deliveryAddressSearchResults = [];
   var deliveryAddressSearchCache = {};
@@ -51,6 +52,61 @@
   var baseRenderOrders = window.renderOrders;
   var baseLoadCloudOrders = window.loadCloudOrders;
   var baseGetGPS = window.getGPS;
+
+  var DELIVERY_AREAS = {
+    abu_dhabi: {
+      name: "أبوظبي || Abu Dhabi",
+      areas: [
+        "مدينة أبوظبي || Abu Dhabi City", "العين || Al Ain", "الظفرة - مدينة زايد || Al Dhafra - Madinat Zayed",
+        "مصفح || Mussafah", "مدينة محمد بن زايد || Mohammed Bin Zayed City", "مدينة خليفة || Khalifa City",
+        "مدينة شخبوط || Shakhbout City", "بني ياس || Bani Yas", "الشهامة || Al Shahama", "الوثبة || Al Wathba",
+        "الرحبة || Al Rahba", "جزيرة ياس || Yas Island", "جزيرة السعديات || Saadiyat Island", "جزيرة الريم || Al Reem Island",
+        "الراحة || Al Raha", "بين الجسرين || Between Two Bridges", "المشرف || Al Mushrif", "الخالدية || Al Khalidiyah", "البطين || Al Bateen"
+      ]
+    },
+    dubai: {
+      name: "دبي || Dubai",
+      areas: [
+        "مدينة دبي || Dubai City", "ديرة || Deira", "بر دبي || Bur Dubai", "البرشاء || Al Barsha", "جميرا || Jumeirah",
+        "دبي مارينا || Dubai Marina", "أبراج بحيرات جميرا || Jumeirah Lakes Towers", "وسط مدينة دبي || Downtown Dubai",
+        "الخليج التجاري || Business Bay", "القوز || Al Quoz", "القصيص || Al Qusais", "مردف || Mirdif",
+        "المدينة العالمية || International City", "واحة دبي للسيليكون || Dubai Silicon Oasis", "دبي الجنوب || Dubai South", "جبل علي || Jebel Ali"
+      ]
+    },
+    sharjah: {
+      name: "الشارقة || Sharjah",
+      areas: [
+        "مدينة الشارقة || Sharjah City", "النهدة || Al Nahda", "المجاز || Al Majaz", "الخان || Al Khan", "التعاون || Al Taawun",
+        "مويلح || Muwaileh", "المنطقة الصناعية || Industrial Area", "الرحمانية || Al Rahmaniya", "السيوح || Al Suyoh",
+        "خورفكان || Khor Fakkan", "كلباء || Kalba", "دبا الحصن || Dibba Al Hisn"
+      ]
+    },
+    ajman: {
+      name: "عجمان || Ajman",
+      areas: [
+        "مدينة عجمان || Ajman City", "النعيمية || Al Nuaimiya", "الراشدية || Al Rashidiya", "الجرف || Al Jurf", "الروضة || Al Rawda",
+        "المويهات || Al Mowaihat", "الحليو || Al Helio", "الزاهية || Al Zahya", "الحميدية || Al Hamidiya", "مصفوت || Masfout", "المنامة || Manama"
+      ]
+    },
+    umm_al_quwain: {
+      name: "أم القيوين || Umm Al Quwain",
+      areas: ["مدينة أم القيوين || Umm Al Quwain City", "السلامة || Al Salamah", "الرملة || Al Ramlah", "الرأس || Al Raas", "فلج المعلا || Falaj Al Mualla", "السينية || Al Siniya"]
+    },
+    ras_al_khaimah: {
+      name: "رأس الخيمة || Ras Al Khaimah",
+      areas: [
+        "مدينة رأس الخيمة || Ras Al Khaimah City", "النخيل || Al Nakheel", "الظيت || Al Dhait", "الحمرا || Al Hamra",
+        "ميناء العرب || Mina Al Arab", "جزيرة المرجان || Al Marjan Island", "الجزيرة الحمراء || Al Jazirah Al Hamra", "خزام || Khuzam", "شعم || Shaam", "الرمس || Rams"
+      ]
+    },
+    fujairah: {
+      name: "الفجيرة || Fujairah",
+      areas: [
+        "مدينة الفجيرة || Fujairah City", "دبا الفجيرة || Dibba Al Fujairah", "الفصيل || Al Faseel", "سكمكم || Sakamkam",
+        "مضب || Madhab", "مربح || Mirbah", "قدفع || Qidfa", "العقة || Al Aqah", "مسافي || Masafi"
+      ]
+    }
+  };
 
   function defaultConfig() {
     return {
@@ -224,6 +280,12 @@
       return {
         id: safe(address.id),
         label: safe(address.label).trim(),
+        recipientName: safe(address.recipientName).trim(),
+        recipientPhone: safe(address.recipientPhone).trim(),
+        emirate: safe(address.emirate).trim(),
+        district: safe(address.district).trim(),
+        building: safe(address.building).trim(),
+        notes: safe(address.notes).trim(),
         area: safe(address.area).trim(),
         location: safe(address.location).trim(),
         updatedAt: Number(address.updatedAt || 0)
@@ -299,7 +361,7 @@
         var selected = address.id === selectedAddressId;
         return '<button class="quickAddressCard' + (selected ? " active" : "") + '" type="button" aria-pressed="' + (selected ? "true" : "false") + '" onclick="applySavedDeliveryAddress(\'' + html(address.id) + '\')">' +
           '<span class="quickAddressIcon" aria-hidden="true">' + addressTypeIcon(address.label) + '</span>' +
-          '<span class="quickAddressText"><b>' + html(address.label) + '</b><small>' + html(address.area) + '</small></span>' +
+          '<span class="quickAddressText"><b>' + html(address.label) + '</b><small>' + html(address.recipientName ? address.recipientName + " • " + address.area : address.area) + '</small></span>' +
           (selected ? '<span class="quickAddressCheck" aria-hidden="true">✓</span>' : "") +
         '</button>';
       }).join("");
@@ -325,12 +387,16 @@
     var address = selectedSavedAddress();
     var areaInput = document.getElementById("area");
     var locationInput = document.getElementById("location");
+    var customerInput = document.getElementById("customer");
+    var phoneInput = document.getElementById("customerPhone");
     if (!areaInput || !locationInput) return;
     savedAddressRestored = true;
     if (!address || areaInput.value || locationInput.value) return;
     applyingSavedAddress = true;
     areaInput.value = address.area;
     locationInput.value = address.location;
+    if (customerInput && address.recipientName) customerInput.value = address.recipientName;
+    if (phoneInput && address.recipientPhone) phoneInput.value = address.recipientPhone;
     applyingSavedAddress = false;
     showChosenLocation(address.location, text("تم اختيار عنوان «", "Selected “") + address.label + text("» للتوصيل", "” for delivery"));
   }
@@ -1291,6 +1357,8 @@
     var previous = selectedSavedAddress();
     var areaInput = document.getElementById("area");
     var locationInput = document.getElementById("location");
+    var customerInput = document.getElementById("customer");
+    var phoneInput = document.getElementById("customerPhone");
     var address = savedAddresses().find(function (item) {
       return item.id === safe(addressId);
     });
@@ -1309,6 +1377,8 @@
     setSelectedAddressId(address.id);
     if (areaInput) areaInput.value = address.area;
     if (locationInput) locationInput.value = address.location;
+    if (customerInput && address.recipientName) customerInput.value = address.recipientName;
+    if (phoneInput && address.recipientPhone) phoneInput.value = address.recipientPhone;
     applyingSavedAddress = false;
     renderSavedAddressOptions();
     showChosenLocation(address.location, text("تم اختيار عنوان «", "Selected “") + address.label + text("» للتوصيل", "” for delivery"));
@@ -1345,7 +1415,7 @@
 
   window.editSavedDeliveryAddress = function (addressId) {
     var address = savedAddresses().find(function (item) { return item.id === safe(addressId); });
-    if (address) openAddressEditor(address);
+    if (address) window.openDeliveryMapPicker(address);
   };
 
   window.confirmSaveDeliveryAddress = function () {
@@ -1401,7 +1471,8 @@
     }
     return '<div class="savedAddressList">' + addresses.map(function (address) {
       return '<article class="savedAddressCard' + (address.id === selectedAddressId ? " active" : "") + '">' +
-        '<div><b>' + addressTypeIcon(address.label) + ' ' + html(address.label) + '</b><p>' + html(address.area) + '</p>' +
+        '<div><b>' + addressTypeIcon(address.label) + ' ' + html(address.label) + '</b><p>' +
+          (address.recipientName ? '<strong>' + html(address.recipientName) + (address.recipientPhone ? ' • ' + html(address.recipientPhone) : '') + '</strong><br>' : '') + html(address.area) + '</p>' +
           '<a href="' + html(address.location) + '" target="_blank" rel="noopener">' + text("فتح على الخريطة", "Open in Maps") + '</a></div>' +
         '<div class="savedAddressActions">' +
           '<button class="primary" type="button" onclick="useManagedDeliveryAddress(\'' + html(address.id) + '\')">' + text("استخدام", "Use") + '</button>' +
@@ -1438,6 +1509,122 @@
     window.openSavedAddressManager();
   };
 
+  function deliveryEmirateKey(value) {
+    var candidate = normalize(value);
+    var keys = Object.keys(DELIVERY_AREAS);
+    for (var index = 0; index < keys.length; index += 1) {
+      var key = keys[index];
+      var names = bilingual(DELIVERY_AREAS[key].name);
+      if (candidate === key || candidate.indexOf(normalize(names.ar)) !== -1 || candidate.indexOf(normalize(names.en)) !== -1) return key;
+    }
+    return "";
+  }
+
+  function deliveryEmirateOptions(selectedKey) {
+    return '<option value="">' + text("اختر الإمارة", "Choose emirate") + '</option>' + Object.keys(DELIVERY_AREAS).map(function (key) {
+      return '<option value="' + key + '"' + (key === selectedKey ? " selected" : "") + '>' + html(shown(DELIVERY_AREAS[key].name)) + '</option>';
+    }).join("");
+  }
+
+  function matchingDeliveryDistrict(emirateKey, value) {
+    var candidate = normalize(value);
+    var areas = DELIVERY_AREAS[emirateKey] ? DELIVERY_AREAS[emirateKey].areas : [];
+    return areas.find(function (area) {
+      var names = bilingual(area);
+      return candidate === normalize(area) || candidate.indexOf(normalize(names.ar)) !== -1 || candidate.indexOf(normalize(names.en)) !== -1;
+    }) || "";
+  }
+
+  window.updateDeliveryDistrictOptions = function (preferredValue) {
+    var emirateSelect = document.getElementById("deliveryEmirateSelect");
+    var districtSelect = document.getElementById("deliveryDistrictSelect");
+    if (!emirateSelect || !districtSelect) return;
+    var emirateKey = emirateSelect.value;
+    var areas = DELIVERY_AREAS[emirateKey] ? DELIVERY_AREAS[emirateKey].areas : [];
+    var preferred = matchingDeliveryDistrict(emirateKey, preferredValue || districtSelect.value);
+    districtSelect.innerHTML = '<option value="">' + text("اختر المدينة أو المنطقة", "Choose city or area") + '</option>' + areas.map(function (area) {
+      return '<option value="' + html(area) + '"' + (area === preferred ? " selected" : "") + '>' + html(shown(area)) + '</option>';
+    }).join("") + '<option value="__other__">' + text("منطقة أخرى", "Other area") + '</option>';
+    if (!preferred && safe(preferredValue).trim()) districtSelect.value = "__other__";
+    window.toggleCustomDeliveryDistrict(preferredValue);
+  };
+
+  window.toggleCustomDeliveryDistrict = function (preferredValue) {
+    var districtSelect = document.getElementById("deliveryDistrictSelect");
+    var otherInput = document.getElementById("deliveryDistrictOther");
+    if (!districtSelect || !otherInput) return;
+    otherInput.hidden = districtSelect.value !== "__other__";
+    if (!otherInput.hidden && safe(preferredValue).trim() && !matchingDeliveryDistrict(document.getElementById("deliveryEmirateSelect").value, preferredValue)) {
+      otherInput.value = preferredValue;
+    }
+    if (!otherInput.hidden && !safe(preferredValue).trim()) otherInput.focus();
+  };
+
+  function selectedDeliveryDistrict() {
+    var districtSelect = document.getElementById("deliveryDistrictSelect");
+    var otherInput = document.getElementById("deliveryDistrictOther");
+    if (!districtSelect) return "";
+    return districtSelect.value === "__other__" ? safe(otherInput && otherInput.value).trim() : shown(districtSelect.value);
+  }
+
+  function googleMapsLinkIsValid(value) {
+    try {
+      var url = new URL(safe(value).trim());
+      var host = url.hostname.toLowerCase();
+      return url.protocol === "https:" && (
+        host === "maps.app.goo.gl" || host === "goo.gl" || host.indexOf("maps.google.") === 0 ||
+        ((host === "google.com" || host.indexOf(".google.") !== -1) && url.pathname.indexOf("/maps") !== -1)
+      );
+    } catch (error) {
+      return false;
+    }
+  }
+
+  function setDeliveryGoogleMapsLink(latitude, longitude) {
+    var linkInput = document.getElementById("deliveryGoogleMapsLink");
+    if (!linkInput) return;
+    linkInput.value = "https://maps.google.com/?q=" + Number(latitude).toFixed(6) + "," + Number(longitude).toFixed(6);
+  }
+
+  window.openGoogleMapsForDelivery = function () {
+    var emirateSelect = document.getElementById("deliveryEmirateSelect");
+    var key = emirateSelect && emirateSelect.value;
+    var emirate = key && DELIVERY_AREAS[key] ? shown(DELIVERY_AREAS[key].name) : "";
+    var query = [selectedDeliveryDistrict(), emirate, text("الإمارات العربية المتحدة", "United Arab Emirates")].filter(Boolean).join("، ");
+    var url = "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(query || "United Arab Emirates");
+    window.open(url, "_blank", "noopener");
+  };
+
+  window.pasteDeliveryGoogleMapsLink = function () {
+    var input = document.getElementById("deliveryGoogleMapsLink");
+    if (!input) return;
+    if (!navigator.clipboard || typeof navigator.clipboard.readText !== "function") {
+      input.focus();
+      alert(text("الصق رابط Google Maps في الخانة.", "Paste the Google Maps link in the field."));
+      return;
+    }
+    navigator.clipboard.readText().then(function (value) {
+      input.value = safe(value).trim();
+      if (!googleMapsLinkIsValid(input.value)) {
+        input.focus();
+        alert(text("الرابط المنسوخ ليس رابط Google Maps صحيحًا.", "The copied link is not a valid Google Maps link."));
+      }
+    }).catch(function () {
+      input.focus();
+      alert(text("اضغط داخل الخانة ثم الصق رابط Google Maps.", "Tap the field and paste the Google Maps link."));
+    });
+  };
+
+  function syncStructuredDeliveryAddress(addressText) {
+    var emirateSelect = document.getElementById("deliveryEmirateSelect");
+    if (!emirateSelect) return;
+    var key = deliveryEmirateKey(addressText);
+    if (!key) return;
+    emirateSelect.value = key;
+    var district = matchingDeliveryDistrict(key, addressText);
+    window.updateDeliveryDistrictOptions(district);
+  }
+
   function destroyDeliveryMap() {
     if (deliveryMapInstance) {
       try { deliveryMapInstance.remove(); } catch (error) {}
@@ -1462,11 +1649,13 @@
       deliveryMapMarker.on("dragend", function () {
         var position = deliveryMapMarker.getLatLng();
         deliveryMapSelection = { lat: position.lat, lng: position.lng };
+        setDeliveryGoogleMapsLink(position.lat, position.lng);
       });
     } else {
       deliveryMapMarker.setLatLng(point);
     }
     if (centerMap) deliveryMapInstance.setView(point, Math.max(deliveryMapInstance.getZoom(), 16));
+    setDeliveryGoogleMapsLink(point[0], point[1]);
     var button = document.getElementById("confirmMapAddressButton");
     if (button) button.disabled = false;
     var state = document.getElementById("deliveryMapState");
@@ -1480,8 +1669,7 @@
       mapElement.innerHTML = '<div class="mapUnavailable">' + text("تعذر تحميل الخريطة. أغلق النافذة واستخدم زر GPS.", "The map could not load. Close this window and use GPS.") + '</div>';
       return;
     }
-    var currentLocation = document.getElementById("location");
-    var existing = parseCoordinates(currentLocation && currentLocation.value);
+    var existing = parseCoordinates(deliveryMapInitialLocation);
     var initial = existing || { lat: 24.4539, lng: 54.3773 };
     destroyDeliveryMap();
     deliveryMapInstance = window.L.map(mapElement, { zoomControl: true }).setView([initial.lat, initial.lng], existing ? 16 : 8);
@@ -1670,8 +1858,9 @@
     var result = deliveryAddressSearchResults[Number(index)];
     if (!result) return;
     setDeliveryMapPoint(result.lat, result.lng, true);
-    var addressField = document.getElementById("mapAddressText");
-    if (addressField) addressField.value = result.address;
+    var notesField = document.getElementById("deliveryAddressNotes");
+    if (notesField && !notesField.value) notesField.value = result.address;
+    syncStructuredDeliveryAddress(result.address);
     var container = document.getElementById("mapSearchResults");
     if (container) {
       var alternatives = deliveryAddressSearchResults.map(function (item, itemIndex) {
@@ -1686,34 +1875,61 @@
     if (state) state.textContent = text("✓ تم تحديد العنوان على الخريطة. أضف رقم المبنى أو الفيلا إن وجد.", "✓ Address located on the map. Add the building or villa number if needed.");
   };
 
-  window.openDeliveryMapPicker = function () {
-    addressEditId = "";
-    pendingAddressType = "home";
+  window.openDeliveryMapPicker = function (address) {
+    address = address && typeof address === "object" ? address : {};
+    addressEditId = safe(address.id);
+    var normalizedLabel = normalize(address.label);
+    pendingAddressType = normalizedLabel.indexOf("مكتب") !== -1 || normalizedLabel.indexOf("office") !== -1
+      ? "office"
+      : (addressEditId && normalizedLabel.indexOf("بيت") === -1 && normalizedLabel.indexOf("home") === -1 ? "other" : "home");
     deliveryAddressSearchResults = [];
-    var areaInput = document.getElementById("area");
+    var customerInput = document.getElementById("customer");
+    var phoneInput = document.getElementById("customerPhone");
+    var recipientName = safe(address.recipientName || (customerInput && customerInput.value)).trim();
+    var recipientPhone = safe(address.recipientPhone || (phoneInput && phoneInput.value)).trim();
+    var currentArea = addressEditId ? safe(address.area).trim() : "";
+    var currentLocation = addressEditId ? safe(address.location).trim() : "";
+    var emirateKey = deliveryEmirateKey(address.emirate || currentArea);
+    var districtValue = safe(address.district).trim() || currentArea;
+    var customLabelValue = pendingAddressType === "other" ? safe(address.label).trim() : "";
+    deliveryMapInitialLocation = currentLocation;
     openEnhancementHtml(
-      '<h2>📍 ' + text("إضافة عنوان توصيل", "Add delivery address") + '</h2>' +
+      '<h2>📍 ' + (addressEditId ? text("تعديل عنوان التوصيل", "Edit delivery address") : text("إضافة عنوان توصيل", "Add delivery address")) + '</h2>' +
       '<div class="addressTypeTitle">' + text("سمِّ هذا العنوان", "Name this address") + '</div>' +
       '<div class="addressTypeOptions" role="group" aria-label="' + text("نوع العنوان", "Address type") + '">' +
-        '<button class="addressTypeButton active" type="button" aria-pressed="true" onclick="selectDeliveryAddressType(\'home\',this)">🏠 ' + text("البيت", "Home") + '</button>' +
-        '<button class="addressTypeButton" type="button" aria-pressed="false" onclick="selectDeliveryAddressType(\'office\',this)">🏢 ' + text("المكتب", "Office") + '</button>' +
-        '<button class="addressTypeButton" type="button" aria-pressed="false" onclick="selectDeliveryAddressType(\'other\',this)">📍 ' + text("عنوان آخر", "Other") + '</button>' +
+        '<button class="addressTypeButton' + (pendingAddressType === "home" ? " active" : "") + '" type="button" aria-pressed="' + (pendingAddressType === "home" ? "true" : "false") + '" onclick="selectDeliveryAddressType(\'home\',this)">🏠 ' + text("البيت", "Home") + '</button>' +
+        '<button class="addressTypeButton' + (pendingAddressType === "office" ? " active" : "") + '" type="button" aria-pressed="' + (pendingAddressType === "office" ? "true" : "false") + '" onclick="selectDeliveryAddressType(\'office\',this)">🏢 ' + text("المكتب", "Office") + '</button>' +
+        '<button class="addressTypeButton' + (pendingAddressType === "other" ? " active" : "") + '" type="button" aria-pressed="' + (pendingAddressType === "other" ? "true" : "false") + '" onclick="selectDeliveryAddressType(\'other\',this)">📍 ' + text("عنوان آخر", "Other") + '</button>' +
       '</div>' +
-      '<input id="customAddressLabel" class="customAddressLabel" maxlength="40" placeholder="' + text("مثال: بيت الوالد", "Example: Parents' home") + '" hidden>' +
+      '<input id="customAddressLabel" class="customAddressLabel" maxlength="40" value="' + html(customLabelValue) + '" placeholder="' + text("مثال: بيت الوالد", "Example: Parents' home") + '"' + (pendingAddressType === "other" ? "" : " hidden") + '>' +
+      '<div class="deliveryAddressFormGrid">' +
+        '<div class="field"><label for="deliveryRecipientName">' + text("اسم المستلم", "Recipient name") + '</label><input id="deliveryRecipientName" autocomplete="name" maxlength="80" value="' + html(recipientName) + '" placeholder="' + text("اسم الشخص الذي سيستلم الطلب", "Name of the person receiving the order") + '"></div>' +
+        '<div class="field"><label for="deliveryRecipientPhone">' + text("رقم هاتف المستلم", "Recipient phone") + '</label><input id="deliveryRecipientPhone" inputmode="tel" autocomplete="tel" maxlength="20" value="' + html(recipientPhone) + '" placeholder="05xxxxxxxx"></div>' +
+        '<div class="field"><label for="deliveryEmirateSelect">' + text("الإمارة", "Emirate") + '</label><select id="deliveryEmirateSelect" onchange="updateDeliveryDistrictOptions()">' + deliveryEmirateOptions(emirateKey) + '</select></div>' +
+        '<div class="field"><label for="deliveryDistrictSelect">' + text("المدينة أو المنطقة", "City or area") + '</label><select id="deliveryDistrictSelect" onchange="toggleCustomDeliveryDistrict()"></select></div>' +
+      '</div>' +
+      '<input id="deliveryDistrictOther" class="customAddressLabel" maxlength="80" placeholder="' + text("اكتب اسم المنطقة", "Enter the area name") + '" hidden>' +
+      '<div class="field"><label for="deliveryBuildingInput">' + text("رقم الفيلا أو البناية والشقة", "Villa, building, or apartment number") + '</label><input id="deliveryBuildingInput" maxlength="100" value="' + html(address.building || "") + '" placeholder="' + text("مثال: فيلا 12 أو بناية 5 شقة 301", "Example: Villa 12 or Building 5, Apt 301") + '"></div>' +
+      '<div class="field googleMapsLinkField"><label for="deliveryGoogleMapsLink">' + text("رابط موقع التوصيل من Google Maps", "Google Maps delivery link") + '</label>' +
+        '<input id="deliveryGoogleMapsLink" type="url" dir="ltr" value="' + html(currentLocation) + '" placeholder="https://maps.app.goo.gl/..."><div class="googleMapsLinkActions">' +
+          '<button class="secondary" type="button" onclick="openGoogleMapsForDelivery()">🗺️ ' + text("فتح Google Maps", "Open Google Maps") + '</button>' +
+          '<button class="secondary" type="button" onclick="pasteDeliveryGoogleMapsLink()">📋 ' + text("لصق الرابط", "Paste link") + '</button>' +
+        '</div><small>' + text("افتح Google Maps، اختر المكان، اضغط مشاركة ثم انسخ الرابط والصقه هنا.", "Open Google Maps, choose the place, tap Share, then copy and paste the link here.") + '</small></div>' +
       '<div class="mapAddressSearch">' +
-        '<label for="mapAddressSearchInput">🔎 ' + text("ابحث بالعربي أو الإنجليزي عن المكان أو العنوان", "Search in Arabic or English for a place or address") + '</label>' +
+        '<label for="mapAddressSearchInput">🔎 ' + text("أو ابحث هنا بالعربي أو الإنجليزي لتحديده تلقائيًا", "Or search here in Arabic or English to locate it automatically") + '</label>' +
         '<div class="mapAddressSearchLine"><input id="mapAddressSearchInput" type="search" autocomplete="off" dir="auto" placeholder="' + text("الشارقة سوبر ماركت / Sharjah supermarket", "Sharjah supermarket / الشارقة سوبر ماركت") + '" onkeydown="if(event.key===\'Enter\'){event.preventDefault();searchDeliveryAddress()}">' +
           '<button id="mapAddressSearchButton" class="primary" type="button" onclick="searchDeliveryAddress()">' + text("بحث", "Search") + '</button></div>' +
         '<div id="mapSearchResults" class="mapSearchResults" aria-live="polite"></div>' +
         '<div class="mapSearchCredit">' + text("بحث عربي وإنجليزي من ", "Arabic and English search by ") + '<a href="https://photon.komoot.io" target="_blank" rel="noopener">Photon</a> / <a href="https://nominatim.org" target="_blank" rel="noopener">Nominatim</a> / <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a></div>' +
       '</div>' +
-      '<div class="mapPickerHint">' + text("اضغط بحث وسنحدد المكان مباشرة على الخريطة. وإذا احتجت يمكنك تحريك العلامة يدويًا.", "Tap Search and we will locate it directly on the map. You can move the pin if needed.") + '</div>' +
+      '<div class="mapPickerHint">' + text("يمكنك لصق رابط Google Maps بالأعلى، أو وضع العلامة على الخريطة وسننشئ الرابط تلقائيًا.", "Paste a Google Maps link above, or place the pin and we will create the link automatically.") + '</div>' +
       '<button id="mapCurrentLocationButton" class="secondary mapCurrentLocation" type="button" onclick="centerDeliveryMapOnCurrentLocation()">🎯 ' + text("استخدم موقعي الحالي كبداية", "Use my current location as a starting point") + '</button>' +
       '<div id="deliveryMapPicker" class="deliveryMapPicker" role="application" aria-label="' + text("خريطة اختيار موقع التوصيل", "Delivery location map") + '"></div>' +
       '<div id="deliveryMapState" class="deliveryMapState">' + text("اضغط على الخريطة لوضع علامة التوصيل.", "Tap the map to place the delivery pin.") + '</div>' +
-      '<div class="field mapAddressField"><label for="mapAddressText">' + text("وصف العنوان بالتفصيل", "Address details") + '</label>' +
-        '<textarea id="mapAddressText" maxlength="240" placeholder="' + text("المنطقة، الشارع، المبنى، الطابق", "Area, street, building, floor") + '">' + html(areaInput && areaInput.value || "") + '</textarea></div>' +
-      '<button id="confirmMapAddressButton" class="primary addressModalAction" type="button" onclick="confirmDeliveryMapLocation()" disabled>' + text("إضافة العنوان", "Add address") + '</button>');
+      '<div class="field mapAddressField"><label for="deliveryAddressNotes">' + text("تفاصيل إضافية (اختياري)", "Additional details (optional)") + '</label>' +
+        '<textarea id="deliveryAddressNotes" maxlength="240" placeholder="' + text("اسم الشارع، الطابق، علامة مميزة", "Street, floor, nearby landmark") + '">' + html(address.notes || "") + '</textarea></div>' +
+      '<button id="confirmMapAddressButton" class="primary addressModalAction" type="button" onclick="confirmDeliveryMapLocation()">' + (addressEditId ? text("حفظ التعديلات", "Save changes") : text("إضافة العنوان", "Add address")) + '</button>');
+    window.updateDeliveryDistrictOptions(districtValue);
     window.setTimeout(initializeDeliveryMapPicker, 80);
   };
 
@@ -1750,13 +1966,31 @@
   };
 
   window.confirmDeliveryMapLocation = function () {
-    var addressText = safe(document.getElementById("mapAddressText") && document.getElementById("mapAddressText").value).trim();
+    var recipientNameInput = document.getElementById("deliveryRecipientName");
+    var recipientPhoneInput = document.getElementById("deliveryRecipientPhone");
+    var emirateSelect = document.getElementById("deliveryEmirateSelect");
+    var buildingInput = document.getElementById("deliveryBuildingInput");
+    var linkInput = document.getElementById("deliveryGoogleMapsLink");
+    var notesInput = document.getElementById("deliveryAddressNotes");
+    var recipientName = safe(recipientNameInput && recipientNameInput.value).trim();
+    var recipientPhone = safe(recipientPhoneInput && recipientPhoneInput.value).trim();
+    var emirateKey = safe(emirateSelect && emirateSelect.value);
+    var district = selectedDeliveryDistrict();
+    var building = safe(buildingInput && buildingInput.value).trim();
+    var notes = safe(notesInput && notesInput.value).trim();
+    var url = safe(linkInput && linkInput.value).trim();
     var customLabel = document.getElementById("customAddressLabel");
     var label = pendingAddressType === "other"
       ? safe(customLabel && customLabel.value).trim()
       : addressTypeLabel(pendingAddressType);
-    if (!deliveryMapSelection) {
-      alert(text("اضغط على مكان التوصيل في الخريطة أولًا.", "Tap the delivery point on the map first."));
+    if (!recipientName) {
+      alert(text("اكتب اسم الشخص الذي سيستلم الطلب.", "Enter the name of the person receiving the order."));
+      if (recipientNameInput) recipientNameInput.focus();
+      return;
+    }
+    if (digits(recipientPhone).length < 8) {
+      alert(text("اكتب رقم هاتف صحيح للمستلم.", "Enter a valid phone number for the recipient."));
+      if (recipientPhoneInput) recipientPhoneInput.focus();
       return;
     }
     if (!label) {
@@ -1764,31 +1998,65 @@
       if (customLabel) customLabel.focus();
       return;
     }
-    if (!addressText) {
-      alert(text("اكتب وصف العنوان بالتفصيل.", "Enter the address details."));
-      var field = document.getElementById("mapAddressText");
-      if (field) field.focus();
+    if (!emirateKey || !DELIVERY_AREAS[emirateKey]) {
+      alert(text("اختر الإمارة أولًا.", "Choose the emirate first."));
+      if (emirateSelect) emirateSelect.focus();
       return;
     }
-    var latitude = Number(deliveryMapSelection.lat).toFixed(6);
-    var longitude = Number(deliveryMapSelection.lng).toFixed(6);
-    var url = "https://maps.google.com/?q=" + latitude + "," + longitude;
+    if (!district) {
+      alert(text("اختر المدينة أو المنطقة.", "Choose the city or area."));
+      var districtField = document.getElementById("deliveryDistrictSelect");
+      if (districtField) districtField.focus();
+      return;
+    }
+    if (!building) {
+      alert(text("اكتب رقم الفيلا أو البناية والشقة.", "Enter the villa, building, or apartment number."));
+      if (buildingInput) buildingInput.focus();
+      return;
+    }
+    if (!url && deliveryMapSelection) {
+      url = "https://maps.google.com/?q=" + Number(deliveryMapSelection.lat).toFixed(6) + "," + Number(deliveryMapSelection.lng).toFixed(6);
+    }
+    if (!url) {
+      alert(text("الصق رابط الموقع من Google Maps أو ضع العلامة على الخريطة.", "Paste the Google Maps link or place the pin on the map."));
+      if (linkInput) linkInput.focus();
+      return;
+    }
+    if (!googleMapsLinkIsValid(url)) {
+      alert(text("تأكد أن الرابط من Google Maps ثم حاول مرة أخرى.", "Make sure the link is from Google Maps and try again."));
+      if (linkInput) linkInput.focus();
+      return;
+    }
+    var emirate = shown(DELIVERY_AREAS[emirateKey].name);
+    var addressText = [emirate, district, building, notes].filter(Boolean).join(" - ");
     var addresses = savedAddresses();
+    var editIndex = addresses.findIndex(function (item) { return item.id === addressEditId; });
     var savedAddress = {
-      id: "address-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 7),
+      id: editIndex >= 0 ? addresses[editIndex].id : "address-" + Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 7),
       label: label,
+      recipientName: recipientName,
+      recipientPhone: recipientPhone,
+      emirate: emirate,
+      district: district,
+      building: building,
+      notes: notes,
       area: addressText,
       location: url,
       updatedAt: Date.now()
     };
+    if (editIndex >= 0) addresses.splice(editIndex, 1);
     addresses.unshift(savedAddress);
     saveAddresses(addresses);
     setSelectedAddressId(savedAddress.id);
     var areaInput = document.getElementById("area");
     var locationInput = document.getElementById("location");
+    var customerInput = document.getElementById("customer");
+    var phoneInput = document.getElementById("customerPhone");
     applyingSavedAddress = true;
     if (areaInput) areaInput.value = addressText;
     if (locationInput) locationInput.value = url;
+    if (customerInput) customerInput.value = recipientName;
+    if (phoneInput) phoneInput.value = recipientPhone;
     applyingSavedAddress = false;
     window.closeEnhancementModal();
     renderSavedAddressOptions();
@@ -1799,6 +2067,7 @@
   window.closeEnhancementModal = function () {
     stopLiveTracking();
     destroyDeliveryMap();
+    deliveryMapInitialLocation = "";
     var modal = document.getElementById("enhancementModal");
     if (modal) modal.classList.remove("open");
   };

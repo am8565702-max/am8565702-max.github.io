@@ -1,4 +1,4 @@
-var CACHE_NAME = "olive-branch-menu-v50";
+var CACHE_NAME = "olive-branch-menu-v51";
 var STATIC_FILES = [
   "./",
   "./index.html",
