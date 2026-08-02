@@ -1506,6 +1506,20 @@
     return value;
   }
 
+  function deliveryAddressSearchBias(value) {
+    var query = normalize(value);
+    if (query.indexOf("الشارقة") !== -1 || query.indexOf("الشارقه") !== -1 || query.indexOf("sharjah") !== -1) {
+      return { lat: 25.3463, lng: 55.4209 };
+    }
+    if (query.indexOf("دبي") !== -1 || query.indexOf("dubai") !== -1) {
+      return { lat: 25.2048, lng: 55.2708 };
+    }
+    if (query.indexOf("عجمان") !== -1 || query.indexOf("ajman") !== -1) {
+      return { lat: 25.4052, lng: 55.5136 };
+    }
+    return { lat: 24.4539, lng: 54.3773 };
+  }
+
   function photonAddressText(properties) {
     properties = properties || {};
     var parts = [
@@ -1536,11 +1550,7 @@
       container.innerHTML = '<div class="mapSearchMessage">' + text("لم نجد عنوانًا داخل الإمارات. جرّب اسم المنطقة والمدينة، أو اختر المكان يدويًا على الخريطة.", "No address was found in the UAE. Try the area and city, or choose the point manually on the map.") + '</div>';
       return;
     }
-    container.innerHTML = results.map(function (result, index) {
-      return '<button class="mapSearchResult" type="button" onclick="chooseDeliveryAddressSearchResult(' + index + ')">' +
-        '<span aria-hidden="true">📍</span><span><b>' + html(result.title) + '</b><small>' + html(result.address) + '</small></span>' +
-      '</button>';
-    }).join("");
+    window.chooseDeliveryAddressSearchResult(0);
   }
 
   window.searchDeliveryAddress = function () {
@@ -1554,6 +1564,7 @@
       return Promise.resolve([]);
     }
     var query = deliveryAddressSearchQuery(rawQuery);
+    var bias = deliveryAddressSearchBias(rawQuery);
     var normalizedRawQuery = normalize(rawQuery);
     var aliasTitle = normalizedRawQuery.indexOf("بين الجسرين") !== -1 || normalizedRawQuery.indexOf("بين الجسران") !== -1
       ? text("بين الجسرين", "Between Two Bridges")
@@ -1565,7 +1576,7 @@
     }
     if (button) button.disabled = true;
     if (container) container.innerHTML = '<div class="mapSearchMessage loading">' + text("جارٍ البحث عن العنوان...", "Searching for the address...") + '</div>';
-    var endpoint = "https://photon.komoot.io/api/?limit=6&lat=24.4539&lon=54.3773&q=" + encodeURIComponent(query);
+    var endpoint = "https://photon.komoot.io/api/?limit=6&lat=" + bias.lat + "&lon=" + bias.lng + "&q=" + encodeURIComponent(query);
     return fetch(endpoint, { headers: { Accept: "application/json" } }).then(function (response) {
       if (!response || !response.ok) throw new Error("ADDRESS_SEARCH_FAILED");
       return response.json();
@@ -1610,7 +1621,7 @@
     var addressField = document.getElementById("mapAddressText");
     if (addressField) addressField.value = result.address;
     var container = document.getElementById("mapSearchResults");
-    if (container) container.innerHTML = '<div class="mapSearchMessage selected">✓ ' + text("تم اختيار ", "Selected ") + html(result.title) + '</div>';
+    if (container) container.innerHTML = '<div class="mapSearchMessage selected"><b>✓ ' + text("تم تحديد ", "Located ") + html(result.title) + '</b><small>' + html(result.address) + '</small></div>';
     var state = document.getElementById("deliveryMapState");
     if (state) state.textContent = text("✓ تم تحديد العنوان على الخريطة. أضف رقم المبنى أو الفيلا إن وجد.", "✓ Address located on the map. Add the building or villa number if needed.");
   };
@@ -1630,19 +1641,19 @@
       '</div>' +
       '<input id="customAddressLabel" class="customAddressLabel" maxlength="40" placeholder="' + text("مثال: بيت الوالد", "Example: Parents' home") + '" hidden>' +
       '<div class="mapAddressSearch">' +
-        '<label for="mapAddressSearchInput">🔎 ' + text("ابحث عن المنطقة أو الشارع", "Search for an area or street") + '</label>' +
-        '<div class="mapAddressSearchLine"><input id="mapAddressSearchInput" type="search" autocomplete="off" placeholder="' + text("مثال: بين الجسرين أبوظبي", "Example: Between Two Bridges Abu Dhabi") + '" onkeydown="if(event.key===\'Enter\'){event.preventDefault();searchDeliveryAddress()}">' +
+        '<label for="mapAddressSearchInput">🔎 ' + text("اكتب اسم المكان أو السوبرماركت أو العنوان", "Enter a place, supermarket, or address") + '</label>' +
+        '<div class="mapAddressSearchLine"><input id="mapAddressSearchInput" type="search" autocomplete="off" placeholder="' + text("مثال: سوبرماركت النور الشارقة", "Example: Al Noor Supermarket Sharjah") + '" onkeydown="if(event.key===\'Enter\'){event.preventDefault();searchDeliveryAddress()}">' +
           '<button id="mapAddressSearchButton" class="primary" type="button" onclick="searchDeliveryAddress()">' + text("بحث", "Search") + '</button></div>' +
         '<div id="mapSearchResults" class="mapSearchResults" aria-live="polite"></div>' +
         '<div class="mapSearchCredit">' + text("نتائج البحث من ", "Search results by ") + '<a href="https://photon.komoot.io" target="_blank" rel="noopener">Photon</a> / <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a></div>' +
       '</div>' +
-      '<div class="mapPickerHint">' + text("اختر نتيجة البحث، أو اضغط مكان التوصيل على الخريطة يدويًا.", "Choose a search result, or tap the delivery point on the map manually.") + '</div>' +
+      '<div class="mapPickerHint">' + text("اضغط بحث وسنحدد المكان مباشرة على الخريطة. وإذا احتجت يمكنك تحريك العلامة يدويًا.", "Tap Search and we will locate it directly on the map. You can move the pin if needed.") + '</div>' +
       '<button id="mapCurrentLocationButton" class="secondary mapCurrentLocation" type="button" onclick="centerDeliveryMapOnCurrentLocation()">🎯 ' + text("استخدم موقعي الحالي كبداية", "Use my current location as a starting point") + '</button>' +
       '<div id="deliveryMapPicker" class="deliveryMapPicker" role="application" aria-label="' + text("خريطة اختيار موقع التوصيل", "Delivery location map") + '"></div>' +
       '<div id="deliveryMapState" class="deliveryMapState">' + text("اضغط على الخريطة لوضع علامة التوصيل.", "Tap the map to place the delivery pin.") + '</div>' +
       '<div class="field mapAddressField"><label for="mapAddressText">' + text("وصف العنوان بالتفصيل", "Address details") + '</label>' +
         '<textarea id="mapAddressText" maxlength="240" placeholder="' + text("المنطقة، الشارع، المبنى، الطابق", "Area, street, building, floor") + '">' + html(areaInput && areaInput.value || "") + '</textarea></div>' +
-      '<button id="confirmMapAddressButton" class="primary addressModalAction" type="button" onclick="confirmDeliveryMapLocation()" disabled>' + text("حفظ واستخدام العنوان", "Save and use address") + '</button>');
+      '<button id="confirmMapAddressButton" class="primary addressModalAction" type="button" onclick="confirmDeliveryMapLocation()" disabled>' + text("إضافة العنوان", "Add address") + '</button>');
     window.setTimeout(initializeDeliveryMapPicker, 80);
   };
 
