@@ -44,6 +44,7 @@
   var baseGetOrderTotals = window.getOrderTotals;
   var baseRender = window.render;
   var baseRenderCart = window.renderCart;
+  var baseAddMenuProduct = window.add;
   var baseLoadCloudProducts = window.loadCloudProducts;
   var baseOpenAdmin = window.openAdmin;
   var baseSetMenuLanguage = window.setMenuLanguage;
@@ -929,6 +930,12 @@
     window.openCart();
   };
 
+  function productHasConfiguredSizes(product) {
+    return Boolean(product && Array.isArray(product.sizes) && product.sizes.some(function (item) {
+      return Number(item && item.price) > 0;
+    }));
+  }
+
   function productForCard(card, unused) {
     var pick = card.querySelector(".pick");
     var match = safe(pick && pick.getAttribute("onclick")).match(/add\((\d+)\)/);
@@ -959,6 +966,32 @@
       var product = productForCard(card, unused);
       if (!product) return;
       card.setAttribute("data-product-id", product.id);
+      if (product.available !== false && productHasConfiguredSizes(product)) {
+        var sizeButton = card.querySelector(".pick");
+        var quantity = card.querySelector(".qty");
+        var priceBox = card.querySelector(".price");
+        var configuredSizes = product.sizes.filter(function (item) {
+          return Number(item && item.price) > 0;
+        });
+        if (quantity) quantity.style.display = "none";
+        if (sizeButton) {
+          sizeButton.disabled = false;
+          sizeButton.textContent = text("اختر الحجم", "Choose size");
+          sizeButton.onclick = function (event) {
+            if (event) {
+              event.preventDefault();
+              event.stopPropagation();
+            }
+            if (typeof window.openSizeModal === "function") window.openSizeModal(Number(product.id));
+          };
+        }
+        if (priceBox && configuredSizes.length) {
+          var minimumSizePrice = Math.min.apply(null, configuredSizes.map(function (item) {
+            return Number(item.price);
+          }));
+          priceBox.textContent = text("يبدأ من ", "From ") + moneyValue(minimumSizePrice) + " " + text("درهم", "AED");
+        }
+      }
       var picture = card.querySelector(".pic");
       if (picture && !picture.querySelector(".productUtility")) {
         picture.insertAdjacentHTML("beforeend",
@@ -1206,6 +1239,17 @@
   window.render = function () {
     baseRender();
     augmentProductCards();
+  };
+
+  window.add = function (productId) {
+    var product = (window.products || []).find(function (item) {
+      return Number(item.id) === Number(productId);
+    });
+    if (product && product.available !== false && productHasConfiguredSizes(product) && typeof window.openSizeModal === "function") {
+      window.openSizeModal(Number(product.id));
+      return;
+    }
+    return baseAddMenuProduct.apply(this, arguments);
   };
 
   window.renderCart = function () {
