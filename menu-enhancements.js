@@ -39,6 +39,8 @@
   var pendingAddressType = "home";
   var deliveryAddressSearchResults = [];
   var deliveryAddressSearchCache = {};
+  var cloudProductRefreshInFlight = null;
+  var lastProductReturnRefresh = 0;
   var baseGetOrderTotals = window.getOrderTotals;
   var baseRender = window.render;
   var baseRenderCart = window.renderCart;
@@ -1225,25 +1227,140 @@
     }
   }
 
-  window.loadCloudProducts = function () {
-    var result = baseLoadCloudProducts.apply(this, arguments);
-    if (!result || typeof result.then !== "function") {
-      extractCloudMarkers();
-      cacheCustomerProducts();
-      refreshEnhancementUi();
-      window.render();
-      return result;
+  function normalizeDirectCloudProducts(payload) {
+    return (payload && Array.isArray(payload.products) ? payload.products : []).map(function (product, index) {
+      return Object.assign({}, product, {
+        id: Number(product.id),
+        name: safe(product.name),
+        desc: safe(product.desc),
+        price: product.price === "" || product.price == null ? "" : Number(product.price),
+        cat: safe(product.cat || "labneh"),
+        image: safe(product.image),
+        visible: product.visible !== false,
+        sort: Number(product.sort || index + 1)
+      });
+    });
+  }
+
+  function applyDirectSharedProductMarkers(productList) {
+    var settingsChanged = false;
+    var nextProducts = [];
+    productList.forEach(function (product) {
+      var name = safe(product.name).trim();
+      if (name === "__MENU_WHATSAPP__") {
+        var phone = safe(product.desc).replace(/\D/g, "");
+        if (phone.length >= 10) {
+          settings.phone = phone;
+          settingsChanged = true;
+        }
+        return;
+      }
+      if (name === "__MENU_PUBLIC_SETTINGS__") {
+        try {
+          var shared = JSON.parse(safe(product.desc) || "{}");
+          var sharedPhone = safe(shared.phone).replace(/\D/g, "");
+          if (sharedPhone.length >= 10) settings.phone = sharedPhone;
+          ["deliveryFee", "minOrder", "discountThreshold", "discountPercent"].forEach(function (key) {
+            var number = Number(shared[key]);
+            if (isFinite(number) && number >= 0) settings[key] = key === "discountPercent" ? Math.min(100, number) : number;
+          });
+          settingsChanged = true;
+        } catch (error) {}
+        return;
+      }
+      nextProducts.push(product);
+    });
+    if (settingsChanged) {
+      settings.webAppUrl = window.CURRENT_WEB_APP_URL || settings.webAppUrl;
+      try { localStorage.setItem(SETKEY, JSON.stringify(settings)); } catch (error) {}
     }
-    return result.then(function (value) {
-      extractCloudMarkers();
-      cacheCustomerProducts();
-      applyTrackedStatusesToCurrentOrders();
-      refreshEnhancementUi();
-      window.render();
-      window.renderCart();
+    return nextProducts;
+  }
+
+  function fetchCloudProductsDirectly() {
+    var url = window.gsUrl && window.gsUrl();
+    if (!url || typeof fetch !== "function") return Promise.reject(new Error("DIRECT_PRODUCTS_UNAVAILABLE"));
+    var controller = typeof AbortController === "function" ? new AbortController() : null;
+    var timer = window.setTimeout(function () {
+      if (controller) controller.abort();
+    }, 12000);
+    var query = new URLSearchParams({ action: "products", _t: String(Date.now()) });
+    var options = { method: "GET", cache: "no-store", redirect: "follow", headers: { Accept: "application/json" } };
+    if (controller) options.signal = controller.signal;
+    return fetch(url + (url.indexOf("?") === -1 ? "?" : "&") + query.toString(), options).then(function (response) {
+      if (!response || !response.ok) throw new Error("DIRECT_PRODUCTS_HTTP");
+      return response.json();
+    }).then(function (payload) {
+      if (!payload || payload.ok === false || !Array.isArray(payload.products)) throw new Error("DIRECT_PRODUCTS_INVALID");
+      return applyDirectSharedProductMarkers(normalizeDirectCloudProducts(payload));
+    }).finally(function () {
+      window.clearTimeout(timer);
+    });
+  }
+
+  function finishCloudProductRefresh(productSnapshot) {
+    if (Array.isArray(productSnapshot)) window.products = productSnapshot.slice();
+    extractCloudMarkers();
+    cacheCustomerProducts();
+    applyTrackedStatusesToCurrentOrders();
+    refreshEnhancementUi();
+    window.render();
+    window.renderCart();
+  }
+
+  window.loadCloudProducts = function () {
+    if (cloudProductRefreshInFlight) return cloudProductRefreshInFlight;
+    var context = this;
+    var args = arguments;
+    var directSnapshot = null;
+    var basePromise;
+    try {
+      basePromise = Promise.resolve(baseLoadCloudProducts.apply(context, args));
+    } catch (error) {
+      basePromise = Promise.reject(error);
+    }
+    var directPromise = fetchCloudProductsDirectly();
+    var directHandled = directPromise.then(function (productsFromCloud) {
+      directSnapshot = productsFromCloud;
+      finishCloudProductRefresh(directSnapshot);
+      return productsFromCloud;
+    });
+    var baseHandled = basePromise.then(function (value) {
+      finishCloudProductRefresh(directSnapshot);
       return value;
     });
+    var failures = [];
+    var firstSuccess = new Promise(function (resolve, reject) {
+      [directHandled, baseHandled].forEach(function (pending) {
+        pending.then(resolve).catch(function (error) {
+          failures.push(error);
+          if (failures.length === 2) reject(failures[0]);
+        });
+      });
+    });
+    cloudProductRefreshInFlight = firstSuccess;
+    Promise.all([
+      directHandled.catch(function () { return null; }),
+      baseHandled.catch(function () { return null; })
+    ]).then(function () {
+      if (cloudProductRefreshInFlight === firstSuccess) cloudProductRefreshInFlight = null;
+    });
+    return firstSuccess;
   };
+
+  function refreshProductsWhenMenuReturns() {
+    var now = Date.now();
+    if (now - lastProductReturnRefresh < 8000 || !window.gsUrl || !window.gsUrl()) return;
+    lastProductReturnRefresh = now;
+    var pending = window.loadCloudProducts();
+    if (pending && typeof pending.catch === "function") pending.catch(function () {});
+  }
+
+  window.addEventListener("pageshow", refreshProductsWhenMenuReturns);
+  window.addEventListener("focus", refreshProductsWhenMenuReturns);
+  document.addEventListener("visibilitychange", function () {
+    if (!document.visibilityState || document.visibilityState === "visible") refreshProductsWhenMenuReturns();
+  });
 
   window.openAdmin = function () {
     var result = baseOpenAdmin.apply(this, arguments);
