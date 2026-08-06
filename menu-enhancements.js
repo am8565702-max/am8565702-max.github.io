@@ -1532,14 +1532,18 @@
         });
       });
     });
-    cloudProductRefreshInFlight = firstSuccess;
+    var usableRefresh = firstSuccess.catch(function () {
+      finishCloudProductRefresh(directSnapshot);
+      return window.products || [];
+    });
+    cloudProductRefreshInFlight = usableRefresh;
     Promise.all([
       directHandled.catch(function () { return null; }),
       baseHandled.catch(function () { return null; })
     ]).then(function () {
-      if (cloudProductRefreshInFlight === firstSuccess) cloudProductRefreshInFlight = null;
+      if (cloudProductRefreshInFlight === usableRefresh) cloudProductRefreshInFlight = null;
     });
-    return firstSuccess;
+    return usableRefresh;
   };
 
   function refreshProductsWhenMenuReturns() {
