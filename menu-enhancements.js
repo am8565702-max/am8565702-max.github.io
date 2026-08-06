@@ -10,6 +10,7 @@
   var APPLIED_COUPON_KEY = "oliveMenuAppliedCouponV1";
   var ADDRESS_BOOK_KEY = "oliveMenuSavedAddressesV1";
   var SELECTED_ADDRESS_KEY = "oliveMenuSelectedAddressV1";
+  var CATEGORY_CACHE_KEY = "oliveMenuCategoriesCloudV1";
   var STATUS_SYNC_SIGNATURE_KEY = "oliveMenuStatusSyncSignatureV2";
   var ADMIN_SESSION_KEY = "oliveMenuAdminSessionV2";
   var MAX_HISTORY = 10;
@@ -40,11 +41,13 @@
   var deliveryAddressSearchResults = [];
   var deliveryAddressSearchCache = {};
   var cloudProductRefreshInFlight = null;
+  var cloudCategoryRefreshInFlight = null;
   var lastProductReturnRefresh = 0;
   var baseGetOrderTotals = window.getOrderTotals;
   var baseRender = window.render;
   var baseRenderCart = window.renderCart;
   var baseAddMenuProduct = window.add;
+  var baseLoadCloudCategories = window.loadCloudCategories;
   var baseLoadCloudProducts = window.loadCloudProducts;
   var baseOpenAdmin = window.openAdmin;
   var baseSetMenuLanguage = window.setMenuLanguage;
@@ -1271,6 +1274,152 @@
     }
   }
 
+  var CATEGORY_FALLBACK_NAMES = {
+    labneh: "اللبنة", jam: "المربى", cheese: "الجبنة", zaater: "الزعتر",
+    olive_oil: "زيت الزيتون", olives: "الزيتون والمخللات", ghee: "السمن",
+    jameed: "الجميد", herbs: "الزهورات والأعشاب", alattar: "العطار",
+    canned: "المعلبات", legumes: "البقوليات والحبوب", spices: "البهارات",
+    hot_drinks: "المشروبات الساخنة", cake: "الكعك", sweet: "الحلويات",
+    cool_drinks: "العصائر", gum: "العلكة", soap: "الصابون"
+  };
+
+  function normalizeDirectCloudCategories(payload) {
+    var deduplicated = {};
+    (payload && Array.isArray(payload.categories) ? payload.categories : []).forEach(function (category, index) {
+      var code = safe(category && category.code).trim();
+      if (!code) return;
+      deduplicated[code] = {
+        code: code,
+        name: safe(category.name || CATEGORY_FALLBACK_NAMES[code] || code).trim(),
+        sort: Number(category.sort || index + 1)
+      };
+    });
+    return Object.keys(deduplicated).map(function (code) {
+      return deduplicated[code];
+    }).sort(function (first, second) {
+      return Number(first.sort || 999) - Number(second.sort || 999);
+    });
+  }
+
+  function redrawCloudCategories() {
+    if (typeof window.renderCats === "function") window.renderCats();
+    if (typeof window.fillCats === "function") window.fillCats();
+    if (typeof window.render === "function") window.render();
+    if (typeof window.renderAdmin === "function") window.renderAdmin();
+  }
+
+  function applyCloudCategories(categories, shouldCache) {
+    var normalized = normalizeDirectCloudCategories({ categories: categories });
+    if (!normalized.length) return false;
+    var names = { all: "الكل" };
+    normalized.forEach(function (category) {
+      names[category.code] = category.name;
+    });
+    window.categoryRows = normalized;
+    window.categoryNames = names;
+    if (window.current !== "all" && !names[window.current]) window.current = "all";
+    if (shouldCache !== false) saveJson(CATEGORY_CACHE_KEY, normalized);
+    redrawCloudCategories();
+    return true;
+  }
+
+  function ensureProductCategoriesVisible() {
+    var names = window.categoryNames && typeof window.categoryNames === "object"
+      ? window.categoryNames
+      : { all: "الكل" };
+    var rows = Array.isArray(window.categoryRows) && window.categoryRows.length
+      ? window.categoryRows.slice()
+      : Object.keys(names).filter(function (code) { return code !== "all"; }).map(function (code, index) {
+          return { code: code, name: names[code], sort: index + 1 };
+        });
+    var changed = false;
+    (window.products || []).forEach(function (product) {
+      if (!product || product.visible === false) return;
+      var code = safe(product.cat).trim();
+      if (!code || names[code]) return;
+      var name = CATEGORY_FALLBACK_NAMES[code] || code.replace(/_/g, " ");
+      names[code] = name;
+      rows.push({ code: code, name: name, sort: rows.length + 1 });
+      changed = true;
+    });
+    if (!changed) return false;
+    window.categoryNames = names;
+    window.categoryRows = rows;
+    saveJson(CATEGORY_CACHE_KEY, rows);
+    if (typeof window.renderCats === "function") window.renderCats();
+    if (typeof window.fillCats === "function") window.fillCats();
+    return true;
+  }
+
+  function fetchCloudCategoriesDirectly() {
+    var url = window.gsUrl && window.gsUrl();
+    if (!url || typeof fetch !== "function") return Promise.reject(new Error("DIRECT_CATEGORIES_UNAVAILABLE"));
+    var controller = typeof AbortController === "function" ? new AbortController() : null;
+    var timer = window.setTimeout(function () {
+      if (controller) controller.abort();
+    }, 12000);
+    var query = new URLSearchParams({ action: "categories", _t: String(Date.now()) });
+    var options = { method: "GET", cache: "no-store", redirect: "follow", headers: { Accept: "application/json" } };
+    if (controller) options.signal = controller.signal;
+    return fetch(url + (url.indexOf("?") === -1 ? "?" : "&") + query.toString(), options).then(function (response) {
+      if (!response || !response.ok) throw new Error("DIRECT_CATEGORIES_HTTP");
+      return response.json();
+    }).then(function (payload) {
+      if (!payload || payload.ok === false || !Array.isArray(payload.categories)) throw new Error("DIRECT_CATEGORIES_INVALID");
+      return normalizeDirectCloudCategories(payload);
+    }).finally(function () {
+      window.clearTimeout(timer);
+    });
+  }
+
+  var cachedCloudCategories = safeJson(CATEGORY_CACHE_KEY, []);
+  if (Array.isArray(cachedCloudCategories) && cachedCloudCategories.length) {
+    applyCloudCategories(cachedCloudCategories, false);
+  }
+
+  window.loadCloudCategories = function () {
+    if (cloudCategoryRefreshInFlight) return cloudCategoryRefreshInFlight;
+    ensureProductCategoriesVisible();
+    var context = this;
+    var args = arguments;
+    var basePromise;
+    try {
+      basePromise = Promise.resolve(baseLoadCloudCategories.apply(context, args));
+    } catch (error) {
+      basePromise = Promise.reject(error);
+    }
+    var directHandled = fetchCloudCategoriesDirectly().then(function (categories) {
+      applyCloudCategories(categories, true);
+      return categories;
+    });
+    var baseHandled = basePromise.then(function (value) {
+      var currentRows = Array.isArray(window.categoryRows) ? window.categoryRows : [];
+      if (currentRows.length) saveJson(CATEGORY_CACHE_KEY, currentRows);
+      ensureProductCategoriesVisible();
+      return value;
+    });
+    var failures = [];
+    var firstSuccess = new Promise(function (resolve, reject) {
+      [directHandled, baseHandled].forEach(function (pending) {
+        pending.then(resolve).catch(function (error) {
+          failures.push(error);
+          if (failures.length === 2) reject(failures[0]);
+        });
+      });
+    });
+    cloudCategoryRefreshInFlight = firstSuccess.catch(function () {
+      ensureProductCategoriesVisible();
+      return window.categoryRows || [];
+    });
+    Promise.all([
+      directHandled.catch(function () { return null; }),
+      baseHandled.catch(function () { return null; })
+    ]).then(function () {
+      cloudCategoryRefreshInFlight = null;
+    });
+    return cloudCategoryRefreshInFlight;
+  };
+
   function normalizeDirectCloudProducts(payload) {
     return (payload && Array.isArray(payload.products) ? payload.products : []).map(function (product, index) {
       return Object.assign({}, product, {
@@ -1346,6 +1495,7 @@
     if (Array.isArray(productSnapshot)) window.products = productSnapshot.slice();
     extractCloudMarkers();
     cacheCustomerProducts();
+    ensureProductCategoriesVisible();
     applyTrackedStatusesToCurrentOrders();
     refreshEnhancementUi();
     window.render();
@@ -1396,6 +1546,8 @@
     var now = Date.now();
     if (now - lastProductReturnRefresh < 8000 || !window.gsUrl || !window.gsUrl()) return;
     lastProductReturnRefresh = now;
+    var categoryPending = window.loadCloudCategories();
+    if (categoryPending && typeof categoryPending.catch === "function") categoryPending.catch(function () {});
     var pending = window.loadCloudProducts();
     if (pending && typeof pending.catch === "function") pending.catch(function () {});
   }
