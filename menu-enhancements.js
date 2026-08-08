@@ -47,6 +47,7 @@
   var baseRender = window.render;
   var baseRenderCart = window.renderCart;
   var baseAddMenuProduct = window.add;
+  var baseFillCats = window.fillCats;
   var baseLoadCloudCategories = window.loadCloudCategories;
   var baseLoadCloudProducts = window.loadCloudProducts;
   var baseOpenAdmin = window.openAdmin;
@@ -1307,6 +1308,20 @@
     if (typeof window.render === "function") window.render();
     if (typeof window.renderAdmin === "function") window.renderAdmin();
   }
+
+  window.fillCats = function () {
+    var categorySelect = document.getElementById("pCat");
+    var selectedCategory = categorySelect ? safe(categorySelect.value).trim() : "";
+    var result = baseFillCats.apply(this, arguments);
+    categorySelect = document.getElementById("pCat");
+    if (categorySelect && selectedCategory) {
+      var optionStillExists = Array.prototype.some.call(categorySelect.options, function (option) {
+        return safe(option.value).trim() === selectedCategory;
+      });
+      if (optionStillExists) categorySelect.value = selectedCategory;
+    }
+    return result;
+  };
 
   function applyCloudCategories(categories, shouldCache) {
     var normalized = normalizeDirectCloudCategories({ categories: categories });
