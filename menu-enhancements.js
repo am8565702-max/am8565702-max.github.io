@@ -3261,61 +3261,124 @@
       : [];
     var exact = language.toLowerCase();
     var family = exact.split("-")[0];
-    return voices.find(function (voice) {
-      return safe(voice.lang).toLowerCase() === exact;
-    }) || voices.find(function (voice) {
-      return safe(voice.lang).toLowerCase().indexOf(family + "-") === 0;
-    }) || null;
+    var preferredFemaleNames = family === "ar"
+      ? /female|mariam|maryam|fatima|hoda|zeina|salma|laila|ليلى|مريم|فاطمة/i
+      : /female|sonia|libby|serena|kate|samantha|zira|google uk english female/i;
+    var matching = voices.filter(function (voice) {
+      var voiceLanguage = safe(voice.lang).toLowerCase();
+      return voiceLanguage === exact || voiceLanguage.indexOf(family + "-") === 0;
+    });
+    matching.sort(function (first, second) {
+      function score(voice) {
+        var value = safe(voice.lang).toLowerCase() === exact ? 40 : 10;
+        if (preferredFemaleNames.test(safe(voice.name))) value += 100;
+        return value;
+      }
+      return score(second) - score(first);
+    });
+    return matching[0] || null;
   }
 
   function enableWelcomeVoice() {
     var splash = document.getElementById("welcomeSplash");
     var synth = window.speechSynthesis;
     if (!splash || isOwnerMenu() || !synth || typeof window.SpeechSynthesisUtterance !== "function") return;
+    var heldSplash = splash.cloneNode(true);
+    splash.parentNode.replaceChild(heldSplash, splash);
+    splash = heldSplash;
+    splash.style.animation = "none";
+    splash.style.opacity = "1";
+    splash.style.visibility = "visible";
+    splash.style.pointerEvents = "auto";
+    splash.style.transition = "opacity .45s ease";
+    Array.prototype.forEach.call(splash.querySelectorAll(".welcomeLogo,.welcomeArabic,.welcomeEnglish,.welcomeDivider"), function (element) {
+      element.style.animation = "none";
+      element.style.opacity = "1";
+      element.style.transform = "none";
+    });
+    var voiceHint = document.createElement("div");
+    voiceHint.setAttribute("role", "status");
+    voiceHint.style.cssText = "margin-top:18px;color:#285b35;font-size:14px;font-weight:800";
+    voiceHint.textContent = "جارٍ تشغيل رسالة الترحيب…";
+    var stage = splash.querySelector(".welcomeStage");
+    if (stage) stage.appendChild(voiceHint);
     var started = false;
     var queued = false;
+    var finished = false;
+    var voiceAttempt = 0;
     var retryEvent = typeof window.PointerEvent === "function" ? "pointerdown" : "touchstart";
+    var safetyTimer = 0;
 
     function removeRetryListeners() {
       document.removeEventListener(retryEvent, retryAfterCustomerTouch);
     }
 
+    function finishWelcome() {
+      if (finished) return;
+      finished = true;
+      removeRetryListeners();
+      window.clearTimeout(safetyTimer);
+      splash.style.opacity = "0";
+      splash.style.pointerEvents = "none";
+      window.setTimeout(function () {
+        if (splash && splash.parentNode) splash.parentNode.removeChild(splash);
+      }, 480);
+    }
+
     function speakWelcome() {
       if (started || queued) return;
       queued = true;
+      voiceAttempt += 1;
+      var currentAttempt = voiceAttempt;
       var arabic = new window.SpeechSynthesisUtterance("مرحبًا بكم في غصن الزيتون للتجارة");
       var english = new window.SpeechSynthesisUtterance("Welcome to Olive Branch Trading");
       arabic.lang = "ar-AE";
       english.lang = "en-GB";
-      arabic.rate = 0.88;
-      english.rate = 0.88;
+      arabic.rate = 0.82;
+      english.rate = 0.84;
       arabic.pitch = english.pitch = 1;
       arabic.volume = english.volume = 1;
       arabic.voice = welcomeVoiceFor("ar-AE");
       english.voice = welcomeVoiceFor("en-GB");
       arabic.onstart = function () {
+        if (currentAttempt !== voiceAttempt) return;
         started = true;
         removeRetryListeners();
+        if (voiceHint) voiceHint.textContent = "أهلًا وسهلًا بكم • Welcome";
       };
       arabic.onend = function () {
+        if (currentAttempt !== voiceAttempt) return;
         window.setTimeout(function () {
           synth.speak(english);
         }, 180);
       };
       arabic.onerror = function () {
-        if (!started) queued = false;
+        if (currentAttempt !== voiceAttempt) return;
+        if (started) {
+          synth.speak(english);
+          return;
+        }
+        queued = false;
+        if (voiceHint) voiceHint.textContent = "المس الشاشة لتشغيل رسالة الترحيب";
       };
+      english.onend = finishWelcome;
+      english.onerror = finishWelcome;
       synth.speak(arabic);
     }
 
     function retryAfterCustomerTouch() {
       if (started) return;
+      voiceAttempt += 1;
       if (queued && typeof synth.cancel === "function") synth.cancel();
       queued = false;
       speakWelcome();
     }
 
     document.addEventListener(retryEvent, retryAfterCustomerTouch, { passive: true });
+    window.setTimeout(function () {
+      if (!started && voiceHint) voiceHint.textContent = "المس الشاشة لتشغيل رسالة الترحيب";
+    }, 1100);
+    safetyTimer = window.setTimeout(finishWelcome, 20000);
     window.setTimeout(speakWelcome, 220);
   }
 
