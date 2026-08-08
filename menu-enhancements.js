@@ -3250,6 +3250,75 @@
     updateFavoriteButton();
   }
 
+  function isOwnerMenu() {
+    var params = new URLSearchParams(window.location.search || "");
+    return params.has("owner_access") || /(?:^|-)owner(?:$|-)/i.test(safe(params.get("v")));
+  }
+
+  function welcomeVoiceFor(language) {
+    var voices = window.speechSynthesis && window.speechSynthesis.getVoices
+      ? window.speechSynthesis.getVoices()
+      : [];
+    var exact = language.toLowerCase();
+    var family = exact.split("-")[0];
+    return voices.find(function (voice) {
+      return safe(voice.lang).toLowerCase() === exact;
+    }) || voices.find(function (voice) {
+      return safe(voice.lang).toLowerCase().indexOf(family + "-") === 0;
+    }) || null;
+  }
+
+  function enableWelcomeVoice() {
+    var splash = document.getElementById("welcomeSplash");
+    var synth = window.speechSynthesis;
+    if (!splash || isOwnerMenu() || !synth || typeof window.SpeechSynthesisUtterance !== "function") return;
+    var started = false;
+    var queued = false;
+    var retryEvent = typeof window.PointerEvent === "function" ? "pointerdown" : "touchstart";
+
+    function removeRetryListeners() {
+      document.removeEventListener(retryEvent, retryAfterCustomerTouch);
+    }
+
+    function speakWelcome() {
+      if (started || queued) return;
+      queued = true;
+      var arabic = new window.SpeechSynthesisUtterance("مرحبًا بكم في غصن الزيتون للتجارة");
+      var english = new window.SpeechSynthesisUtterance("Welcome to Olive Branch Trading");
+      arabic.lang = "ar-AE";
+      english.lang = "en-GB";
+      arabic.rate = 0.88;
+      english.rate = 0.88;
+      arabic.pitch = english.pitch = 1;
+      arabic.volume = english.volume = 1;
+      arabic.voice = welcomeVoiceFor("ar-AE");
+      english.voice = welcomeVoiceFor("en-GB");
+      arabic.onstart = function () {
+        started = true;
+        removeRetryListeners();
+      };
+      arabic.onend = function () {
+        window.setTimeout(function () {
+          synth.speak(english);
+        }, 180);
+      };
+      arabic.onerror = function () {
+        if (!started) queued = false;
+      };
+      synth.speak(arabic);
+    }
+
+    function retryAfterCustomerTouch() {
+      if (started) return;
+      if (queued && typeof synth.cancel === "function") synth.cancel();
+      queued = false;
+      speakWelcome();
+    }
+
+    document.addEventListener(retryEvent, retryAfterCustomerTouch, { passive: true });
+    window.setTimeout(speakWelcome, 220);
+  }
+
   window.setMenuLanguage = function (language) {
     var result = baseSetMenuLanguage.apply(this, arguments);
     refreshEnhancementUi();
@@ -3302,6 +3371,7 @@
 
   injectCustomerUi();
   injectAdminUi();
+  enableWelcomeVoice();
   renderDeliveryOptions();
   renderOffers();
   translateEnhancementUi();
