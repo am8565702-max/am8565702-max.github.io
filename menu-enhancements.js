@@ -3302,12 +3302,16 @@
     voiceHint.textContent = "جارٍ تشغيل رسالة الترحيب…";
     var stage = splash.querySelector(".welcomeStage");
     if (stage) stage.appendChild(voiceHint);
+    var appleMobile = /iPhone|iPad|iPod/i.test(safe(navigator.userAgent)) ||
+      (safe(navigator.platform) === "MacIntel" && Number(navigator.maxTouchPoints || 0) > 1);
     var started = false;
     var queued = false;
     var finished = false;
     var voiceAttempt = 0;
     var retryEvent = typeof window.PointerEvent === "function" ? "pointerdown" : "touchstart";
     var safetyTimer = 0;
+    var arabicFallbackTimer = 0;
+    var englishFallbackTimer = 0;
 
     function removeRetryListeners() {
       document.removeEventListener(retryEvent, retryAfterCustomerTouch);
@@ -3318,6 +3322,8 @@
       finished = true;
       removeRetryListeners();
       window.clearTimeout(safetyTimer);
+      window.clearTimeout(arabicFallbackTimer);
+      window.clearTimeout(englishFallbackTimer);
       splash.style.opacity = "0";
       splash.style.pointerEvents = "none";
       window.setTimeout(function () {
@@ -3332,34 +3338,45 @@
       var currentAttempt = voiceAttempt;
       var arabic = new window.SpeechSynthesisUtterance("مرحبًا بكم في غصن الزيتون للتجارة");
       var english = new window.SpeechSynthesisUtterance("Welcome to Olive Branch Trading");
+      var englishStarted = false;
       arabic.lang = "ar-AE";
       english.lang = "en-GB";
-      arabic.rate = 0.82;
-      english.rate = 0.84;
+      arabic.rate = appleMobile ? 0.92 : 0.82;
+      english.rate = appleMobile ? 0.94 : 0.84;
       arabic.pitch = english.pitch = 1;
       arabic.volume = english.volume = 1;
       arabic.voice = welcomeVoiceFor("ar-AE");
       english.voice = welcomeVoiceFor("en-GB");
+      function startEnglish() {
+        if (finished || englishStarted || currentAttempt !== voiceAttempt) return;
+        englishStarted = true;
+        window.clearTimeout(arabicFallbackTimer);
+        window.setTimeout(function () {
+          if (!finished && currentAttempt === voiceAttempt) synth.speak(english);
+        }, appleMobile ? 80 : 180);
+      }
       arabic.onstart = function () {
         if (currentAttempt !== voiceAttempt) return;
         started = true;
         removeRetryListeners();
         if (voiceHint) voiceHint.textContent = "أهلًا وسهلًا بكم • Welcome";
+        if (appleMobile) arabicFallbackTimer = window.setTimeout(startEnglish, 4200);
       };
       arabic.onend = function () {
         if (currentAttempt !== voiceAttempt) return;
-        window.setTimeout(function () {
-          synth.speak(english);
-        }, 180);
+        startEnglish();
       };
       arabic.onerror = function () {
         if (currentAttempt !== voiceAttempt) return;
         if (started) {
-          synth.speak(english);
+          startEnglish();
           return;
         }
         queued = false;
         if (voiceHint) voiceHint.textContent = "المس الشاشة لتشغيل رسالة الترحيب";
+      };
+      english.onstart = function () {
+        if (appleMobile) englishFallbackTimer = window.setTimeout(finishWelcome, 3500);
       };
       english.onend = finishWelcome;
       english.onerror = finishWelcome;
@@ -3377,8 +3394,8 @@
     document.addEventListener(retryEvent, retryAfterCustomerTouch, { passive: true });
     window.setTimeout(function () {
       if (!started && voiceHint) voiceHint.textContent = "المس الشاشة لتشغيل رسالة الترحيب";
-    }, 1100);
-    safetyTimer = window.setTimeout(finishWelcome, 20000);
+    }, appleMobile ? 450 : 1100);
+    safetyTimer = window.setTimeout(finishWelcome, appleMobile ? 10000 : 20000);
     window.setTimeout(speakWelcome, 220);
   }
 
