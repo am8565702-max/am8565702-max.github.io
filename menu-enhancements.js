@@ -3298,27 +3298,34 @@
       }, 270);
     }
 
-    function playSpeechFallback() {
+    function playSpeechFallback(attempt) {
       if (finished || fixedPlaying || fallbackSpeaking) return;
       var synth = window.speechSynthesis;
       if (!synth || typeof window.SpeechSynthesisUtterance !== "function") {
-        finishWelcome();
         return;
       }
+      var voices = synth.getVoices ? synth.getVoices() : [];
+      var malePattern = /male|daniel|arthur|george|oliver|ryan|thomas|alex|fred|aaron|albert|bruce|ralph|reed|reid|gordon|google uk english male/i;
+      var maleVoice = voices.find(function (voice) {
+        return safe(voice.lang).toLowerCase().indexOf("en-") === 0 &&
+          malePattern.test(safe(voice.name) + " " + safe(voice.voiceURI));
+      });
+      var retryCount = Number(attempt || 0);
+      if (!maleVoice && retryCount < 8) {
+        window.setTimeout(function () {
+          playSpeechFallback(retryCount + 1);
+        }, 60);
+        return;
+      }
+      if (!maleVoice) return;
       fallbackSpeaking = true;
       removeRetryListener();
       var english = new window.SpeechSynthesisUtterance("Welcome to Olive Branch Trading");
-      var voices = synth.getVoices ? synth.getVoices() : [];
-      var malePattern = /male|daniel|arthur|george|oliver|ryan|thomas|google uk english male/i;
       english.lang = "en-GB";
       english.rate = 0.96;
       english.pitch = 0.96;
       english.volume = 1;
-      english.voice = voices.find(function (voice) {
-        return malePattern.test(safe(voice.name) + " " + safe(voice.voiceURI));
-      }) || voices.find(function (voice) {
-        return safe(voice.lang).toLowerCase() === "en-gb";
-      }) || null;
+      english.voice = maleVoice;
       english.onend = finishWelcome;
       english.onerror = finishWelcome;
       if (typeof synth.cancel === "function") synth.cancel();
@@ -3331,14 +3338,14 @@
       try {
         pending = fixedVoice.play();
       } catch (error) {
-        playSpeechFallback();
+        playSpeechFallback(0);
         return;
       }
       if (pending && typeof pending.then === "function") {
         pending.then(function () {
           fixedPlaying = true;
           removeRetryListener();
-        }).catch(playSpeechFallback);
+        }).catch(function () { playSpeechFallback(0); });
       } else {
         fixedPlaying = true;
         removeRetryListener();
@@ -3354,7 +3361,7 @@
       removeRetryListener();
     });
     fixedVoice.addEventListener("ended", finishWelcome);
-    fixedVoice.addEventListener("error", playSpeechFallback);
+    fixedVoice.addEventListener("error", function () { playSpeechFallback(0); });
     document.addEventListener(retryEvent, retryFixedVoice, { passive: true });
     safetyTimer = window.setTimeout(finishWelcome, 3700);
     window.setTimeout(playFixedVoice, 20);
