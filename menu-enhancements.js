@@ -3265,14 +3265,15 @@
     splash.style.opacity = "1";
     splash.style.visibility = "visible";
     splash.style.pointerEvents = "auto";
-    splash.style.transition = "opacity .45s ease";
+    splash.style.transition = "opacity .25s ease";
     Array.prototype.forEach.call(splash.querySelectorAll(".welcomeLogo,.welcomeArabic,.welcomeEnglish,.welcomeDivider"), function (element) {
       element.style.animation = "none";
       element.style.opacity = "1";
       element.style.transform = "none";
     });
     var finished = false;
-    var playing = false;
+    var fixedPlaying = false;
+    var fallbackSpeaking = false;
     var safetyTimer = 0;
     var retryEvent = typeof window.PointerEvent === "function" ? "pointerdown" : "touchstart";
     var fixedVoice = new window.Audio("./welcome-british-male.mp3?v=1");
@@ -3294,24 +3295,52 @@
       splash.style.pointerEvents = "none";
       window.setTimeout(function () {
         if (splash && splash.parentNode) splash.parentNode.removeChild(splash);
-      }, 480);
+      }, 270);
+    }
+
+    function playSpeechFallback() {
+      if (finished || fixedPlaying || fallbackSpeaking) return;
+      var synth = window.speechSynthesis;
+      if (!synth || typeof window.SpeechSynthesisUtterance !== "function") {
+        finishWelcome();
+        return;
+      }
+      fallbackSpeaking = true;
+      removeRetryListener();
+      var english = new window.SpeechSynthesisUtterance("Welcome to Olive Branch Trading");
+      var voices = synth.getVoices ? synth.getVoices() : [];
+      var malePattern = /male|daniel|arthur|george|oliver|ryan|thomas|google uk english male/i;
+      english.lang = "en-GB";
+      english.rate = 0.96;
+      english.pitch = 0.96;
+      english.volume = 1;
+      english.voice = voices.find(function (voice) {
+        return malePattern.test(safe(voice.name) + " " + safe(voice.voiceURI));
+      }) || voices.find(function (voice) {
+        return safe(voice.lang).toLowerCase() === "en-gb";
+      }) || null;
+      english.onend = finishWelcome;
+      english.onerror = finishWelcome;
+      if (typeof synth.cancel === "function") synth.cancel();
+      synth.speak(english);
     }
 
     function playFixedVoice() {
-      if (playing || finished) return;
+      if (fixedPlaying || fallbackSpeaking || finished) return;
       var pending;
       try {
         pending = fixedVoice.play();
       } catch (error) {
+        playSpeechFallback();
         return;
       }
       if (pending && typeof pending.then === "function") {
         pending.then(function () {
-          playing = true;
+          fixedPlaying = true;
           removeRetryListener();
-        }).catch(function () {});
+        }).catch(playSpeechFallback);
       } else {
-        playing = true;
+        fixedPlaying = true;
         removeRetryListener();
       }
     }
@@ -3321,14 +3350,14 @@
     }
 
     fixedVoice.addEventListener("playing", function () {
-      playing = true;
+      fixedPlaying = true;
       removeRetryListener();
     });
     fixedVoice.addEventListener("ended", finishWelcome);
-    fixedVoice.addEventListener("error", finishWelcome);
+    fixedVoice.addEventListener("error", playSpeechFallback);
     document.addEventListener(retryEvent, retryFixedVoice, { passive: true });
-    safetyTimer = window.setTimeout(finishWelcome, 7000);
-    window.setTimeout(playFixedVoice, 60);
+    safetyTimer = window.setTimeout(finishWelcome, 3700);
+    window.setTimeout(playFixedVoice, 20);
   }
 
   window.setMenuLanguage = function (language) {
