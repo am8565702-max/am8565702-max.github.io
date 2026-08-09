@@ -365,6 +365,11 @@
     context.fillText("Order #" + safeText(order.orderNo), 86, 382);
     context.font = "20px Arial, sans-serif";
     context.fillText(safeText(order.record && order.record.dateText), 86, 422);
+    if (safeText(order.trackingCode, "") !== "-") {
+      context.fillStyle = "#9b6817";
+      context.font = "bold 19px Arial, sans-serif";
+      context.fillText("Private tracking code: " + safeText(order.trackingCode), 86, 452);
+    }
 
     var enhancements = order.enhancements || {};
     if (enhancements.deliveryDate || enhancements.deliverySlot || enhancements.couponCode) {

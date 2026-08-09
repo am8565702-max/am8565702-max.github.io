@@ -10,20 +10,22 @@
   var APPLIED_COUPON_KEY = "oliveMenuAppliedCouponV1";
   var ADDRESS_BOOK_KEY = "oliveMenuSavedAddressesV1";
   var SELECTED_ADDRESS_KEY = "oliveMenuSelectedAddressV1";
+  var CUSTOMER_TRACKING_CODE_KEY = "oliveMenuCustomerTrackingCodeV1";
   var CATEGORY_CACHE_KEY = "oliveMenuCategoriesCloudV1";
-  var STATUS_SYNC_SIGNATURE_KEY = "oliveMenuStatusSyncSignatureV2";
+  var STATUS_SYNC_SIGNATURE_KEY = "oliveMenuStatusSyncSignatureV3";
   var ADMIN_SESSION_KEY = "oliveMenuAdminSessionV2";
   var MAX_HISTORY = 10;
   var MAX_SAVED_ADDRESSES = 12;
   var configMarkerId = 0;
   var statusCollectionMarkerId = 0;
-  var statusCollection = { version: 2, orders: {} };
+  var statusCollection = { version: 3, orders: {} };
   var statusSaveQueue = Promise.resolve();
   var statusMarkers = {};
   var statusMarkersLoaded = false;
   var trackingRefreshTimer = 0;
   var trackingRefreshPromise = null;
   var trackingRefreshGeneration = 0;
+  var pendingTrackingCode = "";
   var TRACKING_REFRESH_MS = 5000;
   var adminConfigDirty = false;
   var favoriteOnly = false;
@@ -221,6 +223,46 @@
     return safe(value).replace(/\D/g, "");
   }
 
+  function normalizeTrackingCode(value) {
+    return safe(value).toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 8);
+  }
+
+  function generateTrackingCode() {
+    var alphabet = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
+    var bytes = new Uint8Array(8);
+    if (window.crypto && typeof window.crypto.getRandomValues === "function") {
+      window.crypto.getRandomValues(bytes);
+    } else {
+      for (var index = 0; index < bytes.length; index += 1) {
+        bytes[index] = Math.floor(Math.random() * 256);
+      }
+    }
+    return Array.prototype.map.call(bytes, function (byte) {
+      return alphabet.charAt(byte % alphabet.length);
+    }).join("");
+  }
+
+  function customerTrackingCode(createIfMissing) {
+    var stored = "";
+    try { stored = normalizeTrackingCode(localStorage.getItem(CUSTOMER_TRACKING_CODE_KEY)); } catch (error) {}
+    if (!stored && createIfMissing !== false) {
+      stored = generateTrackingCode();
+      try { localStorage.setItem(CUSTOMER_TRACKING_CODE_KEY, stored); } catch (error) {}
+    }
+    return stored;
+  }
+
+  function trackingCodeFromOrder(order) {
+    var direct = normalizeTrackingCode(order && (order.trackingCode || order.tracking_code));
+    if (direct.length === 8) return direct;
+    var itemNotes = order && Array.isArray(order.items) ? order.items.map(function (item) {
+      return safe(item && (item.notes || item.note));
+    }).join(" | ") : "";
+    var notes = [order && order.notes, order && order.note, order && order.paymentNotes, itemNotes].map(safe).join(" | ");
+    var match = notes.match(/(?:TRACKING_CODE|Tracking\s*code|رمز\s*التتبع)\s*[:=#-]?\s*([A-Z0-9]{8})/i);
+    return match ? normalizeTrackingCode(match[1]) : "";
+  }
+
   function todayValue() {
     return dateValueAfterDays(0);
   }
@@ -277,6 +319,42 @@
     history.unshift(order);
     saveJson(HISTORY_KEY, history.slice(0, MAX_HISTORY));
   }
+
+  function renderThankYouTrackingCode(order) {
+    var code = normalizeTrackingCode(order && order.trackingCode);
+    var orderNumber = document.getElementById("thankYouOrderNo");
+    if (!orderNumber || code.length !== 8) return;
+    var box = document.getElementById("thankYouTrackingCode");
+    if (!box) {
+      box = document.createElement("div");
+      box.id = "thankYouTrackingCode";
+      box.className = "thankYouTrackingCode";
+      orderNumber.insertAdjacentElement("afterend", box);
+    }
+    box.innerHTML = '<span>' + text("رمز تتبع طلباتك السري", "Your private tracking code") + '</span>' +
+      '<b dir="ltr">' + html(code) + '</b>' +
+      '<button type="button" onclick="copyCustomerTrackingCode()">' + text("نسخ الرمز", "Copy code") + '</button>' +
+      '<small>' + text("احتفظ به؛ التتبع لن يعمل برقم الهاتف وحده.", "Keep it safe; a phone number alone cannot open tracking.") + '</small>';
+  }
+
+  window.copyCustomerTrackingCode = function () {
+    var shownCode = document.querySelector("#thankYouTrackingCode b");
+    var code = normalizeTrackingCode(shownCode && shownCode.textContent || customerTrackingCode(false));
+    if (!code) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(code).then(function () {
+        alert(text("تم نسخ رمز التتبع.", "Tracking code copied."));
+      }).catch(function () {});
+      return;
+    }
+    var input = document.createElement("input");
+    input.value = code;
+    document.body.appendChild(input);
+    input.select();
+    try { document.execCommand("copy"); } catch (error) {}
+    input.remove();
+    alert(text("تم نسخ رمز التتبع.", "Tracking code copied."));
+  };
 
   function savedAddresses() {
     var addresses = safeJson(ADDRESS_BOOK_KEY, []);
@@ -478,6 +556,9 @@
   function whatsappExtras(order) {
     var metadata = order.enhancements || {};
     var lines = [];
+    if (normalizeTrackingCode(order.trackingCode).length === 8) {
+      lines.push(text("🔐 رمز التتبع السري: ", "🔐 Private tracking code: ") + normalizeTrackingCode(order.trackingCode));
+    }
     if (metadata.addressLabel) {
       lines.push(text("📍 اسم العنوان المحفوظ: ", "📍 Saved address: ") + metadata.addressLabel);
     }
@@ -838,7 +919,7 @@
     if (foundStatusCollection && foundStatusCollection.orders) {
       statusCollection = foundStatusCollection;
     } else if (!statusCollection || !statusCollection.orders) {
-      statusCollection = { version: 2, orders: {} };
+      statusCollection = { version: 3, orders: {} };
     }
     Object.keys(statusCollection.orders || {}).forEach(function (number) {
       statusMarkers[String(number)] = {
@@ -1270,6 +1351,10 @@
     renderOffers();
     updateFavoriteButton();
     translateEnhancementUi();
+    var latestOrder = orderHistory()[0];
+    if (latestOrder && document.getElementById("thankYouModal") && document.getElementById("thankYouModal").classList.contains("open")) {
+      renderThankYouTrackingCode(latestOrder);
+    }
     if (document.getElementById("adminModal") && document.getElementById("adminModal").classList.contains("open")) {
       renderAdminConfig();
     }
@@ -1588,9 +1673,13 @@
     if (updated.action === "createOrder") {
       var metadata = checkoutMetadata();
       var values = Object.values(window.cart || {});
-      updated.notes = [safe(updated.notes), checkoutNotesText(metadata)].filter(Boolean).join(" | ");
+      pendingTrackingCode = customerTrackingCode();
+      updated.trackingCode = pendingTrackingCode;
+      updated.notes = [safe(updated.notes), checkoutNotesText(metadata), "TRACKING_CODE=" + pendingTrackingCode].filter(Boolean).join(" | ");
       updated.items = (updated.items || []).map(function (item, index) {
-        return Object.assign({}, item, { notes: itemNoteFor(values[index] || item, index) });
+        var notes = itemNoteFor(values[index] || item, index);
+        if (index === 0) notes = [notes, "TRACKING_CODE=" + pendingTrackingCode].filter(Boolean).join(" | ");
+        return Object.assign({}, item, { notes: notes });
       });
     }
     return baseGsPost(updated);
@@ -1637,13 +1726,17 @@
   window.completeCustomerOrderReceiptFlow = function (order) {
     if (!order) return baseCompleteReceipt(order);
     var values = Object.values(window.cart || {});
+    order.trackingCode = normalizeTrackingCode(order.trackingCode || pendingTrackingCode || customerTrackingCode());
     order.items = (order.items || []).map(function (item, index) {
       return Object.assign({}, item, { note: itemNoteFor(item, index) || safe(values[index] && values[index].note) });
     });
     order.enhancements = checkoutMetadata();
     order.whatsappUrl = appendWhatsappText(order.whatsappUrl, whatsappExtras(order));
     saveOrderHistory(JSON.parse(JSON.stringify(order)));
-    return baseCompleteReceipt(order);
+    var handled = baseCompleteReceipt(order);
+    renderThankYouTrackingCode(order);
+    pendingTrackingCode = "";
+    return handled;
   };
 
   window.repeatLastOrder = function () {
@@ -2407,47 +2500,33 @@
     return value;
   }
 
-  function hashPhoneDigits(value) {
-    var hashValue = "olive-branch-status-v1|" + safe(value);
+  function trackingAccessHash(phone, trackingCode) {
+    var source = "olive-branch-tracking-v1|" + normalizedPhoneDigits(phone) + "|" + normalizeTrackingCode(trackingCode);
     if (window.crypto && window.crypto.subtle && window.TextEncoder) {
-      return window.crypto.subtle.digest("SHA-256", new TextEncoder().encode(hashValue)).then(function (buffer) {
+      return window.crypto.subtle.digest("SHA-256", new TextEncoder().encode(source)).then(function (buffer) {
         return Array.prototype.map.call(new Uint8Array(buffer), function (byte) {
           return byte.toString(16).padStart(2, "0");
         }).join("");
       });
     }
     var hash = 2166136261;
-    for (var index = 0; index < hashValue.length; index += 1) {
-      hash ^= hashValue.charCodeAt(index);
+    for (var index = 0; index < source.length; index += 1) {
+      hash ^= source.charCodeAt(index);
       hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
     }
     return Promise.resolve("fallback-" + (hash >>> 0).toString(16));
-  }
-
-  function phoneHash(phone) {
-    return hashPhoneDigits(normalizedPhoneDigits(phone));
-  }
-
-  function phoneHashCandidates(phone) {
-    var raw = digits(phone);
-    var normalized = normalizedPhoneDigits(phone);
-    var values = [normalized, raw];
-    if (normalized.length === 9) {
-      values.push("0" + normalized, "971" + normalized, "00971" + normalized);
-    }
-    values = values.filter(function (value, index, all) {
-      return value && all.indexOf(value) === index;
-    });
-    return Promise.all(values.map(hashPhoneDigits));
   }
 
   window.openTrackingModal = function () {
     stopLiveTracking();
     var latest = orderHistory()[0] || {};
     var latestPhone = latest.record && latest.record.phone || "";
+    var latestTrackingCode = normalizeTrackingCode(latest.trackingCode || customerTrackingCode(false));
     openEnhancementHtml(
       '<h2>🚚 ' + text("تتبّع الطلب", "Track order") + '</h2>' +
       '<div class="field"><label for="trackingPhone">' + text("رقم الهاتف المستخدم في الطلب", "Phone number used for the order") + '</label><input id="trackingPhone" inputmode="tel" value="' + html(latestPhone) + '"></div>' +
+      '<div class="field"><label for="trackingCode">' + text("رمز التتبع السري", "Private tracking code") + '</label><input id="trackingCode" inputmode="text" autocomplete="one-time-code" maxlength="8" dir="ltr" value="' + html(latestTrackingCode) + '" placeholder="AB12CD34"></div>' +
+      '<div class="trackingPrivacyHint">🔒 ' + text("لن تظهر أي طلبات برقم الهاتف وحده.", "A phone number alone cannot reveal any orders.") + '</div>' +
       '<button class="primary" style="width:100%" type="button" onclick="checkOrderTracking()">' + text("تحديث وعرض كل طلباتي", "Refresh and show all my orders") + '</button>' +
       '<div id="trackingLiveState" class="trackingLiveState" aria-live="polite">' + text("يتم تحديث الحالة تلقائيًا كل 5 ثوانٍ.", "Status refreshes automatically every 5 seconds.") + '</div>' +
       '<div id="trackingResult" class="trackingResult" hidden></div>');
@@ -2534,14 +2613,15 @@
     return trackingRefreshPromise;
   }
 
-  function renderTrackingResults(phone) {
+  function renderTrackingResults(phone, trackingCode) {
     var result = document.getElementById("trackingResult");
     if (!result) return Promise.resolve(false);
-    return phoneHashCandidates(phone).then(function (hashes) {
+    var normalizedCode = normalizeTrackingCode(trackingCode);
+    return trackingAccessHash(phone, normalizedCode).then(function (accessHash) {
       var matches = {};
       Object.keys(statusMarkers).forEach(function (number) {
         var marker = statusMarkers[number];
-        if (marker && marker.data && hashes.indexOf(marker.data.phoneHash) !== -1) {
+        if (marker && marker.data && safe(marker.data.trackingHash) === accessHash) {
           matches[String(number)] = {
             orderNo: String(number),
             status: marker.data.status || text("جديد", "New"),
@@ -2552,8 +2632,11 @@
       });
       orderHistory().forEach(function (order) {
         if (normalizedPhoneDigits(order.record && order.record.phone) !== normalizedPhoneDigits(phone)) return;
+        var localCode = normalizeTrackingCode(order.trackingCode || customerTrackingCode(false));
+        if (!localCode || localCode !== normalizedCode) return;
         var number = String(order.orderNo);
-        var current = matches[number] || {};
+        var localMarker = statusMarkers[number] && statusMarkers[number].data || {};
+        var current = matches[number] || localMarker;
         matches[number] = {
           orderNo: number,
           status: current.status || text("جديد", "New"),
@@ -2582,22 +2665,23 @@
     });
   }
 
-  function scheduleLiveTracking(phone, generation) {
+  function scheduleLiveTracking(phone, trackingCode, generation) {
     if (generation !== trackingRefreshGeneration || !trackingModalIsOpen()) return;
     if (trackingRefreshTimer) window.clearTimeout(trackingRefreshTimer);
     trackingRefreshTimer = window.setTimeout(function () {
-      runLiveTrackingRefresh(phone, generation);
+      runLiveTrackingRefresh(phone, trackingCode, generation);
     }, TRACKING_REFRESH_MS);
   }
 
-  function runLiveTrackingRefresh(phone, generation) {
+  function runLiveTrackingRefresh(phone, trackingCode, generation) {
     if (generation !== trackingRefreshGeneration || !trackingModalIsOpen()) return Promise.resolve(false);
     var input = document.getElementById("trackingPhone");
-    if (!input || digits(input.value) !== digits(phone)) return Promise.resolve(false);
+    var codeInput = document.getElementById("trackingCode");
+    if (!input || !codeInput || digits(input.value) !== digits(phone) || normalizeTrackingCode(codeInput.value) !== normalizeTrackingCode(trackingCode)) return Promise.resolve(false);
     setTrackingLiveState(text("جارٍ جلب أحدث حالة...", "Loading latest status..."), false);
     return refreshTrackingStatusesFromCloud().then(function () {
       if (generation !== trackingRefreshGeneration || !trackingModalIsOpen()) return false;
-      return renderTrackingResults(phone).then(function () {
+      return renderTrackingResults(phone, trackingCode).then(function () {
         setTrackingLiveState(text("✓ الحالة محدثة الآن — تحديث تلقائي كل 5 ثوانٍ", "✓ Status is live — refreshing every 5 seconds"), false);
         return true;
       });
@@ -2607,22 +2691,27 @@
       }
       return false;
     }).then(function (updated) {
-      scheduleLiveTracking(phone, generation);
+      scheduleLiveTracking(phone, trackingCode, generation);
       return updated;
     });
   }
 
   window.checkOrderTracking = function () {
     var phone = safe(document.getElementById("trackingPhone") && document.getElementById("trackingPhone").value).trim();
+    var trackingCode = normalizeTrackingCode(document.getElementById("trackingCode") && document.getElementById("trackingCode").value);
     if (digits(phone).length < 8) {
       alert(text("اكتب رقم الهاتف الصحيح.", "Enter a valid phone number."));
+      return Promise.resolve(false);
+    }
+    if (trackingCode.length !== 8) {
+      alert(text("اكتب رمز التتبع السري المكوّن من 8 أحرف وأرقام.", "Enter the 8-character private tracking code."));
       return Promise.resolve(false);
     }
     stopLiveTracking();
     var generation = trackingRefreshGeneration;
     setTrackingLiveState(text("جارٍ عرض الطلبات وجلب أحدث حالة...", "Showing orders and loading latest status..."), false);
-    return renderTrackingResults(phone).then(function () {
-      return runLiveTrackingRefresh(phone, generation);
+    return renderTrackingResults(phone, trackingCode).then(function () {
+      return runLiveTrackingRefresh(phone, trackingCode, generation);
     });
   };
 
@@ -2636,7 +2725,7 @@
     entries.forEach(function (entry) {
       trimmed[entry.number] = entry.data;
     });
-    statusCollection = { version: 2, orders: trimmed };
+    statusCollection = { version: 3, orders: trimmed };
   }
 
   function wait(milliseconds) {
@@ -2841,14 +2930,14 @@
         if (safe(product.name).trim() !== STATUS_COLLECTION_MARKER) return;
         if (!bestMarker || Number(product.id || 0) >= Number(bestMarker.id || 0)) bestMarker = product;
       });
-      if (!bestMarker) return { id: 0, collection: { version: 2, orders: {} } };
+      if (!bestMarker) return { id: 0, collection: { version: 3, orders: {} } };
       try {
         return {
           id: Number(bestMarker.id || 0),
           collection: JSON.parse(safe(bestMarker.desc) || "{}")
         };
       } catch (error) {
-        return { id: Number(bestMarker.id || 0), collection: { version: 2, orders: {} } };
+        return { id: Number(bestMarker.id || 0), collection: { version: 3, orders: {} } };
       }
     });
   }
@@ -2859,7 +2948,7 @@
       var expected = expectedOrders[number] || {};
       var remote = remoteOrders[number] || {};
       return safe(remote.status) === safe(expected.status) &&
-        safe(remote.phoneHash) === safe(expected.phoneHash);
+        safe(remote.trackingHash) === safe(expected.trackingHash);
     });
   }
 
@@ -2920,12 +3009,15 @@
       return String(item.orderNo) === String(orderNumber);
     });
     if (!order || !order.phone) return Promise.resolve();
-    return phoneHash(order.phone).then(function (hash) {
-      var number = String(orderNumber);
+    var number = String(orderNumber);
+    var old = statusCollection.orders && statusCollection.orders[number] || {};
+    var code = trackingCodeFromOrder(order);
+    var hashPromise = code ? trackingAccessHash(order.phone, code) : Promise.resolve(safe(old.trackingHash));
+    return hashPromise.then(function (trackingHash) {
       var statusData = {
         orderNo: number,
         status: status,
-        phoneHash: hash,
+        trackingHash: trackingHash,
         deliveryType: order.deliveryType || "",
         updatedAt: new Date().toISOString()
       };
@@ -2944,7 +3036,7 @@
 
   function ordersStatusSignature() {
     var value = (window.orders || []).map(function (order) {
-      return [safe(order.orderNo), safe(order.status), digits(order.phone)].join("|");
+      return [safe(order.orderNo), safe(order.status), digits(order.phone), trackingCodeFromOrder(order)].join("|");
     }).sort().join(";");
     var hash = 2166136261;
     for (var index = 0; index < value.length; index += 1) {
@@ -2969,16 +3061,18 @@
         (Date.parse(first.dateISO) || Number(first.orderNo) || 0);
     }).slice(0, 100);
     return Promise.all(orders.map(function (order) {
-      return phoneHash(order.phone).then(function (hash) {
-        var number = String(order.orderNo);
-        var old = statusCollection.orders && statusCollection.orders[number] || {};
+      var code = trackingCodeFromOrder(order);
+      var number = String(order.orderNo);
+      var old = statusCollection.orders && statusCollection.orders[number] || {};
+      var hashPromise = code ? trackingAccessHash(order.phone, code) : Promise.resolve(safe(old.trackingHash));
+      return hashPromise.then(function (trackingHash) {
         var status = safe(order.status || "جديد");
         return {
           number: number,
           data: {
             orderNo: number,
             status: status,
-            phoneHash: hash,
+            trackingHash: trackingHash,
             deliveryType: order.deliveryType || "",
             updatedAt: old.status === status && old.updatedAt
               ? old.updatedAt
@@ -3419,4 +3513,8 @@
   translateEnhancementUi();
   window.render();
   window.renderCart();
+  var restoredOrder = orderHistory()[0];
+  if (restoredOrder && document.getElementById("thankYouModal") && document.getElementById("thankYouModal").classList.contains("open")) {
+    renderThankYouTrackingCode(restoredOrder);
+  }
 })();

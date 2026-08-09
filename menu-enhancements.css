@@ -21,6 +21,7 @@ html[dir="ltr"] .enhancementDialog h2{margin:2px 0 14px 48px}
 .enhancementDialog .field input,.enhancementDialog .field select,.enhancementDialog .field textarea{width:100%;min-height:46px;padding:10px;border:1px solid #d8ccb8;border-radius:10px;background:#fff}.enhancementDialog .field textarea{min-height:82px;resize:vertical}
 .trackingResult{margin-top:14px;padding:16px;border:1px solid #d8c6a8;border-radius:15px;background:#faf7f1}
 .trackingResult[hidden]{display:none}
+.trackingPrivacyHint{margin:-3px 0 10px;padding:9px 10px;border:1px solid #c9d9cb;border-radius:10px;background:#f4faf5;color:var(--green);font-size:11px;font-weight:800;text-align:center}.enhancementDialog #trackingCode{text-transform:uppercase;letter-spacing:2px;text-align:center;font-size:18px;font-weight:900}
 .trackingCount{margin-bottom:10px;padding:10px;border-radius:11px;background:#e8f3ea;color:var(--green);text-align:center}
 .trackingOrderCard{margin-top:10px;padding:14px;border:1px solid #e1d4bd;border-radius:14px;background:#fff}
 .trackingOrderCard:first-of-type{margin-top:0}.trackingMeta{margin:5px 0;color:var(--muted);font-size:12px}
@@ -31,6 +32,7 @@ html[dir="ltr"] .enhancementDialog h2{margin:2px 0 14px 48px}
 .statusSteps{display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-top:14px}
 .statusStep{text-align:center;font-size:11px;color:#8b918d}
 .statusStep:before{content:"";display:block;width:15px;height:15px;margin:0 auto 7px;border-radius:50%;background:#d8ddd9;box-shadow:0 0 0 3px #eef0ee}
+.thankYouTrackingCode{display:grid;grid-template-columns:1fr auto;gap:7px;align-items:center;margin:-4px auto 12px;padding:11px;border:1px solid #d8c6a8;border-radius:14px;background:#fffaf0;color:var(--green);text-align:center}.thankYouTrackingCode span,.thankYouTrackingCode small{grid-column:1/-1}.thankYouTrackingCode span{font-size:12px;font-weight:900}.thankYouTrackingCode b{direction:ltr;padding:8px;border-radius:9px;background:#fff;font-size:21px;letter-spacing:2px}.thankYouTrackingCode button{min-height:40px;padding:7px 12px;border:0;border-radius:9px;background:var(--green);color:#fff;font-weight:900;cursor:pointer}.thankYouTrackingCode small{color:var(--muted);font-size:10px;line-height:1.5}
 .statusStep.done,.statusStep.current{color:var(--green);font-weight:900}
 .statusStep.done:before,.statusStep.current:before{background:var(--green);box-shadow:0 0 0 3px #dcecdf}
 .statusStep.current:before{background:var(--gold);box-shadow:0 0 0 4px #f4e8d2}
