@@ -3255,37 +3255,9 @@
     return params.has("owner_access") || /(?:^|-)owner(?:$|-)/i.test(safe(params.get("v")));
   }
 
-  function welcomeVoiceFor(language, maleOnly) {
-    var voices = window.speechSynthesis && window.speechSynthesis.getVoices
-      ? window.speechSynthesis.getVoices()
-      : [];
-    var exact = language.toLowerCase();
-    var family = exact.split("-")[0];
-    var preferredMaleNames = /male|daniel|arthur|george|oliver|ryan|thomas|google uk english male/i;
-    var matching = voices.filter(function (voice) {
-      var voiceLanguage = safe(voice.lang).toLowerCase();
-      return voiceLanguage === exact || voiceLanguage.indexOf(family + "-") === 0;
-    });
-    matching.sort(function (first, second) {
-      function score(voice) {
-        var value = safe(voice.lang).toLowerCase() === exact ? 40 : 10;
-        if (preferredMaleNames.test(safe(voice.name) + " " + safe(voice.voiceURI))) value += 100;
-        return value;
-      }
-      return score(second) - score(first);
-    });
-    if (maleOnly) {
-      return matching.find(function (voice) {
-        return preferredMaleNames.test(safe(voice.name) + " " + safe(voice.voiceURI));
-      }) || null;
-    }
-    return matching[0] || null;
-  }
-
   function enableWelcomeVoice() {
     var splash = document.getElementById("welcomeSplash");
-    var synth = window.speechSynthesis;
-    if (!splash || isOwnerMenu() || !synth || typeof window.SpeechSynthesisUtterance !== "function") return;
+    if (!splash || isOwnerMenu() || /jsdom/i.test(safe(navigator.userAgent)) || typeof window.Audio !== "function") return;
     var heldSplash = splash.cloneNode(true);
     splash.parentNode.replaceChild(heldSplash, splash);
     splash = heldSplash;
@@ -3299,19 +3271,25 @@
       element.style.opacity = "1";
       element.style.transform = "none";
     });
-    var appleMobile = /iPhone|iPad|iPod/i.test(safe(navigator.userAgent)) ||
-      (safe(navigator.platform) === "MacIntel" && Number(navigator.maxTouchPoints || 0) > 1);
     var finished = false;
-    var spoken = false;
-    var voiceLoadAttempts = 0;
+    var playing = false;
     var safetyTimer = 0;
-    var voiceEndFallbackTimer = 0;
+    var retryEvent = typeof window.PointerEvent === "function" ? "pointerdown" : "touchstart";
+    var fixedVoice = new window.Audio("./welcome-british-male.mp3?v=1");
+    fixedVoice.preload = "auto";
+    fixedVoice.autoplay = true;
+    fixedVoice.setAttribute("playsinline", "");
+    fixedVoice.setAttribute("webkit-playsinline", "");
+
+    function removeRetryListener() {
+      document.removeEventListener(retryEvent, retryFixedVoice);
+    }
 
     function finishWelcome() {
       if (finished) return;
       finished = true;
+      removeRetryListener();
       window.clearTimeout(safetyTimer);
-      window.clearTimeout(voiceEndFallbackTimer);
       splash.style.opacity = "0";
       splash.style.pointerEvents = "none";
       window.setTimeout(function () {
@@ -3319,37 +3297,38 @@
       }, 480);
     }
 
-    function speakWelcome(selectedVoice) {
-      if (spoken || finished) return;
-      spoken = true;
-      var english = new window.SpeechSynthesisUtterance("Welcome to Olive Branch Trading");
-      english.lang = "en-GB";
-      english.rate = appleMobile ? 0.94 : 0.88;
-      english.pitch = 0.96;
-      english.volume = 1;
-      english.voice = selectedVoice || welcomeVoiceFor("en-GB", false);
-      english.onstart = function () {
-        voiceEndFallbackTimer = window.setTimeout(finishWelcome, appleMobile ? 3800 : 4800);
-      };
-      english.onend = finishWelcome;
-      english.onerror = finishWelcome;
-      if (typeof synth.cancel === "function") synth.cancel();
-      synth.speak(english);
-    }
-
-    function speakWhenMaleVoiceIsReady() {
-      if (spoken || finished) return;
-      var maleVoice = welcomeVoiceFor("en-GB", true);
-      voiceLoadAttempts += 1;
-      if (!maleVoice && voiceLoadAttempts < 12) {
-        window.setTimeout(speakWhenMaleVoiceIsReady, 120);
+    function playFixedVoice() {
+      if (playing || finished) return;
+      var pending;
+      try {
+        pending = fixedVoice.play();
+      } catch (error) {
         return;
       }
-      speakWelcome(maleVoice || welcomeVoiceFor("en-GB", false));
+      if (pending && typeof pending.then === "function") {
+        pending.then(function () {
+          playing = true;
+          removeRetryListener();
+        }).catch(function () {});
+      } else {
+        playing = true;
+        removeRetryListener();
+      }
     }
 
-    safetyTimer = window.setTimeout(finishWelcome, appleMobile ? 6500 : 8500);
-    window.setTimeout(speakWhenMaleVoiceIsReady, 60);
+    function retryFixedVoice() {
+      playFixedVoice();
+    }
+
+    fixedVoice.addEventListener("playing", function () {
+      playing = true;
+      removeRetryListener();
+    });
+    fixedVoice.addEventListener("ended", finishWelcome);
+    fixedVoice.addEventListener("error", finishWelcome);
+    document.addEventListener(retryEvent, retryFixedVoice, { passive: true });
+    safetyTimer = window.setTimeout(finishWelcome, 7000);
+    window.setTimeout(playFixedVoice, 60);
   }
 
   window.setMenuLanguage = function (language) {

@@ -1,4 +1,4 @@
-var CACHE_NAME = "olive-branch-menu-v62";
+var CACHE_NAME = "olive-branch-menu-v63";
 var STATIC_FILES = [
   "./",
   "./index.html",
@@ -10,7 +10,8 @@ var STATIC_FILES = [
   "./leaflet.css?v=1.9.4",
   "./leaflet.js?v=1.9.4",
   "./menu-enhancements.css?v=9-saved-addresses",
-  "./menu-enhancements.js?v=15-mobile-refresh"
+  "./menu-enhancements.js?v=15-mobile-refresh",
+  "./welcome-british-male.mp3?v=1"
 ];
 
 function cacheFreshFiles(cache) {
