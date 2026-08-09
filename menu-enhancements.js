@@ -3255,7 +3255,7 @@
     return params.has("owner_access") || /(?:^|-)owner(?:$|-)/i.test(safe(params.get("v")));
   }
 
-  function welcomeVoiceFor(language) {
+  function welcomeVoiceFor(language, maleOnly) {
     var voices = window.speechSynthesis && window.speechSynthesis.getVoices
       ? window.speechSynthesis.getVoices()
       : [];
@@ -3269,11 +3269,16 @@
     matching.sort(function (first, second) {
       function score(voice) {
         var value = safe(voice.lang).toLowerCase() === exact ? 40 : 10;
-        if (preferredMaleNames.test(safe(voice.name))) value += 100;
+        if (preferredMaleNames.test(safe(voice.name) + " " + safe(voice.voiceURI))) value += 100;
         return value;
       }
       return score(second) - score(first);
     });
+    if (maleOnly) {
+      return matching.find(function (voice) {
+        return preferredMaleNames.test(safe(voice.name) + " " + safe(voice.voiceURI));
+      }) || null;
+    }
     return matching[0] || null;
   }
 
@@ -3298,6 +3303,7 @@
       (safe(navigator.platform) === "MacIntel" && Number(navigator.maxTouchPoints || 0) > 1);
     var finished = false;
     var spoken = false;
+    var voiceLoadAttempts = 0;
     var safetyTimer = 0;
     var voiceEndFallbackTimer = 0;
 
@@ -3313,7 +3319,7 @@
       }, 480);
     }
 
-    function speakWelcome() {
+    function speakWelcome(selectedVoice) {
       if (spoken || finished) return;
       spoken = true;
       var english = new window.SpeechSynthesisUtterance("Welcome to Olive Branch Trading");
@@ -3321,7 +3327,7 @@
       english.rate = appleMobile ? 0.94 : 0.88;
       english.pitch = 0.96;
       english.volume = 1;
-      english.voice = welcomeVoiceFor("en-GB");
+      english.voice = selectedVoice || welcomeVoiceFor("en-GB", false);
       english.onstart = function () {
         voiceEndFallbackTimer = window.setTimeout(finishWelcome, appleMobile ? 3800 : 4800);
       };
@@ -3331,8 +3337,19 @@
       synth.speak(english);
     }
 
+    function speakWhenMaleVoiceIsReady() {
+      if (spoken || finished) return;
+      var maleVoice = welcomeVoiceFor("en-GB", true);
+      voiceLoadAttempts += 1;
+      if (!maleVoice && voiceLoadAttempts < 12) {
+        window.setTimeout(speakWhenMaleVoiceIsReady, 120);
+        return;
+      }
+      speakWelcome(maleVoice || welcomeVoiceFor("en-GB", false));
+    }
+
     safetyTimer = window.setTimeout(finishWelcome, appleMobile ? 6500 : 8500);
-    window.setTimeout(speakWelcome, 80);
+    window.setTimeout(speakWhenMaleVoiceIsReady, 60);
   }
 
   window.setMenuLanguage = function (language) {
