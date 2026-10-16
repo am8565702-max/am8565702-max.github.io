@@ -1,0 +1,3318 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=yes">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<meta name="theme-color" content="#285b35">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="غصن الزيتون">
+<meta name="application-name" content="غصن الزيتون">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="leaflet.css?v=1.9.4">
+<link rel="stylesheet" href="menu-enhancements.css?v=9-saved-addresses">
+<title>منيو غصن الزيتون</title>
+<style>
+:root{--green:#285b35;--green2:#1f4a2c;--gold:#caa56a;--cream:#f7f1e7;--card:#fff;--text:#223126;--muted:#6b746d;--danger:#b42318}
+*{box-sizing:border-box}body{margin:0;font-family:Tahoma,Arial,sans-serif;background:linear-gradient(180deg,#faf7f0,#f2eadb);color:var(--text)}button,input,textarea,select{font:inherit}
+.welcomeSplash{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;overflow:hidden;padding:24px;background:radial-gradient(circle at center,#fff 0,#fbf5e9 45%,#eadcc4 100%);animation:welcomeSplashFade 5s ease forwards}.welcomeStage{width:min(92vw,720px);text-align:center}.welcomeLogo{display:block;width:min(180px,42vw);height:min(180px,42vw);object-fit:contain;margin:0 auto 18px;opacity:0;transform:scale(.86);animation:welcomeLogoIn .75s ease .05s forwards}.welcomeArabic,.welcomeEnglish{will-change:transform,opacity;line-height:1.35;text-wrap:balance}.welcomeArabic{direction:rtl;color:var(--green);font-size:clamp(27px,6vw,52px);font-weight:900;transform:translateX(110vw);opacity:0;animation:welcomeFromRight .9s cubic-bezier(.22,.9,.3,1.12) .12s forwards}.welcomeDivider{width:min(220px,55vw);height:3px;margin:14px auto;border-radius:999px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:0;animation:welcomeDividerIn .4s ease .82s forwards}.welcomeEnglish{direction:ltr;color:#a36c10;font-size:clamp(19px,4.2vw,34px);font-weight:800;letter-spacing:.2px;transform:translateX(-110vw);opacity:0;animation:welcomeFromLeft .9s cubic-bezier(.22,.9,.3,1.12) .22s forwards}@keyframes welcomeLogoIn{to{transform:scale(1);opacity:1}}@keyframes welcomeFromRight{to{transform:translateX(0);opacity:1}}@keyframes welcomeFromLeft{to{transform:translateX(0);opacity:1}}@keyframes welcomeDividerIn{to{opacity:1}}@keyframes welcomeSplashFade{0%,84%{opacity:1;visibility:visible}100%{opacity:0;visibility:hidden;pointer-events:none}}@media(prefers-reduced-motion:reduce){.welcomeSplash,.welcomeLogo,.welcomeArabic,.welcomeEnglish,.welcomeDivider{animation:none}.welcomeLogo,.welcomeArabic,.welcomeEnglish,.welcomeDivider{transform:none;opacity:1}}
+header{position:-webkit-sticky;position:sticky;top:0;z-index:10;background:rgba(255,255,255,.96);backdrop-filter:blur(10px);border-bottom:1px solid #e8dcc7;padding:10px 16px;display:grid;grid-template-columns:auto auto minmax(180px,1fr) auto auto;gap:10px;align-items:center}.brand{display:flex;align-items:center;gap:10px;min-width:220px}.brandLogo{display:block;width:72px;height:68px;object-fit:contain;flex:0 0 auto}.brandText{min-width:0}.brand h1{font-size:22px;margin:0;color:var(--green)}.brand small{color:var(--muted)}
+.langSwitch{display:flex;gap:4px;padding:4px;border:1px solid #decdb1;background:#f7f1e7;border-radius:14px}.langSwitch button{min-height:36px;border:0;border-radius:10px;padding:7px 11px;background:transparent;color:var(--green);font-weight:800;cursor:pointer}.langSwitch button.active{background:var(--green);color:#fff;box-shadow:0 3px 10px rgba(40,91,53,.18)}html[dir="ltr"] .panel{left:auto;right:0;transform:translateX(105%)}html[dir="ltr"] .tag{right:auto;left:10px}html[dir="ltr"] .close{float:right}
+.search{width:100%;padding:13px 16px;border:1px solid #decdb1;border-radius:14px;font-size:15px;outline:none}.topBtn{border:0;border-radius:14px;padding:12px 15px;font-weight:700;cursor:pointer}.cartBtn{background:var(--green);color:#fff;position:relative}.adminBtn{display:none;background:#f3eadb;color:var(--green);border:1px solid #decdb1}.adminBtn.ownerOnlyVisible{display:block}.badge{position:absolute;top:-8px;left:-8px;background:#d62828;color:#fff;border-radius:50%;min-width:24px;height:24px;display:grid;place-items:center;font-size:12px}
+.locationStatus{margin:7px 0 10px;padding:12px;border:1px solid #add0b6;border-radius:12px;background:#e8f6eb;color:#1f5a30;line-height:1.7}.locationStatus.error{border-color:#efb2ad;background:#fee4e2;color:#9b1c15}.locationStatus.loading{border-color:#ead28b;background:#fff7df;color:#6b4d00}.locationStatus a{display:inline-block;margin-top:4px;color:var(--green);font-weight:800;text-decoration:underline;text-underline-offset:3px}.locationStatus[hidden]{display:none}.gps:disabled{opacity:.65;cursor:wait}
+.send:disabled{opacity:.65;cursor:wait}.whatsappFallback{display:block;text-align:center;text-decoration:none}.whatsappFallback[hidden]{display:none}
+.hero{margin:18px auto;max-width:1200px;padding:22px;border-radius:24px;background:linear-gradient(135deg,#2e6840,#1f4a2c);color:#fff;display:flex;justify-content:space-between;gap:20px;align-items:center}.hero h2{margin:0 0 8px;font-size:28px}.hero p{margin:0;opacity:.9}.hero .wa{background:#25D366;color:#073b1b;padding:12px 18px;border-radius:14px;font-weight:700}
+.categories{max-width:1200px;margin:auto;padding:0 16px 14px;display:flex;gap:10px;overflow:auto}.cat{white-space:nowrap;border:1px solid #dfd2bd;background:#fff;padding:10px 15px;border-radius:999px;cursor:pointer}.cat.active{background:var(--green);color:#fff;border-color:var(--green)}
+main{max-width:1200px;margin:auto;padding:0 16px 80px}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px}.card{background:var(--card);border-radius:20px;overflow:hidden;box-shadow:0 10px 28px rgba(59,45,24,.10);border:1px solid #eadfcd;display:flex;flex-direction:column}.pic{height:175px;background:#eee;overflow:hidden;position:relative}.pic img{width:100%;height:100%;object-fit:cover}.tag{position:absolute;top:10px;right:10px;background:rgba(255,255,255,.92);padding:6px 9px;border-radius:10px;font-size:12px;color:var(--green);font-weight:700}.body{padding:14px;display:flex;flex-direction:column;gap:8px;flex:1}.name{font-size:18px;font-weight:800}.desc{color:var(--muted);font-size:13px;line-height:1.6;min-height:40px}.price{font-size:20px;color:var(--green);font-weight:900}.actions{display:flex;gap:8px;align-items:center;margin-top:auto}.pick{flex:1;border:0;background:var(--green);color:#fff;padding:11px;border-radius:12px;font-weight:700;cursor:pointer}.qty{display:flex;align-items:center;border:1px solid #decdb1;border-radius:12px;overflow:hidden}.qty button{width:34px;height:38px;border:0;background:#f6efe3;font-size:20px;cursor:pointer}.qty span{min-width:34px;text-align:center;font-weight:700}
+.drawer,.modal{position:fixed;top:0;right:0;bottom:0;left:0;inset:0;z-index:30;pointer-events:none}.drawer.open,.modal.open{pointer-events:auto}.shade{position:absolute;top:0;right:0;bottom:0;left:0;inset:0;background:rgba(0,0,0,.48);opacity:0;transition:.2s}.open .shade{opacity:1}.panel{position:absolute;top:0;bottom:0;left:0;width:min(440px,94vw);background:#fff;transform:translateX(-105%);transition:.25s;padding:18px;overflow:auto}.drawer.open .panel{transform:none}.panel h3{margin:0 0 14px;color:var(--green)}.cartItem{display:grid;grid-template-columns:1fr auto;gap:8px;padding:12px 0;border-bottom:1px solid #eee}.itemTotal{color:var(--green);font-weight:800;margin-top:4px}.orderOptions{margin:14px 0;padding:12px;border:1px solid #eadfcd;border-radius:14px;background:#faf7f1}.orderOptions label{display:flex;align-items:center;gap:8px;margin:7px 0}.summary{margin:14px 0;border-radius:16px;background:#f4efe5;padding:14px}.sumRow{display:flex;justify-content:space-between;gap:12px;padding:6px 0}.sumRow.final{border-top:2px solid #d6c29e;margin-top:7px;padding-top:12px;font-size:20px;font-weight:900;color:var(--green)}.discountRow{color:#b42318}.paymentSection{border-top:1px solid #d6c29e;margin-top:12px;padding-top:13px}.paymentTitle{display:block;margin-bottom:9px;color:var(--green);font-weight:900}.paymentChoices{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.paymentChoice{display:flex;align-items:center;justify-content:center;gap:5px;min-height:42px;padding:8px 6px;border:1px solid #d8c6a8;border-radius:11px;background:#fff;cursor:pointer;font-weight:700;text-align:center}.paymentChoice:has(input:checked){border-color:var(--green);background:#e8f3ea;color:var(--green);box-shadow:0 0 0 1px var(--green)}.paymentChoice input{accent-color:var(--green);margin:0}.bankDetails{margin-top:10px;padding:11px;border:1px dashed #caa56a;border-radius:12px;background:#fffaf0;text-align:center}.bankNumber{display:block;margin:6px 0 9px;font-size:19px;font-weight:900;letter-spacing:1px;direction:ltr}.copyAccount{width:100%;min-height:42px;border:0;border-radius:10px;background:var(--green);color:#fff;font-weight:800;cursor:pointer}.miniNote{font-size:12px;color:var(--muted);margin-top:5px}.form input{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;margin:5px 0}.gps{width:100%;padding:11px;border:1px solid var(--green);background:#eef7f0;color:var(--green);border-radius:10px;font-weight:700}.send{width:100%;padding:14px;border:0;background:#25D366;color:#fff;border-radius:12px;font-size:16px;font-weight:800;margin-top:10px}.empty{text-align:center;color:#777;padding:30px}.menuLoadingSpinner{width:36px;height:36px;margin:0 auto 12px;border:4px solid #dfe9e1;border-top-color:var(--green);border-radius:50%;animation:menuSpin .8s linear infinite}.menuRetry{margin-top:12px;padding:9px 18px;border:0;border-radius:9px;background:var(--green);color:#fff;font-weight:800}@keyframes menuSpin{to{transform:rotate(360deg)}}.close{float:left;border:0;background:#eee;width:34px;height:34px;border-radius:10px;cursor:pointer}
+.bankDetails{display:grid;gap:9px;text-align:initial}.bankDetailCell{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:5px 9px;align-items:center;padding:10px;border:1px solid #e5d5b9;border-radius:11px;background:#fff}.bankDetailLabel{grid-column:1/-1;color:var(--muted);font-size:12px;font-weight:800}.bankDetailValue{min-width:0;color:var(--text);font-size:15px;font-weight:900;overflow-wrap:anywhere}.bankDetailValue.ltr{direction:ltr;text-align:left;letter-spacing:.3px}.copyBankValue{grid-column:2;grid-row:2;min-width:72px;min-height:38px;padding:7px 12px;border:0;border-radius:9px;background:var(--green);color:#fff;font-weight:800;cursor:pointer}
+.dialog{position:absolute;top:4vh;right:3vw;bottom:4vh;left:3vw;inset:4vh 3vw;background:#fff;border-radius:22px;opacity:0;transform:scale(.97);transition:.2s;overflow:hidden;display:flex;flex-direction:column}.modal.open .dialog{opacity:1;transform:none}.adminHead{padding:14px 18px;background:var(--green);color:#fff;display:flex;align-items:center;gap:12px}.adminHead h2{margin:0;flex:1}.adminBody{display:grid;grid-template-columns:380px 1fr;gap:16px;padding:16px;overflow:auto}.adminSide,.adminList{border:1px solid #eadfcd;border-radius:16px;padding:14px;background:#fff}.adminSide h3,.adminList h3{margin:0 0 12px;color:var(--green)}.field{display:grid;gap:5px;margin-bottom:10px}.field label{font-size:13px;font-weight:700}.field input,.field textarea,.field select{width:100%;padding:10px;border:1px solid #d8ccb8;border-radius:9px}.field textarea{min-height:72px;resize:vertical}.row{display:flex;gap:8px}.row>*{flex:1}.primary,.secondary,.danger{border:0;border-radius:10px;padding:10px 12px;font-weight:700;cursor:pointer}.primary{background:var(--green);color:#fff}.secondary{background:#f1eadf;color:var(--green)}.danger{background:#fee4e2;color:var(--danger)}.adminTools{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}.adminProducts{display:grid;gap:10px}.adminItem{display:grid;grid-template-columns:72px 1fr auto;gap:10px;align-items:center;border:1px solid #eee;border-radius:12px;padding:8px}.adminItem img{width:72px;height:60px;object-fit:cover;border-radius:8px}.muted{color:var(--muted);font-size:12px}.hiddenP{opacity:.5}.loginBox{position:absolute;width:min(360px,90vw);top:50%;left:50%;transform:translate(-50%,-50%);background:#fff;padding:22px;border-radius:18px;opacity:0;transition:.2s}.modal.open .loginBox{opacity:1}.loginBox input{width:100%;padding:12px;border:1px solid #ddd;border-radius:10px;margin:10px 0}.preview{width:100%;height:150px;object-fit:cover;border:1px dashed #cbb99b;border-radius:12px;background:#f8f3ea}.notice{background:#fff7df;border:1px solid #f1d58a;padding:10px;border-radius:10px;font-size:12px;margin-top:10px}
+@media(max-width:800px){header{grid-template-columns:1fr auto auto}.brand,.langSwitch{grid-column:1/-1}.langSwitch{justify-self:start}.hero{margin:12px;border-radius:18px;display:block}.hero .wa{display:inline-block;margin-top:14px}.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.pic{height:130px}.name{font-size:15px}.desc{font-size:12px;min-height:52px}.price{font-size:17px}.actions{flex-direction:column}.qty{width:100%;justify-content:space-between}.qty button{flex:1}.pick{width:100%}.adminBody{grid-template-columns:1fr}.dialog{inset:1vh 1vw}.adminItem{grid-template-columns:58px 1fr}.adminItem img{width:58px;height:52px}.adminItem .row{grid-column:1/-1}}
+@media(max-width:800px){body{padding-bottom:env(safe-area-inset-bottom);-webkit-text-size-adjust:100%;touch-action:manipulation}header{grid-template-columns:1fr auto auto;padding:8px 12px;padding-top:max(8px,env(safe-area-inset-top));gap:8px}.brand,.langSwitch{grid-column:1/-1}.brand{min-width:0}.brandLogo{width:62px;height:59px}.brand h1{font-size:19px}.brand small{font-size:12px}.search{min-width:0;padding:12px;font-size:16px}.topBtn{min-height:44px;padding:10px 12px}.hero{margin:10px 12px 14px;padding:18px;border-radius:18px;display:block}.hero h2{font-size:22px}.hero p{font-size:14px;line-height:1.7}.hero .wa{display:inline-block;margin-top:12px}.categories{padding:0 12px 12px}.cat{min-height:44px;padding:10px 16px}main{padding:0 10px 90px}.card{border-radius:16px}.body{padding:11px;gap:7px}.qty button,.pick{min-height:44px}.panel{width:100vw;max-width:none;padding:16px 14px calc(18px + env(safe-area-inset-bottom))}.close{width:44px;height:44px}.form input,.gps,.send{min-height:48px;font-size:16px}.adminBody{grid-template-columns:1fr;padding:10px;display:block}.dialog{top:0;right:0;bottom:0;left:0;inset:0;border-radius:0;padding-top:env(safe-area-inset-top)}.field input,.field textarea,.field select{font-size:16px;min-height:44px}.primary,.secondary,.danger{min-height:44px}}
+@media(max-width:430px){header{grid-template-columns:1fr 1fr}.brand,.langSwitch,.search{grid-column:1/-1}.brandLogo{width:56px;height:53px}.brand h1{font-size:17px}.langSwitch{justify-self:stretch}.langSwitch button{flex:1}.adminBtn,.cartBtn{width:100%}.grid{grid-template-columns:1fr}.pic{height:210px}.desc{min-height:0}.actions{flex-direction:row}.pick{width:auto}.qty{width:132px}.row{flex-wrap:wrap}.row>*{flex:1 1 140px}}
+
+.adminTabs{display:flex;gap:8px;padding:10px 16px 0;background:#f8f4ec}.adminTab{border:1px solid #d8ccb8;background:#fff;color:var(--green);padding:10px 16px;border-radius:10px 10px 0 0;font-weight:800;cursor:pointer}.adminTab.active{background:var(--green);color:#fff}.tabPage{display:none}.tabPage.active{display:grid}.ordersPage{display:none;padding:16px;overflow:auto}.ordersPage.active{display:block}.stats{display:grid;grid-template-columns:repeat(4,minmax(130px,1fr));gap:10px;margin-bottom:14px}.stat{background:#fff;border:1px solid #eadfcd;border-radius:14px;padding:14px}.stat b{display:block;font-size:24px;color:var(--green);margin-top:5px}.ordersTools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.ordersTableWrap{overflow:auto;border:1px solid #eadfcd;border-radius:14px;background:#fff}.ordersTable{width:100%;border-collapse:collapse;min-width:980px}.ordersTable th,.ordersTable td{padding:10px;border-bottom:1px solid #eee;text-align:right;vertical-align:top}.ordersTable th{background:#f4efe5;color:var(--green);position:sticky;top:0}.orderProducts{max-width:300px;white-space:pre-line;line-height:1.7}.statusSelect{padding:7px;border:1px solid #d8ccb8;border-radius:8px}.orderNo{font-size:17px;font-weight:900;color:var(--green)}.customerNo{font-size:12px;color:var(--muted)}
+@media(max-width:800px){.stats{grid-template-columns:repeat(2,1fr)}.adminTabs{overflow:auto}.adminTab{white-space:nowrap}}
+
+.gsStatus{font-size:12px;padding:6px 10px;border-radius:999px;background:#fff3cd;color:#6b4d00;border:1px solid #ead28b}
+.gsStatus.ok{background:#e8f6eb;color:#1f5a30;border-color:#add0b6}
+.gsStatus.bad{background:#fee4e2;color:#9b1c15;border-color:#efb2ad}
+
+
+.categoryAdminBox{margin-top:18px;padding-top:16px;border-top:2px solid #eee}
+.categoryForm{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end}
+.categoryList{margin-top:10px;display:flex;flex-direction:column;gap:8px}
+.categoryRow{display:grid;grid-template-columns:1fr 1.4fr 80px auto;gap:8px;align-items:center;background:#faf7f1;border:1px solid #eadfcd;border-radius:12px;padding:8px}
+.categoryRow input{margin:0}
+.categoryRow .danger{padding:9px 10px}
+@media(max-width:700px){
+ .categoryForm{grid-template-columns:1fr}
+ .categoryRow{grid-template-columns:1fr 1fr}
+ .categoryRow .categoryActions{grid-column:1/-1}
+}
+
+.productSizesBox{margin:2px 0 14px;padding:13px;border:1px solid #d8c6a8;border-radius:14px;background:#fffaf0}
+.productSizesBox[hidden]{display:none}
+.productSizesBox h3{margin:0 0 7px;color:var(--green)}
+.sizePriceGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:10px}
+.sizePriceRow{display:grid;grid-template-columns:minmax(115px,1fr) minmax(92px,.65fr);gap:7px;align-items:center;padding:7px;border:1px solid #eadfcd;border-radius:10px;background:#fff}
+.sizePriceRow label{font-size:13px;font-weight:800}
+.sizePriceRow input{width:100%;min-height:40px;padding:8px;border:1px solid #d8ccb8;border-radius:8px}
+.sizeDialog{position:absolute;top:50%;left:50%;width:min(520px,94vw);max-height:88vh;overflow:auto;transform:translate(-50%,-48%) scale(.97);background:#fff;border-radius:22px;padding:18px;opacity:0;transition:.2s;box-shadow:0 24px 70px rgba(0,0,0,.28)}
+.modal.open .sizeDialog{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.sizeDialog h3{margin:4px 46px 4px 0;color:var(--green);font-size:23px}
+html[dir="ltr"] .sizeDialog h3{margin:4px 0 4px 46px}
+.sizeDialog p{margin:0 0 14px;color:var(--muted)}
+.sizeOptions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.sizeOption{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:58px;padding:11px 12px;border:1px solid #d8c6a8;border-radius:12px;background:#fff;color:var(--text);cursor:pointer;text-align:inherit;font-weight:800}
+.sizeOption:hover:not(:disabled){border-color:var(--green);background:#eef7f0}
+.sizeOption .sizeOptionPrice{color:var(--green);white-space:nowrap}
+.sizeOption:disabled{cursor:not-allowed;opacity:.55;background:#f6f3ed}
+.sizeEmptyNotice{grid-column:1/-1;padding:11px;border:1px solid #f1d58a;border-radius:10px;background:#fff7df;color:#6b4d00;text-align:center}
+.card.unavailable{background:#f4f4f4;box-shadow:0 6px 18px rgba(0,0,0,.07)}
+.card.unavailable .pic img,.card.unavailable .tag,.card.unavailable .name,.card.unavailable .desc,.card.unavailable .price{opacity:.42;filter:grayscale(.35)}
+.availabilityBadge{position:absolute;right:10px;bottom:10px;z-index:2;padding:9px 13px;border:1px solid #d5d5d5;border-radius:11px;background:rgba(255,255,255,.96);color:#777;font-weight:900;box-shadow:0 3px 12px rgba(0,0,0,.10)}
+html[dir="ltr"] .availabilityBadge{right:auto;left:10px}
+.card.unavailable .pick,.card.unavailable .pick:disabled{background:#d5d5d5;color:#777;cursor:not-allowed}
+.adminItem.outOfStockAdmin{background:#f4f4f4}
+.adminItem.outOfStockAdmin img{opacity:.45;filter:grayscale(.35)}
+.stockState{color:#9b1c15;font-weight:800}
+@media(max-width:600px){.sizePriceGrid,.sizeOptions{grid-template-columns:1fr}.sizePriceRow{grid-template-columns:1fr 120px}.sizeDialog{width:calc(100vw - 20px);max-height:92vh}.sizeOption{min-height:54px}}
+
+.orderThanksModal{z-index:1200}.orderThanksModal.open{pointer-events:auto}.thankYouDialog{position:absolute;top:50%;left:50%;width:min(520px,94vw);max-height:92vh;overflow:auto;transform:translate(-50%,-48%) scale(.97);background:#fff;border-radius:24px;padding:24px;opacity:0;transition:.2s;box-shadow:0 24px 80px rgba(0,0,0,.30);text-align:center}.orderThanksModal.open .thankYouDialog{opacity:1;transform:translate(-50%,-50%) scale(1)}.thankYouLogo{display:block;width:108px;height:108px;object-fit:contain;margin:0 auto 10px}.thankYouDialog h2{margin:6px 0;color:var(--green);font-size:25px;line-height:1.5}.thankYouDialog p{margin:6px 0;color:var(--muted);line-height:1.7}.thankYouOrderNo{display:inline-block;margin:10px 0 14px;padding:9px 14px;border-radius:999px;background:#eef7f0;color:var(--green);font-weight:900}.receiptStatus{min-height:25px;margin:8px 0 12px;color:var(--muted);font-size:13px}.receiptActions{display:grid;grid-template-columns:1fr 1fr;gap:9px}.receiptActions button{min-height:48px}.receiptActions .full{grid-column:1/-1}.receiptWhatsApp{background:#25D366;color:#073b1b}.receiptClose{margin-top:9px;width:100%}@media(max-width:430px){.thankYouDialog{padding:20px 16px}.receiptActions{grid-template-columns:1fr}.receiptActions .full{grid-column:auto}}
+
+</style>
+</head>
+<body>
+<div id="welcomeSplash" class="welcomeSplash" role="status" aria-live="polite" aria-label="رسالة ترحيب"><div class="welcomeStage"><img class="welcomeLogo" src="icon-512.png" alt="شعار غصن الزيتون"><div class="welcomeArabic" lang="ar" dir="rtl">مرحبًا بكم في غصن الزيتون للتجارة</div><div class="welcomeDivider" aria-hidden="true"></div><div class="welcomeEnglish" lang="en" dir="ltr">Welcome to Olive Branch Trading</div></div></div>
+<script>(function(){var splash=document.getElementById("welcomeSplash");if(!splash)return;var reduced=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;window.setTimeout(function(){if(splash&&splash.parentNode)splash.parentNode.removeChild(splash)},reduced?1600:5200)})();</script>
+<header><div class="brand"><img class="brandLogo" src="icon-512.png" alt="شعار غصن الزيتون"><div class="brandText"><h1>منيو غصن الزيتون</h1><small>اختر المنتج وحدد الكمية ثم أرسل الطلب</small></div></div><div class="langSwitch" role="group" aria-label="اختيار اللغة"><button id="langAr" class="active" type="button" onclick="setMenuLanguage('ar')">عربي</button><button id="langEn" type="button" onclick="setMenuLanguage('en')">English</button></div><input id="search" class="search" placeholder="ابحث عن منتج..."><button class="topBtn adminBtn" onclick="requestAdmin()">⚙️ الإدارة</button><button class="topBtn cartBtn" onclick="openCart()">🛒 السلة <span id="badge" class="badge">0</span></button></header>
+<section class="hero"><div><h2>منتجات فلسطينية مختارة بعناية</h2><p>اطلب مباشرة عبر واتساب مع تحديد موقعك GPS</p></div><div id="heroPhone" class="wa">واتساب 0505660791</div></section>
+<div id="cats" class="categories"></div><main><div id="pageError" style="display:none;margin:12px auto;max-width:900px;padding:12px;border-radius:12px;background:#fee4e2;color:#9b1c15;text-align:center"></div>
+<div id="grid" class="grid"></div></main>
+<div id="drawer" class="drawer"><div class="shade" onclick="closeCart()"></div><aside class="panel"><button class="close" onclick="closeCart()">✕</button><h3>سلة الطلب</h3><div id="cart"></div><div class="orderOptions"><b>طريقة التوصيل</b><label><input type="radio" name="deliveryType" value="delivery" checked onchange="renderCart()"> توصيل</label><div class="miniNote" id="deliveryHint"></div></div><div id="summary" class="summary"></div><div class="form"><div class="notice">سيتم إنشاء رقم طلب تلقائي يبدأ من 1000 عند الإرسال.</div><input id="customer" placeholder="اسم العميل"><input id="customerPhone" placeholder="رقم هاتف العميل"><input id="area" placeholder="المنطقة / العنوان"><button id="gpsButton" class="gps" type="button" onclick="getGPS()">📍 تحديد موقعي GPS</button><div id="locationStatus" class="locationStatus" role="status" aria-live="polite" hidden><span id="locationStatusText"></span><br><a id="locationMapLink" href="#" target="_blank" rel="noopener noreferrer" hidden>فتح الموقع على الخريطة</a></div><input id="location" type="hidden"><button class="send" onclick="sendWA()">إرسال الطلب على واتساب</button><a id="whatsappFallback" class="send whatsappFallback" href="#" target="_self" hidden>فتح واتساب لإرسال الطلب</a></div></aside></div>
+<div id="thankYouModal" class="modal orderThanksModal" role="dialog" aria-modal="true" aria-labelledby="thankYouTitle"><div class="shade" onclick="closeThankYouModal()"></div><div class="thankYouDialog"><img class="thankYouLogo" src="icon-512.png" alt="شعار غصن الزيتون"><h2 id="thankYouTitle">شكرًا على طلبكم من غصن الزيتون للتجارة</h2><p id="thankYouSubtitle">تم تسجيل طلبكم بنجاح، ونعمل على تجهيز فاتورة الطلب.</p><div id="thankYouOrderNo" class="thankYouOrderNo"></div><div id="receiptStatus" class="receiptStatus" role="status" aria-live="polite"></div><div class="receiptActions"><button id="receiptDownloadButton" class="primary" type="button" onclick="downloadLastOrderPdf()" disabled>تنزيل فاتورة PDF</button><button id="receiptShareButton" class="secondary" type="button" onclick="shareLastOrderPdf()" disabled>مشاركة فاتورة PDF</button><button id="receiptWhatsappButton" class="primary receiptWhatsApp full" type="button" onclick="openLastOrderWhatsApp()">فتح واتساب لإرسال الطلب</button></div><button id="receiptCloseButton" class="secondary receiptClose" type="button" onclick="closeThankYouModal()">العودة إلى المنيو</button></div></div>
+<div id="loginModal" class="modal"><div class="shade" onclick="closeLogin()"></div><div class="loginBox"><button class="close" onclick="closeLogin()">✕</button><h3>دخول لوحة التحكم</h3><input id="pinInput" type="password" autocomplete="current-password" placeholder="كلمة المرور"><button class="primary" style="width:100%" onclick="loginAdmin()">دخول آمن</button><div class="notice">يتم التحقق من كلمة المرور داخل الخادم، وتنتهي جلسة الإدارة تلقائيًا.</div></div></div>
+<div id="sizeModal" class="modal"><div class="shade" onclick="closeSizeModal()"></div><div class="sizeDialog" role="dialog" aria-modal="true" aria-labelledby="sizeProductName"><button class="close" onclick="closeSizeModal()">✕</button><h3 id="sizeProductName">اختر الحجم</h3><p id="sizeProductHint">حدد الحجم المطلوب لإضافته إلى السلة</p><div id="sizeOptions" class="sizeOptions"></div></div></div>
+<div id="adminModal" class="modal"><div class="shade"></div><div class="dialog"><div class="adminHead"><h2>لوحة تحكم المنيو والعملاء</h2><button class="secondary" onclick="closeAdmin()">إغلاق</button></div><div class="adminTabs"><button id="productsTabBtn" class="adminTab active" onclick="showAdminTab('products')">المنتجات والإعدادات</button><button id="ordersTabBtn" class="adminTab" onclick="showAdminTab('orders')">الطلبات والعملاء <span id="ordersCountBadge"></span></button></div><div id="productsTab" class="adminBody tabPage active"><section class="adminSide"><h3 id="formTitle">إضافة منتج</h3><input type="hidden" id="editId"><div class="field"><label>اسم المنتج</label><input id="pName" placeholder="الاسم بالعربي || English name"></div><div class="field"><label>المكونات / الوصف</label><textarea id="pDesc" placeholder="الوصف بالعربي || English description"></textarea></div><div class="notice" style="margin:0 0 10px">لترجمة أي منتج جديد: اكتب العربي ثم <b>||</b> ثم الإنجليزي في خانة الاسم والوصف.</div><div class="row"><div class="field"><label>السعر</label><input id="pPrice" type="number" step="0.01"></div><div class="field"><label>الجروب</label><select id="pCat"></select></div></div><div id="productSizesBox" class="productSizesBox" hidden><h3>أحجام وأسعار المنتج</h3><div class="notice">اكتب سعر الأحجام المتاحة فقط. اترك السعر فارغًا للحجم غير المتاح.</div><div id="productSizePrices" class="sizePriceGrid"></div></div><div class="field"><label>صورة المنتج</label><input id="pImage" type="file" accept="image/*" onchange="loadImage(event)"><img id="preview" class="preview" alt="معاينة الصورة"></div><div class="field"><label><input id="pAvailable" type="checkbox" checked> متوفر للطلب الآن</label></div><div class="field"><label><input id="pVisible" type="checkbox" checked> المنتج ظاهر للزبائن</label></div><div class="row"><button class="primary" onclick="saveProduct()">حفظ المنتج</button><button class="secondary" onclick="clearForm()">جديد</button></div><hr style="border:0;border-top:1px solid #eee;margin:16px 0"><h3>إعدادات</h3><div class="field"><label>رقم واتساب بصيغة دولية</label><input id="settingPhone" placeholder="971505660791"></div><div class="field"><label>كلمة مرور الإدارة</label><input id="settingPin" type="password"></div><div class="row"><div class="field"><label>رسوم التوصيل</label><input id="settingDelivery" type="number" min="0" step="0.01"></div><div class="field"><label>الحد الأدنى للطلب</label><input id="settingMinOrder" type="number" min="0" step="0.01"></div></div><div class="row"><div class="field"><label>خصم عند طلب بقيمة</label><input id="settingDiscountThreshold" type="number" min="0" step="0.01"></div><div class="field"><label>نسبة الخصم %</label><input id="settingDiscountPercent" type="number" min="0" max="100" step="0.01"></div></div><div class="field"><label>رابط Google Apps Script Web App</label><input id="settingWebApp" placeholder="https://script.google.com/macros/s/.../exec"></div><div class="notice">ضع رابط النشر هنا مرة واحدة، وبعدها ستُحفظ الطلبات والعملاء في Google Sheets.</div><button class="primary" style="width:100%" onclick="saveSettings()">حفظ الإعدادات</button>
+<div class="categoryAdminBox">
+  <h3>إدارة الجروبات</h3>
+  <div class="notice">يمكنك تغيير اسم الجروب أو إضافة جروب جديد. التعديل يُحفظ في Google Sheets ويظهر لكل الزبائن.</div>
+  <div class="categoryForm">
+    <div class="field"><label>كود الجروب بالإنجليزي</label><input id="newCatCode" placeholder="مثال: oils"></div>
+    <div class="field"><label>اسم الجروب</label><input id="newCatName" placeholder="مثال: الزيوت"></div>
+    <div class="field"><label>الترتيب</label><input id="newCatSort" type="number" value="99" min="1"></div>
+    <button id="addCategoryBtn" type="button" class="primary" onclick="addCategory(event)">إضافة جروب</button>
+  </div>
+  <div style="margin-top:8px">
+      <button type="button" class="secondary" onclick="testCategoryConnection()">اختبار اتصال الجروبات</button>
+    </div>
+    <div id="categoryAdminList" class="categoryList"></div>
+</div>
+<div class="notice">التعديلات المحلية للمنتجات تبقى على نفس الجهاز، أما الجروبات فتُحفظ مركزيًا في شيت CATEGORIES.</div></section><section class="adminList"><h3>إدارة المنتجات</h3><div class="adminTools"><button class="secondary" onclick="exportData()">⬇️ نسخة احتياطية</button><label class="secondary" style="cursor:pointer">⬆️ استرجاع<input id="importFile" type="file" accept="application/json" hidden onchange="importData(event)"></label><button class="danger" onclick="resetData()">إعادة الافتراضي</button></div><input id="adminSearch" class="search" placeholder="بحث داخل المنتجات..." oninput="renderAdmin()"><div id="adminProducts" class="adminProducts"></div></section></div><section id="ordersTab" class="ordersPage tabPage"><div class="stats"><div class="stat">إجمالي الطلبات<b id="statOrders">0</b></div><div class="stat">إجمالي العملاء<b id="statCustomers">0</b></div><div class="stat">إجمالي المبيعات<b id="statSales">0</b></div><div class="stat">طلبات اليوم<b id="statToday">0</b></div></div><div class="ordersTools"><input id="ordersSearch" class="search" style="max-width:420px" placeholder="ابحث بالاسم أو الهاتف أو رقم الطلب..." oninput="renderOrders()"><button class="secondary" onclick="exportOrdersCSV()">⬇️ تصدير الطلبات Excel/CSV</button><button class="danger" onclick="clearOrders()">حذف سجل الطلبات</button></div><div class="ordersTableWrap"><table class="ordersTable"><thead><tr><th>رقم الطلب</th><th>التاريخ والوقت</th><th>العميل والهاتف</th><th>المنطقة والموقع</th><th>المنتجات</th><th>الإجمالي</th><th>الحالة</th><th>إجراء</th></tr></thead><tbody id="ordersBody"></tbody></table></div></section></div></div>
+<script>
+function _regenerator() { var e, t, r = "function" == typeof Symbol ? Symbol : {}, n = r.iterator || "@@iterator", o = r.toStringTag || "@@toStringTag"; function i(r, n, o, i) { var c = n && n.prototype instanceof Generator ? n : Generator, u = Object.create(c.prototype); return _regeneratorDefine2(u, "_invoke", function (r, n, o) { var i, c, u, f = 0, p = o || [], y = !1, G = { p: 0, n: 0, v: e, a: d, f: d.bind(e, 4), d: function d(t, r) { return i = t, c = 0, u = e, G.n = r, a; } }; function d(r, n) { for (c = r, u = n, t = 0; !y && f && !o && t < p.length; t++) { var o, i = p[t], d = G.p, l = i[2]; r > 3 ? (o = l === n) && (u = i[(c = i[4]) ? 5 : (c = 3, 3)], i[4] = i[5] = e) : i[0] <= d && ((o = r < 2 && d < i[1]) ? (c = 0, G.v = n, G.n = i[1]) : d < l && (o = r < 3 || i[0] > n || n > l) && (i[4] = r, i[5] = n, G.n = l, c = 0)); } if (o || r > 1) return a; throw y = !0, n; } return function (o, p, l) { if (f > 1) throw TypeError("Generator is already running"); for (y && 1 === p && d(p, l), c = p, u = l; (t = c < 2 ? e : u) || !y;) { i || (c ? c < 3 ? (c > 1 && (G.n = -1), d(c, u)) : G.n = u : G.v = u); try { if (f = 2, i) { if (c || (o = "next"), t = i[o]) { if (!(t = t.call(i, u))) throw TypeError("iterator result is not an object"); if (!t.done) return t; u = t.value, c < 2 && (c = 0); } else 1 === c && (t = i.return) && t.call(i), c < 2 && (u = TypeError("The iterator does not provide a '" + o + "' method"), c = 1); i = e; } else if ((t = (y = G.n < 0) ? u : r.call(n, G)) !== a) break; } catch (t) { i = e, c = 1, u = t; } finally { f = 1; } } return { value: t, done: y }; }; }(r, o, i), !0), u; } var a = {}; function Generator() {} function GeneratorFunction() {} function GeneratorFunctionPrototype() {} t = Object.getPrototypeOf; var c = [][n] ? t(t([][n]())) : (_regeneratorDefine2(t = {}, n, function () { return this; }), t), u = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(c); function f(e) { return Object.setPrototypeOf ? Object.setPrototypeOf(e, GeneratorFunctionPrototype) : (e.__proto__ = GeneratorFunctionPrototype, _regeneratorDefine2(e, o, "GeneratorFunction")), e.prototype = Object.create(u), e; } return GeneratorFunction.prototype = GeneratorFunctionPrototype, _regeneratorDefine2(u, "constructor", GeneratorFunctionPrototype), _regeneratorDefine2(GeneratorFunctionPrototype, "constructor", GeneratorFunction), GeneratorFunction.displayName = "GeneratorFunction", _regeneratorDefine2(GeneratorFunctionPrototype, o, "GeneratorFunction"), _regeneratorDefine2(u), _regeneratorDefine2(u, o, "Generator"), _regeneratorDefine2(u, n, function () { return this; }), _regeneratorDefine2(u, "toString", function () { return "[object Generator]"; }), (_regenerator = function _regenerator() { return { w: i, m: f }; })(); }
+function _regeneratorDefine2(e, r, n, t) { var i = Object.defineProperty; try { i({}, "", {}); } catch (e) { i = 0; } _regeneratorDefine2 = function _regeneratorDefine(e, r, n, t) { function o(r, n) { _regeneratorDefine2(e, r, function (e) { return this._invoke(r, n, e); }); } r ? i ? i(e, r, { value: n, enumerable: !t, configurable: !t, writable: !t }) : e[r] = n : (o("next", 0), o("throw", 1), o("return", 2)); }, _regeneratorDefine2(e, r, n, t); }
+function asyncGeneratorStep(n, t, e, r, o, a, c) { try { var i = n[a](c), u = i.value; } catch (n) { return void e(n); } i.done ? t(u) : Promise.resolve(u).then(r, o); }
+function _asyncToGenerator(n) { return function () { var t = this, e = arguments; return new Promise(function (r, o) { var a = n.apply(t, e); function _next(n) { asyncGeneratorStep(a, r, o, _next, _throw, "next", n); } function _throw(n) { asyncGeneratorStep(a, r, o, _next, _throw, "throw", n); } _next(void 0); }); }; }
+function _slicedToArray(r, e) { return _arrayWithHoles(r) || _iterableToArrayLimit(r, e) || _unsupportedIterableToArray(r, e) || _nonIterableRest(); }
+function _nonIterableRest() { throw new TypeError("Invalid attempt to destructure non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+function _iterableToArrayLimit(r, l) { var t = null == r ? null : "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (null != t) { var e, n, i, u, a = [], f = !0, o = !1; try { if (i = (t = t.call(r)).next, 0 === l) { if (Object(t) !== t) return; f = !1; } else for (; !(f = (e = i.call(t)).done) && (a.push(e.value), a.length !== l); f = !0); } catch (r) { o = !0, n = r; } finally { try { if (!f && null != t.return && (u = t.return(), Object(u) !== u)) return; } finally { if (o) throw n; } } return a; } }
+function _arrayWithHoles(r) { if (Array.isArray(r)) return r; }
+function _createForOfIteratorHelper(r, e) { var t = "undefined" != typeof Symbol && r[Symbol.iterator] || r["@@iterator"]; if (!t) { if (Array.isArray(r) || (t = _unsupportedIterableToArray(r)) || e && r && "number" == typeof r.length) { t && (r = t); var _n = 0, F = function F() {}; return { s: F, n: function n() { return _n >= r.length ? { done: !0 } : { done: !1, value: r[_n++] }; }, e: function e(r) { throw r; }, f: F }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); } var o, a = !0, u = !1; return { s: function s() { t = t.call(r); }, n: function n() { var r = t.next(); return a = r.done, r; }, e: function e(r) { u = !0, o = r; }, f: function f() { try { a || null == t.return || t.return(); } finally { if (u) throw o; } } }; }
+function _unsupportedIterableToArray(r, a) { if (r) { if ("string" == typeof r) return _arrayLikeToArray(r, a); var t = {}.toString.call(r).slice(8, -1); return "Object" === t && r.constructor && (t = r.constructor.name), "Map" === t || "Set" === t ? Array.from(r) : "Arguments" === t || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(t) ? _arrayLikeToArray(r, a) : void 0; } }
+function _arrayLikeToArray(r, a) { (null == a || a > r.length) && (a = r.length); for (var e = 0, n = Array(a); e < a; e++) n[e] = r[e]; return n; }
+(function (w) {
+  if (!Object.assign) {
+    Object.assign = function (target) {
+      if (target == null) throw new TypeError('Cannot convert undefined or null to object');
+      var to = Object(target);
+      for (var i = 1; i < arguments.length; i++) {
+        var next = arguments[i];
+        if (next != null) {
+          for (var key in next) {
+            if (Object.prototype.hasOwnProperty.call(next, key)) to[key] = next[key];
+          }
+        }
+      }
+      return to;
+    };
+  }
+  if (!Object.entries) {
+    Object.entries = function (obj) {
+      var out = [];
+      for (var key in Object(obj)) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) out.push([key, obj[key]]);
+      }
+      return out;
+    };
+  }
+  if (!Object.values) {
+    Object.values = function (obj) {
+      var out = [];
+      for (var key in Object(obj)) {
+        if (Object.prototype.hasOwnProperty.call(obj, key)) out.push(obj[key]);
+      }
+      return out;
+    };
+  }
+  if (!Object.getOwnPropertyDescriptors) {
+    Object.getOwnPropertyDescriptors = function (obj) {
+      var out = {};
+      Object.getOwnPropertyNames(obj).forEach(function (key) {
+        out[key] = Object.getOwnPropertyDescriptor(obj, key);
+      });
+      return out;
+    };
+  }
+  if (!Array.prototype.includes) {
+    Array.prototype.includes = function (value) {
+      return this.indexOf(value) !== -1;
+    };
+  }
+  if (!Array.prototype.find) {
+    Array.prototype.find = function (fn, that) {
+      for (var i = 0; i < this.length; i++) {
+        if (fn.call(that, this[i], i, this)) return this[i];
+      }
+    };
+  }
+  if (!String.prototype.includes) {
+    String.prototype.includes = function (value, start) {
+      return this.indexOf(value, start || 0) !== -1;
+    };
+  }
+  if (!String.prototype.startsWith) {
+    String.prototype.startsWith = function (value, start) {
+      start = start || 0;
+      return this.substr(start, value.length) === value;
+    };
+  }
+  if (!w.URLSearchParams) {
+    w.URLSearchParams = function (init) {
+      this.items = [];
+      init = init || {};
+      for (var key in init) {
+        if (Object.prototype.hasOwnProperty.call(init, key)) this.append(key, init[key]);
+      }
+    };
+    w.URLSearchParams.prototype.append = function (key, value) {
+      this.items.push(encodeURIComponent(key) + '=' + encodeURIComponent(value == null ? '' : value));
+    };
+    w.URLSearchParams.prototype.toString = function () {
+      return this.items.join('&');
+    };
+  }
+  if (w.Element && Element.prototype && !Element.prototype.remove) {
+    Element.prototype.remove = function () {
+      if (this.parentNode) this.parentNode.removeChild(this);
+    };
+  }
+  if (!w.fetch && w.Promise) {
+    w.fetch = function (url, options) {
+      options = options || {};
+      return new Promise(function (resolve, reject) {
+        var xhr = new XMLHttpRequest();
+        xhr.open(options.method || 'GET', url, true);
+        var headers = options.headers || {};
+        for (var key in headers) {
+          if (Object.prototype.hasOwnProperty.call(headers, key)) xhr.setRequestHeader(key, headers[key]);
+        }
+        xhr.onload = function () {
+          resolve({
+            ok: xhr.status >= 200 && xhr.status < 300,
+            status: xhr.status,
+            text: function text() {
+              return Promise.resolve(xhr.responseText);
+            }
+          });
+        };
+        xhr.onerror = function () {
+          reject(new TypeError('Network request failed'));
+        };
+        xhr.send(options.body || null);
+      });
+    };
+  }
+})(window);
+var __defProp = Object.defineProperty;
+var __defProps = Object.defineProperties;
+var __getOwnPropDescs = Object.getOwnPropertyDescriptors;
+var __getOwnPropSymbols = Object.getOwnPropertySymbols;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __propIsEnum = Object.prototype.propertyIsEnumerable;
+var __defNormalProp = function __defNormalProp(obj, key, value) {
+  return key in obj ? __defProp(obj, key, {
+    enumerable: true,
+    configurable: true,
+    writable: true,
+    value: value
+  }) : obj[key] = value;
+};
+var __spreadValues = function __spreadValues(a, b) {
+  for (var prop in b || (b = {})) if (__hasOwnProp.call(b, prop)) __defNormalProp(a, prop, b[prop]);
+  if (__getOwnPropSymbols) {
+    var _iterator = _createForOfIteratorHelper(__getOwnPropSymbols(b)),
+      _step;
+    try {
+      for (_iterator.s(); !(_step = _iterator.n()).done;) {
+        var prop = _step.value;
+        if (__propIsEnum.call(b, prop)) __defNormalProp(a, prop, b[prop]);
+      }
+    } catch (err) {
+      _iterator.e(err);
+    } finally {
+      _iterator.f();
+    }
+  }
+  return a;
+};
+var __spreadProps = function __spreadProps(a, b) {
+  return __defProps(a, __getOwnPropDescs(b));
+};
+if (typeof window.structuredClone !== "function") {
+  window.structuredClone = function (value) {
+    return JSON.parse(JSON.stringify(value));
+  };
+}
+window.addEventListener("error", function (event) {
+  console.error("Menu error:", event.error || event.message);
+  var box = document.getElementById("pageError");
+  if (box) {
+    box.style.display = "block";
+    box.textContent = "حدث خطأ في تحميل المنيو: " + String(event.message || "خطأ غير معروف") + " — اضغط Ctrl+F5 لإعادة التحميل.";
+  }
+});
+window.addEventListener("unhandledrejection", function (event) {
+  console.error("Unhandled promise:", event.reason);
+});
+var legacyDefaultProducts = [["labneh", "لبنة خلطة بيتزا", "لبنة وزيت زيتون وسلطة زيتون", "35", "2"], ["labneh", "لبنة خلطة فلسطينية", "لبنة وزيت زيتون وسلطة زيتون ومكدوس", "35", "2"], ["labneh", "لبنة خلطة خليجية", "لبنة وزيت زيتون وسلطة زيتون وزعتر", "35", "2"], ["labneh", "لبنة مكدوس بالشطة", "لبنة وزيت زيتون وشطة ومكدوس", "35", "2"], ["labneh", "لبنة خلطة غزاوية", "لبنة وزيت زيتون وسلطة زيتون ودقة", "35", "2"], ["labneh", "لبنة مكدوس", "لبنة وزيت زيتون ومكدوس", "35", "2"], ["labneh", "لبنة بالزيتون", "لبنة وزيت زيتون وزيتون", "35", "2"], ["labneh", "لبنة بالرمان", "لبنة وزيت زيتون ورمان وزعتر بري وذرة", "35", "2"], ["labneh", "لبنة بالزيتون بالشطة", "لبنة وزيت زيتون وزيتون وشطة", "35", "3"], ["labneh", "لبنة بالزعتر", "لبنة وزيت زيتون وزعتر", "35", "3"], ["labneh", "لبنة حبة البركة حار", "لبنة وزيت زيتون وحبة بركة وشطة", "35", "3"], ["labneh", "لبنة حبة البركة", "لبنة وزيت زيتون وحبة البركة", "35", "3"], ["labneh", "لبنة مدعبلة سادة", "لبنة وزيت زيتون", "35", "3"], ["labneh", "لبنة طازج", "لبنة وزيت زيتون", "35", "3"], ["labneh", "لبنة ملكية", "لبنة وزيت زيتون ومكدوس وجبنة ودقة", "35", "4"], ["labneh", "لبنة روح الاتحاد", "لبنة وزيت زيتون ودقة وشطة", "35", "4"], ["jam", "مربى تين بالمكسرات", "", "30", "5"], ["jam", "مربى تين ناعم", "", "30", "5"], ["jam", "مربى توت طبيعي", "", "30", "5"], ["jam", "مربى مشمش طبيعي", "", "30", "5"], ["jam", "مربى فراولة طبيعي", "", "30", "5"], ["jam", "مربى كرز طبيعي", "", "30", "5"], ["jam", "مربى ورد طبيعي", "", "30", "5"], ["jam", "مربى برتقال طبيعي", "", "30", "5"], ["cheese", "جبنة نابلسية فلسطينية", "", "", "6"], ["ghee", "سمن الغزال 1 كغم", "", "30", "11"], ["ghee", "سمن الغزال 1.7 كغم", "", "45", "11"], ["ghee", "سمن الغزالين 1 كغم", "", "30", "11"], ["ghee", "سمن حيواني فلسطيني 1 كغم", "", "70", "11"], ["jameed", "جميد 1 قطعة", "", "15", "12"], ["jameed", "جميد كبير 1 قطعة", "", "35", "12"], ["jameed", "جميد 1 كغم", "", "70", "12"], ["canned", "ماء زهر 650 مل", "", "15", "13"], ["canned", "ماء ورد 650 مل", "", "15", "13"], ["canned", "طحينة بيضاء 500 جم", "", "20", "13"], ["canned", "طحينة حمراء 500 جم", "", "20", "13"], ["canned", "دبس الرمان 670 مل", "", "30", "13"], ["canned", "خل التفاح 800 مل", "", "30", "13"], ["hot", "قهوة محمد أفندي 250 جم", "", "35", "23"], ["hot", "قهوة محمد أفندي 500 جم", "", "50", "23"], ["hot", "بن العميد 3×1 عدد 30", "", "50", "23"], ["hot", "بن العميد 2×1 عدد 30", "", "45", "23"], ["hot", "قهوة السعيدة 450 جم", "", "30", "23"], ["hot", "بن العميد وسط مع الهيل 250 جم", "", "25", "23"], ["hot", "عرقسوس رمزي الأصيل 200 جم", "", "20", "23"], ["cake", "كعك أصابع جوز الهند", "", "20", "26"], ["cake", "كعك أساور تمر شوفان", "", "20", "26"], ["cake", "معمول تمر حبة البركة", "", "20", "26"], ["cake", "كعك أصابع يانسون", "", "20", "26"], ["cake", "كعك برازق", "", "20", "26"], ["sweet", "حلاوة طحينية فانيلا 36 قطعة", "", "65", "27"], ["sweet", "حلاوة طحينية شوكوفانيل 36 قطعة", "", "65", "27"], ["sweet", "حلاوة أبو حربي 450 جم", "", "25", "27"], ["sweet", "برافو سمسمية 24 حبة", "", "30", "27"], ["sweet", "برافو فستقية 24 حبة", "", "30", "27"], ["drinks", "عصير الإجاص والكيوي والصبار", "", "15", "29"], ["drinks", "عصير عنب", "", "15", "29"], ["drinks", "عصير مانجا", "", "15", "29"], ["drinks", "عصير فراولة وموز", "", "15", "29"], ["gum", "علكة فراولة", "", "10", "30"], ["gum", "علكة مستكة", "", "10", "30"], ["gum", "علكة قرفة", "", "10", "30"], ["gum", "علكة نعنع", "", "10", "30"], ["soap", "صابون نابلسي", "", "10", "31"], ["soap", "صابون غار طبيعي", "", "15", "31"], ["soap", "صابون بلوم", "", "10", "31"]].map(function (x, i) {
+  return {
+    id: i + 1,
+    cat: x[0],
+    name: x[1],
+    desc: x[2],
+    price: x[3],
+    image: "slides/slide-".concat(String(x[4]).padStart(2, "0"), ".jpg"),
+    visible: true
+  };
+});
+var defaultProducts = [];
+var categoryNames = {
+  all: "الكل",
+  labneh: "اللبنة",
+  jam: "المربى",
+  cheese: "الجبنة",
+  ghee: "السمن",
+  jameed: "الجميد",
+  canned: "المعلبات",
+  hot: "المشروبات الساخنة",
+  cake: "الكعك",
+  sweet: "الحلويات",
+  drinks: "العصائر",
+  gum: "العلكة",
+  soap: "الصابون"
+};
+var categoryRows = [];
+var KEY = "oliveMenuProductsCloudV7",
+  SETKEY = "oliveMenuSettingsV2",
+  ORDERSKEY = "oliveMenuOrdersV1",
+  ORDERSEQKEY = "oliveMenuOrderSeqV1";
+var CURRENT_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbya0T5Pfk_XZRyAzb3ivvVURivI7BgEJ_fRbw4TY9ccHqtZWh-Zq409BYlIoLB1FHhz/exec";
+var LEGACY_WEB_APP_URL = "https://script.google.com/macros/s/AKfycbz-9uHwBH_hCu2ZqsIC5xhnl6Ky5Lfk9888sp-eRVvccmUUr_MzwPtecRTQy5RC9TU/exec";
+function safeStorageJSON(key, fallback) {
+  try {
+    var raw = localStorage.getItem(key);
+    if (!raw) return fallback;
+    var parsed = JSON.parse(raw);
+    return parsed === null || parsed === void 0 ? fallback : parsed;
+  } catch (error) {
+    console.warn("تم تجاهل بيانات متصفح تالفة:", key, error);
+    localStorage.removeItem(key);
+    return fallback;
+  }
+}
+var orders = safeStorageJSON(ORDERSKEY, []);
+var products = loadProducts();
+var productLoadAttempts = 0;
+var settings = Object.assign({
+  phone: "971505660791",
+  pin: "secure-session",
+  deliveryFee: 0,
+  minOrder: 0,
+  discountThreshold: 0,
+  discountPercent: 0,
+  webAppUrl: CURRENT_WEB_APP_URL
+}, safeStorageJSON(SETKEY, {}));
+settings.webAppUrl = CURRENT_WEB_APP_URL;
+localStorage.setItem(SETKEY, JSON.stringify(settings));
+var current = "all",
+  cart = safeStorageJSON("cartDemo", {}),
+  pendingImage = "";
+function loadProducts() {
+  try {
+    var saved = safeStorageJSON(KEY, null);
+    return Array.isArray(saved) ? saved : structuredClone(defaultProducts);
+  } catch (error) {
+    console.warn("تحميل المنتجات الافتراضية:", error);
+    return structuredClone(defaultProducts);
+  }
+}
+function persist() {
+  localStorage.setItem(KEY, JSON.stringify(products));
+  render();
+  renderAdmin();
+}
+function renderCats() {
+  cats.innerHTML = Object.entries(categoryNames).map(function (_ref) {
+    var _ref2 = _slicedToArray(_ref, 2),
+      k = _ref2[0],
+      v = _ref2[1];
+    return "<button class=\"cat ".concat(k === current ? "active" : "", "\" onclick=\"setCat('").concat(k, "')\">").concat(v, "</button>");
+  }).join("");
+}
+function setCat(c) {
+  current = c;
+  renderCats();
+  render();
+}
+function qty(id) {
+  var _a;
+  return ((_a = cart[id]) == null ? void 0 : _a.qty) || 0;
+}
+function esc() {
+  var s = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : "";
+  return String(s).replace(/[&<>'"]/g, function (c) {
+    return {
+      "&": "&amp;",
+      "<": "&lt;",
+      ">": "&gt;",
+      "'": "&#39;",
+      '"': "&quot;"
+    }[c];
+  });
+}
+function productLoadingMarkup() {
+  var loadingFailed = productLoadAttempts >= 4;
+  var english = document.documentElement.lang === "en";
+  return '<div class="empty"><div class="menuLoadingSpinner"></div><b>' +
+    (loadingFailed ? (english ? "Products are taking longer to load" : "تأخر تحميل المنتجات") : (english ? "Loading products..." : "جاري تحميل المنتجات...")) + '</b><br><small>' +
+    (loadingFailed ? (english ? "Tap to try again" : "اضغط للمحاولة مرة أخرى") : (english ? "Please wait a moment" : "يرجى الانتظار لحظات")) + '</small>' +
+    (loadingFailed ? '<br><button class="menuRetry" type="button" onclick="retryMenuProducts()">' + (english ? "Try again" : "إعادة المحاولة") + '</button>' : '') + '</div>';
+}
+function render() {
+  heroPhone.textContent = "\u0648\u0627\u062A\u0633\u0627\u0628 ".concat(formatPhone(settings.phone));
+  var q = search.value.trim();
+  if (!products.length && !q) {
+    grid.innerHTML = productLoadingMarkup();
+    updateBadge();
+    return;
+  }
+  var list = products.filter(function (p) {
+    return p.visible !== false && (current === "all" || p.cat === current) && (!q || "".concat(p.name, " ").concat(p.desc).includes(q));
+  });
+  grid.innerHTML = list.map(function (p) {
+    return "<article class=\"card\"><div class=\"pic\"><img loading=\"lazy\" decoding=\"async\" src=\"".concat(p.image, "\" onerror=\"this.src='slides/slide-01.jpg'\"><span class=\"tag\">").concat(categoryNames[p.cat] || p.cat, "</span></div><div class=\"body\"><div class=\"name\">").concat(esc(p.name), "</div><div class=\"desc\">").concat(esc(p.desc || "منتج أصلي من منيو غصن الزيتون"), "</div><div class=\"price\">").concat(p.price ? "".concat(p.price, " \u062F\u0631\u0647\u0645") : "حسب العبوة", "</div><div class=\"actions\"><button class=\"pick\" onclick=\"add(").concat(p.id, ")\">\u0627\u062E\u062A\u0631</button><div class=\"qty\"><button onclick=\"change(").concat(p.id, ",-1)\">\u2212</button><span>").concat(qty(p.id), "</span><button onclick=\"change(").concat(p.id, ",1)\">+</button></div></div></div></article>");
+  }).join("") || '<div class="empty">لا توجد نتائج</div>';
+  updateBadge();
+}
+function add(id) {
+  change(id, 1);
+}
+function change(id, d) {
+  var p = products.find(function (x) {
+    return x.id === id;
+  });
+  if (!p) return;
+  var n = Math.max(0, qty(id) + d);
+  if (n) cart[id] = __spreadProps(__spreadValues({}, p), {
+    qty: n
+  });else delete cart[id];
+  saveCart();
+  render();
+  renderCart();
+}
+function saveCart() {
+  localStorage.setItem("cartDemo", JSON.stringify(cart));
+  updateBadge();
+}
+function updateBadge() {
+  badge.textContent = Object.values(cart).reduce(function (s, x) {
+    return s + x.qty;
+  }, 0);
+}
+function openCart() {
+  drawer.classList.add("open");
+  renderCart();
+}
+function closeCart() {
+  drawer.classList.remove("open");
+}
+function money(n) {
+  return Number(n || 0).toFixed(2).replace(/\.00$/, "");
+}
+function getOrderTotals() {
+  var _a;
+  var arr = Object.values(cart);
+  var itemCount = arr.length;
+  var qtyCount = arr.reduce(function (s, x) {
+    return s + Number(x.qty || 0);
+  }, 0);
+  var subtotal = arr.reduce(function (s, x) {
+    return s + (Number(x.price) || 0) * Number(x.qty || 0);
+  }, 0);
+  var deliveryType = ((_a = document.querySelector('input[name="deliveryType"]:checked')) == null ? void 0 : _a.value) || "delivery";
+  var delivery = deliveryType === "delivery" ? Number(settings.deliveryFee || 0) : 0;
+  var discount = subtotal >= Number(settings.discountThreshold || 0) && Number(settings.discountThreshold || 0) > 0 ? subtotal * (Number(settings.discountPercent || 0) / 100) : 0;
+  var total = Math.max(0, subtotal + delivery - discount);
+  return {
+    itemCount: itemCount,
+    qtyCount: qtyCount,
+    subtotal: subtotal,
+    delivery: delivery,
+    discount: discount,
+    total: total,
+    deliveryType: deliveryType
+  };
+}
+function renderCart() {
+  var arr = Object.values(cart);
+  document.getElementById("cart").innerHTML = arr.length ? arr.map(function (x) {
+    var line = (Number(x.price) || 0) * x.qty;
+    return "<div class=\"cartItem\"><div><b>".concat(esc(x.name), "</b><br><small>").concat(x.price ? money(x.price) + " درهم للوحدة" : "حسب العبوة", "</small>").concat(x.price ? "<div class=\"itemTotal\">".concat(money(line), " \u062F\u0631\u0647\u0645</div>") : "", "</div><div class=\"qty\"><button onclick=\"change(").concat(x.id, ",-1)\">\u2212</button><span>").concat(x.qty, "</span><button onclick=\"change(").concat(x.id, ",1)\">+</button></div></div>");
+  }).join("") : '<div class="empty">السلة فارغة</div>';
+  var t = getOrderTotals();
+  deliveryHint.textContent = t.deliveryType === "delivery" ? "\u0631\u0633\u0648\u0645 \u0627\u0644\u062A\u0648\u0635\u064A\u0644: ".concat(money(t.delivery), " \u062F\u0631\u0647\u0645") : "سيتم احتساب رسوم التوصيل حسب الإعدادات";
+  summary.innerHTML = "<div class=\"sumRow\"><span>\u0639\u062F\u062F \u0627\u0644\u0623\u0635\u0646\u0627\u0641</span><b>".concat(t.itemCount, "</b></div><div class=\"sumRow\"><span>\u0625\u062C\u0645\u0627\u0644\u064A \u0627\u0644\u0642\u0637\u0639</span><b>").concat(t.qtyCount, "</b></div><div class=\"sumRow\"><span>\u0627\u0644\u0625\u062C\u0645\u0627\u0644\u064A \u0642\u0628\u0644 \u0627\u0644\u062A\u0648\u0635\u064A\u0644</span><b>").concat(money(t.subtotal), " \u062F\u0631\u0647\u0645</b></div>").concat(t.delivery ? "<div class=\"sumRow\"><span>\u0631\u0633\u0648\u0645 \u0627\u0644\u062A\u0648\u0635\u064A\u0644</span><b>".concat(money(t.delivery), " \u062F\u0631\u0647\u0645</b></div>") : "").concat(t.discount ? "<div class=\"sumRow discountRow\"><span>\u0627\u0644\u062E\u0635\u0645 (".concat(money(settings.discountPercent), "%)</span><b>\u2212 ").concat(money(t.discount), " \u062F\u0631\u0647\u0645</b></div>") : "", "<div class=\"sumRow final\"><span>\u0627\u0644\u0625\u062C\u0645\u0627\u0644\u064A \u0627\u0644\u0646\u0647\u0627\u0626\u064A</span><span>").concat(money(t.total), " \u062F\u0631\u0647\u0645</span></div>").concat(settings.minOrder && t.subtotal < settings.minOrder ? "<div class=\"notice\">\u0627\u0644\u062D\u062F \u0627\u0644\u0623\u062F\u0646\u0649 \u0644\u0644\u0637\u0644\u0628 ".concat(money(settings.minOrder), " \u062F\u0631\u0647\u0645\u060C \u0648\u0627\u0644\u0645\u062A\u0628\u0642\u064A ").concat(money(settings.minOrder - t.subtotal), " \u062F\u0631\u0647\u0645.</div>") : "");
+}
+function getGPS() {
+  if (!navigator.geolocation) {
+    alert("GPS غير مدعوم");
+    return;
+  }
+  navigator.geolocation.getCurrentPosition(function (p) {
+    document.getElementById("location").value = "https://maps.google.com/?q=".concat(p.coords.latitude, ",").concat(p.coords.longitude);
+  }, function () {
+    return alert("تعذر تحديد الموقع. افتح الصفحة عبر HTTPS واسمح للموقع.");
+  });
+}
+function nextOrderNumber() {
+  var n = Number(localStorage.getItem(ORDERSEQKEY) || 999) + 1;
+  localStorage.setItem(ORDERSEQKEY, String(n));
+  return n;
+}
+function saveOrderRecord(arr, t, orderNo) {
+  var now = new Date();
+  var phone = (customerPhone.value || "").trim();
+  var existing = orders.find(function (o) {
+    return o.phone === phone && phone;
+  });
+  var customerNo = existing ? existing.customerNo : orderNo;
+  var record = {
+    orderNo: orderNo,
+    customerNo: customerNo,
+    dateISO: now.toISOString(),
+    dateText: now.toLocaleString("ar-AE"),
+    name: (customer.value || "-").trim(),
+    phone: phone || "-",
+    area: (area.value || "-").trim(),
+    location: (document.getElementById("location").value || "-").trim(),
+    deliveryType: t.deliveryType,
+    items: arr.map(function (x) {
+      return {
+        id: x.id,
+        name: x.name,
+        price: Number(x.price) || 0,
+        qty: Number(x.qty) || 0,
+        lineTotal: (Number(x.price) || 0) * Number(x.qty || 0)
+      };
+    }),
+    itemCount: t.itemCount,
+    qtyCount: t.qtyCount,
+    subtotal: t.subtotal,
+    delivery: t.delivery,
+    discount: t.discount,
+    total: t.total,
+    status: "جديد"
+  };
+  orders.unshift(record);
+  localStorage.setItem(ORDERSKEY, JSON.stringify(orders));
+  return record;
+}
+function sendWA() {
+  var arr = Object.values(cart);
+  if (!arr.length) {
+    alert("اختر منتجًا أولًا");
+    return;
+  }
+  var t = getOrderTotals();
+  if (Number(settings.minOrder || 0) > 0 && t.subtotal < Number(settings.minOrder)) {
+    alert("\u0627\u0644\u062D\u062F \u0627\u0644\u0623\u062F\u0646\u0649 \u0644\u0644\u0637\u0644\u0628 ".concat(money(settings.minOrder), " \u062F\u0631\u0647\u0645"));
+    return;
+  }
+  if (!customer.value.trim()) {
+    alert("اكتب اسم العميل");
+    customer.focus();
+    return;
+  }
+  if (!customerPhone.value.trim()) {
+    alert("اكتب رقم هاتف العميل");
+    customerPhone.focus();
+    return;
+  }
+  var orderNo = nextOrderNumber();
+  var record = saveOrderRecord(arr, t, orderNo);
+  var lines = ["\uD83D\uDED2 \u0637\u0644\u0628 \u062C\u062F\u064A\u062F \u0631\u0642\u0645 #".concat(orderNo, " \u0645\u0646 \u0645\u0646\u064A\u0648 \u063A\u0635\u0646 \u0627\u0644\u0632\u064A\u062A\u0648\u0646"), "", "\u0631\u0642\u0645 \u0627\u0644\u0639\u0645\u064A\u0644: ".concat(record.customerNo), "\u0627\u0644\u0627\u0633\u0645: ".concat(record.name), "\u0631\u0642\u0645 \u0627\u0644\u0647\u0627\u062A\u0641: ".concat(record.phone), "\u0627\u0644\u062A\u0627\u0631\u064A\u062E: ".concat(record.dateText), "\u0627\u0644\u0645\u0646\u0637\u0642\u0629: ".concat(record.area), "\u0637\u0631\u064A\u0642\u0629 \u0627\u0644\u0627\u0633\u062A\u0644\u0627\u0645: ".concat(t.deliveryType === "delivery" ? "توصيل" : "استلام من الفرع"), "\u0627\u0644\u0645\u0648\u0642\u0639: ".concat(record.location), "", "الطلبات:"];
+  arr.forEach(function (x, i) {
+    return lines.push("".concat(i + 1, "- ").concat(x.name, "\n   ").concat(x.price ? "".concat(money(x.price), " \xD7 ").concat(x.qty, " = ").concat(money(Number(x.price) * x.qty), " \u062F\u0631\u0647\u0645") : "\u0627\u0644\u0643\u0645\u064A\u0629: ".concat(x.qty)));
+  });
+  lines.push("", "\u0639\u062F\u062F \u0627\u0644\u0623\u0635\u0646\u0627\u0641: ".concat(t.itemCount), "\u0625\u062C\u0645\u0627\u0644\u064A \u0627\u0644\u0642\u0637\u0639: ".concat(t.qtyCount), "\u0627\u0644\u0625\u062C\u0645\u0627\u0644\u064A \u0642\u0628\u0644 \u0627\u0644\u062A\u0648\u0635\u064A\u0644: ".concat(money(t.subtotal), " \u062F\u0631\u0647\u0645"));
+  if (t.delivery) lines.push("\u0631\u0633\u0648\u0645 \u0627\u0644\u062A\u0648\u0635\u064A\u0644: ".concat(money(t.delivery), " \u062F\u0631\u0647\u0645"));
+  if (t.discount) lines.push("\u0627\u0644\u062E\u0635\u0645: -".concat(money(t.discount), " \u062F\u0631\u0647\u0645"));
+  lines.push("\u2705 \u0627\u0644\u0625\u062C\u0645\u0627\u0644\u064A \u0627\u0644\u0646\u0647\u0627\u0626\u064A: ".concat(money(t.total), " \u062F\u0631\u0647\u0645"));
+  window.open("https://wa.me/".concat(settings.phone, "?text=").concat(encodeURIComponent(lines.join("\n"))), "_blank");
+  alert("\u062A\u0645 \u062A\u0633\u062C\u064A\u0644 \u0627\u0644\u0637\u0644\u0628 \u0631\u0642\u0645 #".concat(orderNo));
+  cart = {};
+  saveCart();
+  renderCart();
+  closeCart();
+}
+function requestAdmin() {
+  pinInput.value = "";
+  loginModal.classList.add("open");
+  setTimeout(function () {
+    return pinInput.focus();
+  }, 100);
+}
+function closeLogin() {
+  loginModal.classList.remove("open");
+}
+function loginAdmin() {
+  if (pinInput.value !== settings.pin) {
+    alert("كلمة المرور غير صحيحة");
+    return;
+  }
+  closeLogin();
+  openAdmin();
+}
+function openAdmin() {
+  showAdminTab("products");
+  settingPhone.value = settings.phone;
+  settingPin.value = settings.pin;
+  settingDelivery.value = settings.deliveryFee || 0;
+  settingMinOrder.value = settings.minOrder || 0;
+  settingDiscountThreshold.value = settings.discountThreshold || 0;
+  settingDiscountPercent.value = settings.discountPercent || 0;
+  fillCats();
+  renderAdmin();
+  renderOrders();
+  adminModal.classList.add("open");
+}
+function closeAdmin() {
+  adminModal.classList.remove("open");
+  clearForm();
+}
+function fillCats() {
+  pCat.innerHTML = Object.entries(categoryNames).filter(function (_ref3) {
+    var _ref4 = _slicedToArray(_ref3, 1),
+      k = _ref4[0];
+    return k !== "all";
+  }).map(function (_ref5) {
+    var _ref6 = _slicedToArray(_ref5, 2),
+      k = _ref6[0],
+      v = _ref6[1];
+    return "<option value=\"".concat(esc(k), "\">").concat(esc(v), "</option>");
+  }).join("");
+  renderCategoryAdmin();
+}
+function loadImage(_x) {
+  return _loadImage.apply(this, arguments);
+}
+function _loadImage() {
+  _loadImage = _asyncToGenerator(_regenerator().m(function _callee2(e) {
+    var f, _t;
+    return _regenerator().w(function (_context2) {
+      while (1) switch (_context2.p = _context2.n) {
+        case 0:
+          f = e.target.files[0];
+          if (f) {
+            _context2.n = 1;
+            break;
+          }
+          return _context2.a(2);
+        case 1:
+          if (/^image\/(png|jpe?g|webp)$/i.test(f.type)) {
+            _context2.n = 2;
+            break;
+          }
+          alert("اختر صورة JPG أو PNG أو WEBP");
+          e.target.value = "";
+          return _context2.a(2);
+        case 2:
+          _context2.p = 2;
+          preview.alt = "جاري تجهيز الصورة...";
+          _context2.n = 3;
+          return compressProductImage(f);
+        case 3:
+          pendingImage = _context2.v;
+          preview.src = pendingImage;
+          preview.alt = "معاينة الصورة";
+          _context2.n = 5;
+          break;
+        case 4:
+          _context2.p = 4;
+          _t = _context2.v;
+          pendingImage = "";
+          e.target.value = "";
+          preview.removeAttribute("src");
+          preview.alt = "معاينة الصورة";
+          alert("تعذر تجهيز الصورة: " + _t.message);
+        case 5:
+          return _context2.a(2);
+      }
+    }, _callee2, null, [[2, 4]]);
+  }));
+  return _loadImage.apply(this, arguments);
+}
+function compressProductImage(file) {
+  return new Promise(function (resolve, reject) {
+    var reader = new FileReader();
+    reader.onerror = function () {
+      return reject(new Error("تعذر قراءة الصورة"));
+    };
+    reader.onload = function () {
+      var img = new Image();
+      img.onerror = function () {
+        return reject(new Error("ملف الصورة غير صالح"));
+      };
+      img.onload = function () {
+        var maxSide = 1400,
+          scale = Math.min(1, maxSide / Math.max(img.naturalWidth, img.naturalHeight)),
+          w = Math.max(1, Math.round(img.naturalWidth * scale)),
+          h = Math.max(1, Math.round(img.naturalHeight * scale)),
+          canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        var ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#fff";
+        ctx.fillRect(0, 0, w, h);
+        ctx.drawImage(img, 0, 0, w, h);
+        var quality = 0.86,
+          data = canvas.toDataURL("image/jpeg", quality);
+        while (data.length > 12e5 && quality > 0.5) {
+          quality -= 0.08;
+          data = canvas.toDataURL("image/jpeg", quality);
+        }
+        if (data.length > 16e5) return reject(new Error("الصورة كبيرة جدًا"));
+        resolve(data);
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+function clearForm() {
+  editId.value = "";
+  formTitle.textContent = "إضافة منتج";
+  pName.value = "";
+  pDesc.value = "";
+  pPrice.value = "";
+  pCat.value = "labneh";
+  pVisible.checked = true;
+  pendingImage = "";
+  preview.removeAttribute("src");
+  pImage.value = "";
+}
+function saveProduct() {
+  return _saveProduct.apply(this, arguments);
+}
+function _saveProduct() {
+  _saveProduct = _asyncToGenerator(_regenerator().m(function _callee3() {
+    var name, payload, saveBtn, oldButtonText, d, _t2;
+    return _regenerator().w(function (_context3) {
+      while (1) switch (_context3.p = _context3.n) {
+        case 0:
+          name = String(pName.value || "").trim();
+          if (name) {
+            _context3.n = 1;
+            break;
+          }
+          alert("اكتب اسم المنتج");
+          return _context3.a(2);
+        case 1:
+          if (gsUrl()) {
+            _context3.n = 2;
+            break;
+          }
+          alert("رابط Google Apps Script غير موجود");
+          return _context3.a(2);
+        case 2:
+          payload = {
+            action: "saveProduct",
+            pin: settings.pin,
+            id: Number(editId.value || 0),
+            name: name,
+            desc: String(pDesc.value || "").trim(),
+            price: pPrice.value === "" ? "" : Number(pPrice.value),
+            cat: String(pCat.value || "").trim(),
+            visible: pVisible.checked,
+            imageData: pendingImage && pendingImage.startsWith("data:") ? pendingImage : "",
+            existingImage: pendingImage && !pendingImage.startsWith("data:") ? pendingImage : ""
+          };
+          saveBtn = document.querySelector('button[onclick="saveProduct()"]');
+          oldButtonText = saveBtn ? saveBtn.textContent : "";
+          _context3.p = 3;
+          if (saveBtn) {
+            saveBtn.disabled = true;
+            saveBtn.textContent = "جاري الحفظ...";
+          }
+          _context3.n = 4;
+          return gsPost(payload);
+        case 4:
+          d = _context3.v;
+          if (d.ok) {
+            _context3.n = 5;
+            break;
+          }
+          throw new Error(d.error || "FAILED");
+        case 5:
+          _context3.n = 6;
+          return loadCloudProducts();
+        case 6:
+          clearForm();
+          alert(payload.id ? "تم تعديل المنتج في Google Sheets" : "تمت إضافة المنتج إلى Google Sheets");
+          _context3.n = 8;
+          break;
+        case 7:
+          _context3.p = 7;
+          _t2 = _context3.v;
+          alert("تعذر حفظ المنتج: " + _t2.message);
+        case 8:
+          _context3.p = 8;
+          if (saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.textContent = oldButtonText || "حفظ المنتج";
+          }
+          return _context3.f(8);
+        case 9:
+          return _context3.a(2);
+      }
+    }, _callee3, null, [[3, 7, 8, 9]]);
+  }));
+  return _saveProduct.apply(this, arguments);
+}
+function editProduct(id) {
+  var p = products.find(function (x) {
+    return x.id === id;
+  });
+  if (!p) return;
+  editId.value = p.id;
+  formTitle.textContent = "تعديل المنتج";
+  pName.value = p.name;
+  pDesc.value = p.desc || "";
+  pPrice.value = p.price || "";
+  pCat.value = p.cat;
+  pVisible.checked = p.visible !== false;
+  pendingImage = p.image;
+  preview.src = p.image;
+  document.querySelector(".adminBody").scrollTo({
+    top: 0,
+    behavior: "smooth"
+  });
+}
+function toggleProduct(_x2) {
+  return _toggleProduct.apply(this, arguments);
+}
+function _toggleProduct() {
+  _toggleProduct = _asyncToGenerator(_regenerator().m(function _callee4(id) {
+    var p, d, _t3;
+    return _regenerator().w(function (_context4) {
+      while (1) switch (_context4.p = _context4.n) {
+        case 0:
+          p = products.find(function (x) {
+            return Number(x.id) === Number(id);
+          });
+          if (p) {
+            _context4.n = 1;
+            break;
+          }
+          return _context4.a(2);
+        case 1:
+          _context4.p = 1;
+          _context4.n = 2;
+          return gsPost({
+            action: "toggleProduct",
+            pin: settings.pin,
+            id: Number(id),
+            visible: p.visible === false
+          });
+        case 2:
+          d = _context4.v;
+          if (d.ok) {
+            _context4.n = 3;
+            break;
+          }
+          throw new Error(d.error || "FAILED");
+        case 3:
+          _context4.n = 4;
+          return loadCloudProducts();
+        case 4:
+          _context4.n = 6;
+          break;
+        case 5:
+          _context4.p = 5;
+          _t3 = _context4.v;
+          alert("تعذر تغيير حالة المنتج: " + _t3.message);
+        case 6:
+          return _context4.a(2);
+      }
+    }, _callee4, null, [[1, 5]]);
+  }));
+  return _toggleProduct.apply(this, arguments);
+}
+function deleteProduct(_x3) {
+  return _deleteProduct.apply(this, arguments);
+}
+function _deleteProduct() {
+  _deleteProduct = _asyncToGenerator(_regenerator().m(function _callee5(id) {
+    var d, _t4;
+    return _regenerator().w(function (_context5) {
+      while (1) switch (_context5.p = _context5.n) {
+        case 0:
+          if (confirm("حذف المنتج نهائيًا من Google Sheets؟")) {
+            _context5.n = 1;
+            break;
+          }
+          return _context5.a(2);
+        case 1:
+          _context5.p = 1;
+          _context5.n = 2;
+          return gsPost({
+            action: "deleteProduct",
+            pin: settings.pin,
+            id: Number(id)
+          });
+        case 2:
+          d = _context5.v;
+          if (d.ok) {
+            _context5.n = 3;
+            break;
+          }
+          throw new Error(d.error || "FAILED");
+        case 3:
+          delete cart[id];
+          saveCart();
+          _context5.n = 4;
+          return loadCloudProducts();
+        case 4:
+          alert("تم حذف المنتج");
+          _context5.n = 6;
+          break;
+        case 5:
+          _context5.p = 5;
+          _t4 = _context5.v;
+          alert("تعذر حذف المنتج: " + _t4.message);
+        case 6:
+          return _context5.a(2);
+      }
+    }, _callee5, null, [[1, 5]]);
+  }));
+  return _deleteProduct.apply(this, arguments);
+}
+function normalizeCatCode(value) {
+  return String(value || "").trim().toLowerCase().replace(/\s+/g, "_").replace(/[^a-z0-9_-]/g, "");
+}
+function renderCategoryAdmin() {
+  var box = document.getElementById("categoryAdminList");
+  if (!box) return;
+  var rows = (categoryRows.length ? categoryRows : Object.entries(categoryNames).filter(function (_ref7) {
+    var _ref8 = _slicedToArray(_ref7, 1),
+      code = _ref8[0];
+    return code !== "all";
+  }).map(function (_ref9, i) {
+    var _ref0 = _slicedToArray(_ref9, 2),
+      code = _ref0[0],
+      name = _ref0[1];
+    return {
+      code: code,
+      name: name,
+      sort: i + 1
+    };
+  })).slice().sort(function (a, b) {
+    return Number(a.sort || 999) - Number(b.sort || 999);
+  });
+  box.innerHTML = rows.map(function (c) {
+    return "\n    <div class=\"categoryRow\">\n      <input value=\"".concat(esc(c.code), "\" readonly title=\"\u0643\u0648\u062F \u0627\u0644\u062C\u0631\u0648\u0628 \u0644\u0627 \u064A\u062A\u063A\u064A\u0631 \u0628\u0639\u062F \u0627\u0644\u0625\u0646\u0634\u0627\u0621\">\n      <input id=\"catName_").concat(esc(c.code), "\" value=\"").concat(esc(c.name), "\">\n      <input id=\"catSort_").concat(esc(c.code), "\" type=\"number\" min=\"1\" value=\"").concat(Number(c.sort || 99), "\">\n      <div class=\"categoryActions row\">\n        <button type=\"button\" class=\"secondary\" onclick=\"saveCategory('").concat(esc(c.code), "')\">\u062D\u0641\u0638</button>\n        <button type=\"button\" class=\"danger\" onclick=\"deleteCategory('").concat(esc(c.code), "')\">\u062D\u0630\u0641</button>\n      </div>\n    </div>");
+  }).join("");
+}
+function loadCloudCategories() {
+  return _loadCloudCategories.apply(this, arguments);
+}
+function _loadCloudCategories() {
+  _loadCloudCategories = _asyncToGenerator(_regenerator().m(function _callee6() {
+    var d, dedup, _t5;
+    return _regenerator().w(function (_context6) {
+      while (1) switch (_context6.p = _context6.n) {
+        case 0:
+          if (gsUrl()) {
+            _context6.n = 1;
+            break;
+          }
+          return _context6.a(2);
+        case 1:
+          _context6.p = 1;
+          _context6.n = 2;
+          return jsonp("categories");
+        case 2:
+          d = _context6.v;
+          if (Array.isArray(d.categories)) {
+            _context6.n = 3;
+            break;
+          }
+          throw new Error("INVALID_CATEGORIES");
+        case 3:
+          dedup = {};
+          d.categories.forEach(function (c, i) {
+            var code = String(c.code || "").trim();
+            if (!code) return;
+            dedup[code] = {
+              code: code,
+              name: String(c.name || c.code || "").trim(),
+              sort: Number(c.sort || i + 1)
+            };
+          });
+          categoryRows = Object.values(dedup);
+          categoryNames = {
+            all: "الكل"
+          };
+          categoryRows.forEach(function (c) {
+            return categoryNames[c.code] = c.name;
+          });
+          if (current !== "all" && !categoryNames[current]) current = "all";
+          renderCats();
+          fillCats();
+          render();
+          renderAdmin();
+          _context6.n = 5;
+          break;
+        case 4:
+          _context6.p = 4;
+          _t5 = _context6.v;
+          console.warn("Categories:", _t5.message);
+        case 5:
+          return _context6.a(2);
+      }
+    }, _callee6, null, [[1, 4]]);
+  }));
+  return _loadCloudCategories.apply(this, arguments);
+}
+function addCategory(_x4) {
+  return _addCategory.apply(this, arguments);
+}
+function _addCategory() {
+  _addCategory = _asyncToGenerator(_regenerator().m(function _callee7(event) {
+    var codeInput, nameInput, sortInput, button, code, name, sort, oldText, result, _t6;
+    return _regenerator().w(function (_context7) {
+      while (1) switch (_context7.p = _context7.n) {
+        case 0:
+          if (event) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+          codeInput = document.getElementById("newCatCode");
+          nameInput = document.getElementById("newCatName");
+          sortInput = document.getElementById("newCatSort");
+          button = document.getElementById("addCategoryBtn");
+          code = normalizeCatCode((codeInput == null ? void 0 : codeInput.value) || "");
+          name = String((nameInput == null ? void 0 : nameInput.value) || "").trim();
+          sort = Math.max(1, Number((sortInput == null ? void 0 : sortInput.value) || 99));
+          if (code) {
+            _context7.n = 1;
+            break;
+          }
+          alert("اكتب كود الجروب بحروف إنجليزية فقط، مثل: oils");
+          codeInput == null ? void 0 : codeInput.focus();
+          return _context7.a(2);
+        case 1:
+          if (name) {
+            _context7.n = 2;
+            break;
+          }
+          alert("اكتب اسم الجروب");
+          nameInput == null ? void 0 : nameInput.focus();
+          return _context7.a(2);
+        case 2:
+          if (!categoryNames[code]) {
+            _context7.n = 3;
+            break;
+          }
+          alert("كود الجروب موجود بالفعل. استخدم كودًا مختلفًا.");
+          codeInput == null ? void 0 : codeInput.focus();
+          return _context7.a(2);
+        case 3:
+          if (gsUrl()) {
+            _context7.n = 4;
+            break;
+          }
+          alert("رابط Google Apps Script غير موجود في الإعدادات");
+          return _context7.a(2);
+        case 4:
+          oldText = (button == null ? void 0 : button.textContent) || "إضافة جروب";
+          if (button) {
+            button.disabled = true;
+            button.textContent = "جارٍ الإضافة...";
+          }
+          _context7.p = 5;
+          _context7.n = 6;
+          return jsonp("saveCategory", {
+            pin: String(settings.pin || "secure-session"),
+            code: code,
+            name: name,
+            sort: String(sort)
+          });
+        case 6:
+          result = _context7.v;
+          if (!(!result || result.ok !== true)) {
+            _context7.n = 7;
+            break;
+          }
+          throw new Error((result == null ? void 0 : result.error) || "لم يستجب Google Apps Script بصورة صحيحة");
+        case 7:
+          if (codeInput) codeInput.value = "";
+          if (nameInput) nameInput.value = "";
+          if (sortInput) sortInput.value = "99";
+          _context7.n = 8;
+          return loadCloudCategories();
+        case 8:
+          if (categoryNames[code]) {
+            _context7.n = 9;
+            break;
+          }
+          throw new Error("تم إرسال الطلب، لكن الجروب لم يظهر بعد إعادة القراءة");
+        case 9:
+          alert("تمت إضافة الجروب بنجاح: " + name);
+          _context7.n = 11;
+          break;
+        case 10:
+          _context7.p = 10;
+          _t6 = _context7.v;
+          console.error("Add category error:", _t6);
+          alert("تعذر إضافة الجروب:\n" + String((_t6 == null ? void 0 : _t6.message) || _t6));
+        case 11:
+          _context7.p = 11;
+          if (button) {
+            button.disabled = false;
+            button.textContent = oldText;
+          }
+          return _context7.f(11);
+        case 12:
+          return _context7.a(2);
+      }
+    }, _callee7, null, [[5, 10, 11, 12]]);
+  }));
+  return _addCategory.apply(this, arguments);
+}
+function testCategoryConnection() {
+  return _testCategoryConnection.apply(this, arguments);
+}
+function _testCategoryConnection() {
+  _testCategoryConnection = _asyncToGenerator(_regenerator().m(function _callee8() {
+    var result, _t7;
+    return _regenerator().w(function (_context8) {
+      while (1) switch (_context8.p = _context8.n) {
+        case 0:
+          _context8.p = 0;
+          _context8.n = 1;
+          return jsonp("categories");
+        case 1:
+          result = _context8.v;
+          if (result == null ? void 0 : result.ok) {
+            _context8.n = 2;
+            break;
+          }
+          throw new Error((result == null ? void 0 : result.error) || "FAILED");
+        case 2:
+          alert("الاتصال يعمل. عدد الجروبات: " + (result.categories || []).length + "\nالإصدار: " + (result.version || "غير محدد"));
+          _context8.n = 4;
+          break;
+        case 3:
+          _context8.p = 3;
+          _t7 = _context8.v;
+          alert("فشل الاتصال:\n" + String((_t7 == null ? void 0 : _t7.message) || _t7));
+        case 4:
+          return _context8.a(2);
+      }
+    }, _callee8, null, [[0, 3]]);
+  }));
+  return _testCategoryConnection.apply(this, arguments);
+}
+function saveCategory(_x5) {
+  return _saveCategory.apply(this, arguments);
+}
+function _saveCategory() {
+  _saveCategory = _asyncToGenerator(_regenerator().m(function _callee9(code) {
+    var _a, _b, name, sort, d, _t8;
+    return _regenerator().w(function (_context9) {
+      while (1) switch (_context9.p = _context9.n) {
+        case 0:
+          name = String(((_a = document.getElementById("catName_" + code)) == null ? void 0 : _a.value) || "").trim();
+          sort = Number(((_b = document.getElementById("catSort_" + code)) == null ? void 0 : _b.value) || 99);
+          if (name) {
+            _context9.n = 1;
+            break;
+          }
+          alert("اسم الجروب مطلوب");
+          return _context9.a(2);
+        case 1:
+          _context9.p = 1;
+          _context9.n = 2;
+          return jsonp("saveCategory", {
+            pin: settings.pin,
+            code: code,
+            name: name,
+            sort: sort
+          });
+        case 2:
+          d = _context9.v;
+          if (d.ok) {
+            _context9.n = 3;
+            break;
+          }
+          throw new Error(d.error || "FAILED");
+        case 3:
+          _context9.n = 4;
+          return loadCloudCategories();
+        case 4:
+          alert("تم حفظ اسم الجروب");
+          _context9.n = 6;
+          break;
+        case 5:
+          _context9.p = 5;
+          _t8 = _context9.v;
+          alert("تعذر حفظ الجروب: " + _t8.message);
+        case 6:
+          return _context9.a(2);
+      }
+    }, _callee9, null, [[1, 5]]);
+  }));
+  return _saveCategory.apply(this, arguments);
+}
+function deleteCategory(_x6) {
+  return _deleteCategory.apply(this, arguments);
+}
+function _deleteCategory() {
+  _deleteCategory = _asyncToGenerator(_regenerator().m(function _callee0(code) {
+    var used, d, _t9;
+    return _regenerator().w(function (_context0) {
+      while (1) switch (_context0.p = _context0.n) {
+        case 0:
+          used = products.some(function (p) {
+            return p.cat === code;
+          });
+          if (!used) {
+            _context0.n = 1;
+            break;
+          }
+          alert("لا يمكن حذف الجروب لأنه مستخدم في منتجات. انقل المنتجات إلى جروب آخر أولًا.");
+          return _context0.a(2);
+        case 1:
+          if (confirm("حذف هذا الجروب؟")) {
+            _context0.n = 2;
+            break;
+          }
+          return _context0.a(2);
+        case 2:
+          _context0.p = 2;
+          _context0.n = 3;
+          return jsonp("deleteCategory", {
+            pin: settings.pin,
+            code: code
+          });
+        case 3:
+          d = _context0.v;
+          if (d.ok) {
+            _context0.n = 4;
+            break;
+          }
+          throw new Error(d.error || "FAILED");
+        case 4:
+          _context0.n = 5;
+          return loadCloudCategories();
+        case 5:
+          alert("تم حذف الجروب");
+          _context0.n = 7;
+          break;
+        case 6:
+          _context0.p = 6;
+          _t9 = _context0.v;
+          alert("تعذر حذف الجروب: " + _t9.message);
+        case 7:
+          return _context0.a(2);
+      }
+    }, _callee0, null, [[2, 6]]);
+  }));
+  return _deleteCategory.apply(this, arguments);
+}
+function renderAdmin() {
+  if (!adminProducts) return;
+  var q = (adminSearch.value || "").trim();
+  var list = products.filter(function (p) {
+    return !q || "".concat(p.name, " ").concat(p.desc).includes(q);
+  });
+  adminProducts.innerHTML = list.map(function (p) {
+    return "<div class=\"adminItem ".concat(p.visible === false ? "hiddenP" : "", "\"><img loading=\"lazy\" decoding=\"async\" src=\"").concat(p.image, "\" onerror=\"this.src='slides/slide-01.jpg'\"><div><b>").concat(esc(p.name), "</b><div class=\"muted\">").concat(categoryNames[p.cat] || p.cat, " \u2022 ").concat(p.price || "بدون سعر", " \u062F\u0631\u0647\u0645 ").concat(p.visible === false ? "• مخفي" : "", "</div></div><div class=\"row\"><button class=\"secondary\" onclick=\"editProduct(").concat(p.id, ")\">\u062A\u0639\u062F\u064A\u0644</button><button class=\"secondary\" onclick=\"toggleProduct(").concat(p.id, ")\">").concat(p.visible === false ? "إظهار" : "إخفاء", "</button><button class=\"danger\" onclick=\"deleteProduct(").concat(p.id, ")\">\u062D\u0630\u0641</button></div></div>");
+  }).join("");
+}
+function saveSettings() {
+  var phone = settingPhone.value.replace(/\D/g, "");
+  var pin = settingPin.value.trim();
+  if (phone.length < 10 || pin.length < 4) {
+    alert("راجع رقم واتساب وكلمة المرور");
+    return;
+  }
+  settings = {
+    phone: phone,
+    pin: pin,
+    deliveryFee: Number(settingDelivery.value || 0),
+    minOrder: Number(settingMinOrder.value || 0),
+    discountThreshold: Number(settingDiscountThreshold.value || 0),
+    discountPercent: Number(settingDiscountPercent.value || 0)
+  };
+  localStorage.setItem(SETKEY, JSON.stringify(settings));
+  render();
+  renderCart();
+  alert("تم حفظ الإعدادات");
+}
+function exportData() {
+  var blob = new Blob([JSON.stringify({
+    products: products,
+    settings: settings,
+    orders: orders,
+    orderSeq: Number(localStorage.getItem(ORDERSEQKEY) || 999)
+  }, null, 2)], {
+    type: "application/json"
+  });
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "olive-menu-backup.json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+function importData(e) {
+  var f = e.target.files[0];
+  if (!f) return;
+  var r = new FileReader();
+  r.onload = function () {
+    try {
+      var d = JSON.parse(r.result);
+      if (!Array.isArray(d.products)) throw 0;
+      products = d.products;
+      settings = d.settings || settings;
+      orders = Array.isArray(d.orders) ? d.orders : orders;
+      if (d.orderSeq) localStorage.setItem(ORDERSEQKEY, String(d.orderSeq));
+      localStorage.setItem(ORDERSKEY, JSON.stringify(orders));
+      localStorage.setItem(KEY, JSON.stringify(products));
+      localStorage.setItem(SETKEY, JSON.stringify(settings));
+      render();
+      renderAdmin();
+      alert("تم استرجاع النسخة");
+    } catch (e2) {
+      alert("ملف النسخة غير صالح");
+    }
+  };
+  r.readAsText(f);
+}
+function resetData() {
+  if (!confirm("إعادة كل المنتجات والإعدادات للوضع الافتراضي؟")) return;
+  products = structuredClone(defaultProducts);
+  settings = {
+    phone: "971505660791",
+    pin: "secure-session",
+    deliveryFee: 0,
+    minOrder: 0,
+    discountThreshold: 0,
+    discountPercent: 0
+  };
+  localStorage.setItem(KEY, JSON.stringify(products));
+  localStorage.setItem(SETKEY, JSON.stringify(settings));
+  render();
+  renderAdmin();
+  alert("تمت الإعادة");
+}
+function showAdminTab(tab) {
+  var isOrders = tab === "orders";
+  productsTab.classList.toggle("active", !isOrders);
+  ordersTab.classList.toggle("active", isOrders);
+  productsTabBtn.classList.toggle("active", !isOrders);
+  ordersTabBtn.classList.toggle("active", isOrders);
+  if (isOrders) renderOrders();
+}
+function orderProductsText(o) {
+  return (o.items || []).map(function (x) {
+    return "".concat(x.name, " \xD7 ").concat(x.qty).concat(x.price ? " = ".concat(money(x.lineTotal), " \u062F\u0631\u0647\u0645") : "");
+  }).join("\n");
+}
+function renderOrders() {
+  var q = ((ordersSearch == null ? void 0 : ordersSearch.value) || "").trim().toLowerCase();
+  var list = orders.filter(function (o) {
+    return !q || "".concat(o.orderNo, " ").concat(o.customerNo, " ").concat(o.name, " ").concat(o.phone, " ").concat(o.area, " ").concat(orderProductsText(o)).toLowerCase().includes(q);
+  });
+  var uniqueCustomers = new Set(orders.map(function (o) {
+    return o.phone;
+  }).filter(function (x) {
+    return x && x !== "-";
+  })).size;
+  var today = (new Date()).toDateString();
+  statOrders.textContent = orders.length;
+  statCustomers.textContent = uniqueCustomers;
+  statSales.textContent = money(orders.reduce(function (s, o) {
+    return s + Number(o.total || 0);
+  }, 0)) + " درهم";
+  statToday.textContent = orders.filter(function (o) {
+    return new Date(o.dateISO).toDateString() === today;
+  }).length;
+  ordersCountBadge.textContent = "(".concat(orders.length, ")");
+  ordersBody.innerHTML = list.length ? list.map(function (o) {
+    return "<tr><td><div class=\"orderNo\">#".concat(o.orderNo, "</div><div class=\"customerNo\">\u0639\u0645\u064A\u0644 ").concat(o.customerNo, "</div></td><td>").concat(esc(o.dateText || ""), "</td><td><b>").concat(esc(o.name), "</b><br>").concat(esc(o.phone), "</td><td>").concat(esc(o.area)).concat(o.location && o.location !== "-" ? "<br><a href=\"".concat(o.location, "\" target=\"_blank\">\u0641\u062A\u062D \u0627\u0644\u0645\u0648\u0642\u0639</a>") : "", "</td><td class=\"orderProducts\">").concat(esc(orderProductsText(o)), "</td><td><b>").concat(money(o.total), " \u062F\u0631\u0647\u0645</b><br><small>").concat(o.qtyCount || 0, " \u0642\u0637\u0639\u0629</small></td><td><select class=\"statusSelect\" onchange=\"updateOrderStatus(").concat(o.orderNo, ",this.value)\">").concat(["جديد", "قيد التجهيز", "جاهز", "تم التسليم", "ملغي"].map(function (st) {
+      return "<option ".concat(o.status === st ? "selected" : "", ">").concat(st, "</option>");
+    }).join(""), "</select></td><td><button class=\"danger\" onclick=\"deleteOrder(").concat(o.orderNo, ")\">\u062D\u0630\u0641</button></td></tr>");
+  }).join("") : '<tr><td colspan="8" class="empty">لا توجد طلبات مسجلة</td></tr>';
+}
+function updateOrderStatus(no, status) {
+  var o = orders.find(function (x) {
+    return x.orderNo === no;
+  });
+  if (o) {
+    o.status = status;
+    localStorage.setItem(ORDERSKEY, JSON.stringify(orders));
+  }
+}
+function deleteOrder(no) {
+  if (!confirm("\u062D\u0630\u0641 \u0627\u0644\u0637\u0644\u0628 #".concat(no, "\u061F"))) return;
+  orders = orders.filter(function (x) {
+    return x.orderNo !== no;
+  });
+  localStorage.setItem(ORDERSKEY, JSON.stringify(orders));
+  renderOrders();
+}
+function clearOrders() {
+  if (!confirm("حذف جميع الطلبات المسجلة؟")) return;
+  orders = [];
+  localStorage.setItem(ORDERSKEY, "[]");
+  localStorage.setItem(ORDERSEQKEY, "999");
+  renderOrders();
+}
+function csvCell(v) {
+  return '"' + String(v != null ? v : "").replace(/"/g, '""') + '"';
+}
+function exportOrdersCSV() {
+  var rows = [["رقم الطلب", "رقم العميل", "التاريخ", "الاسم", "الهاتف", "المنطقة", "الموقع", "المنتجات", "عدد القطع", "الإجمالي", "الحالة"]];
+  orders.forEach(function (o) {
+    return rows.push([o.orderNo, o.customerNo, o.dateText, o.name, o.phone, o.area, o.location, orderProductsText(o), o.qtyCount, o.total, o.status]);
+  });
+  var csv = "\uFEFF" + rows.map(function (r) {
+    return r.map(csvCell).join(",");
+  }).join("\n");
+  var blob = new Blob([csv], {
+    type: "text/csv;charset=utf-8"
+  });
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "orders-customers.csv";
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+function formatPhone(p) {
+  return String(p || "").startsWith("971") ? "0" + String(p).slice(3) : String(p || "");
+}
+document.addEventListener("DOMContentLoaded", function () {
+  var searchBox = document.getElementById("search");
+  if (searchBox) searchBox.addEventListener("input", render);
+  renderCats();
+  render();
+});
+function gsUrl() {
+  return (settings.webAppUrl || "").trim();
+}
+function jsonp(action) {
+  var params = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
+  var url = gsUrl();
+  if (!url) return Promise.reject(new Error("NO_URL"));
+
+  function scriptRequest() {
+    return new Promise(function (resolve, reject) {
+    var cb = "gs_cb_" + Date.now() + "_" + Math.random().toString(36).slice(2);
+    var s = document.createElement("script");
+    var timer = setTimeout(function () {
+      cleanup();
+      reject(new Error("TIMEOUT"));
+    }, 2e4);
+    function cleanup() {
+      clearTimeout(timer);
+      delete window[cb];
+      s.remove();
+    }
+    window[cb] = function (d) {
+      cleanup();
+      d && d.ok ? resolve(d) : reject(new Error((d == null ? void 0 : d.error) || "FAILED"));
+    };
+    var q = new URLSearchParams(__spreadValues({
+      action: action,
+      callback: cb,
+      _t: Date.now()
+    }, params));
+    s.src = url + (url.includes("?") ? "&" : "?") + q.toString();
+    s.onerror = function () {
+      cleanup();
+      reject(new Error("NETWORK"));
+    };
+    document.head.appendChild(s);
+    });
+  }
+
+  function fetchRequest() {
+    return new Promise(function (resolve, reject) {
+      if (typeof fetch !== "function") return reject(new Error("FETCH_UNAVAILABLE"));
+      var finished = false;
+      var timer = setTimeout(function () {
+        if (finished) return;
+        finished = true;
+        reject(new Error("FETCH_TIMEOUT"));
+      }, 2e4);
+      var q = new URLSearchParams(__spreadValues({
+        action: action,
+        _t: Date.now()
+      }, params));
+      fetch(url + (url.includes("?") ? "&" : "?") + q.toString(), {
+        method: "GET",
+        cache: "no-store",
+        redirect: "follow"
+      }).then(function (response) {
+        if (!response.ok) throw new Error("HTTP_" + response.status);
+        return response.json();
+      }).then(function (data) {
+        if (finished) return;
+        finished = true;
+        clearTimeout(timer);
+        data && data.ok ? resolve(data) : reject(new Error((data == null ? void 0 : data.error) || "FAILED"));
+      }).catch(function (error) {
+        if (finished) return;
+        finished = true;
+        clearTimeout(timer);
+        reject(error);
+      });
+    });
+  }
+
+  // Some mobile browsers or networks block one of the two Google Apps Script
+  // transports. During the first product load, accept whichever transport
+  // succeeds first so the menu never depends on JSONP alone.
+  if (action === "products" && !products.length) {
+    return new Promise(function (resolve, reject) {
+      var failures = [];
+      [fetchRequest(), scriptRequest()].forEach(function (request) {
+        request.then(resolve).catch(function (error) {
+          failures.push(error);
+          if (failures.length === 2) reject(failures[0]);
+        });
+      });
+    });
+  }
+  return scriptRequest();
+}
+function gsPost(_x7) {
+  return _gsPost.apply(this, arguments);
+}
+function _gsPost() {
+  _gsPost = _asyncToGenerator(_regenerator().m(function _callee1(payload) {
+    var url, r, text, _t0;
+    return _regenerator().w(function (_context1) {
+      while (1) switch (_context1.p = _context1.n) {
+        case 0:
+          url = gsUrl();
+          if (url) {
+            _context1.n = 1;
+            break;
+          }
+          throw new Error("NO_URL");
+        case 1:
+          _context1.n = 2;
+          return fetch(url, {
+            method: "POST",
+            headers: {
+              "Content-Type": "text/plain;charset=utf-8"
+            },
+            body: JSON.stringify(payload),
+            redirect: "follow"
+          });
+        case 2:
+          r = _context1.v;
+          _context1.n = 3;
+          return r.text();
+        case 3:
+          text = _context1.v;
+          _context1.p = 4;
+          return _context1.a(2, JSON.parse(text));
+        case 5:
+          _context1.p = 5;
+          _t0 = _context1.v;
+          throw new Error("INVALID_RESPONSE");
+        case 6:
+          return _context1.a(2);
+      }
+    }, _callee1, null, [[4, 5]]);
+  }));
+  return _gsPost.apply(this, arguments);
+}
+function loadCloudProducts() {
+  return _loadCloudProducts.apply(this, arguments);
+}
+function _loadCloudProducts() {
+  _loadCloudProducts = _asyncToGenerator(_regenerator().m(function _callee10() {
+    var d, _t1;
+    return _regenerator().w(function (_context10) {
+      while (1) switch (_context10.p = _context10.n) {
+        case 0:
+          if (gsUrl()) {
+            _context10.n = 1;
+            break;
+          }
+          return _context10.a(2);
+        case 1:
+          _context10.p = 1;
+          _context10.n = 2;
+          return jsonp("products");
+        case 2:
+          d = _context10.v;
+          if (Array.isArray(d.products)) {
+            products = d.products.map(function (p, i) {
+              return {
+                id: Number(p.id),
+                name: String(p.name || ""),
+                desc: String(p.desc || ""),
+                price: p.price === "" || p.price == null ? "" : Number(p.price),
+                cat: String(p.cat || "labneh"),
+                image: String(p.image || ""),
+                visible: p.visible !== false,
+                sort: Number(p.sort || i + 1)
+              };
+            });
+            render();
+            renderAdmin();
+            console.log("Products loaded from Google Sheets");
+          }
+          _context10.n = 4;
+          break;
+        case 3:
+          _context10.p = 3;
+          _t1 = _context10.v;
+          console.warn("Google Sheets products fallback:", _t1.message);
+        case 4:
+          return _context10.a(2);
+      }
+    }, _callee10, null, [[1, 3]]);
+  }));
+  return _loadCloudProducts.apply(this, arguments);
+}
+var originalOpenAdmin = openAdmin;
+openAdmin = function openAdmin() {
+  originalOpenAdmin();
+  settingWebApp.value = settings.webAppUrl || "";
+  if (gsUrl()) {
+    loadCloudCategories();
+    loadCloudOrders();
+  }
+};
+var originalSaveSettings = saveSettings;
+saveSettings = function saveSettings() {
+  var phone = settingPhone.value.replace(/\D/g, "");
+  var pin = settingPin.value.trim();
+  if (phone.length < 10 || pin.length < 4) {
+    alert("راجع رقم واتساب وكلمة المرور");
+    return;
+  }
+  settings = {
+    phone: phone,
+    pin: pin,
+    deliveryFee: Number(settingDelivery.value || 0),
+    minOrder: Number(settingMinOrder.value || 0),
+    discountThreshold: Number(settingDiscountThreshold.value || 0),
+    discountPercent: Number(settingDiscountPercent.value || 0),
+    webAppUrl: (settingWebApp.value || "").trim()
+  };
+  localStorage.setItem(SETKEY, JSON.stringify(settings));
+  render();
+  renderCart();
+  loadCloudProducts();
+  alert("تم حفظ الإعدادات وربط Google Sheets");
+};
+function sendWA() {
+  return _sendWA.apply(this, arguments);
+}
+function _sendWA() {
+  _sendWA = _asyncToGenerator(_regenerator().m(function _callee11() {
+    var arr, t, record, orderNo, customerNo, d, lines, _t10;
+    return _regenerator().w(function (_context11) {
+      while (1) switch (_context11.p = _context11.n) {
+        case 0:
+          arr = Object.values(cart);
+          if (arr.length) {
+            _context11.n = 1;
+            break;
+          }
+          alert("اختر منتجًا أولًا");
+          return _context11.a(2);
+        case 1:
+          t = getOrderTotals();
+          if (!(Number(settings.minOrder || 0) > 0 && t.subtotal < Number(settings.minOrder))) {
+            _context11.n = 2;
+            break;
+          }
+          alert("\u0627\u0644\u062D\u062F \u0627\u0644\u0623\u062F\u0646\u0649 \u0644\u0644\u0637\u0644\u0628 ".concat(money(settings.minOrder), " \u062F\u0631\u0647\u0645"));
+          return _context11.a(2);
+        case 2:
+          if (customer.value.trim()) {
+            _context11.n = 3;
+            break;
+          }
+          alert("اكتب اسم العميل");
+          customer.focus();
+          return _context11.a(2);
+        case 3:
+          if (customerPhone.value.trim()) {
+            _context11.n = 4;
+            break;
+          }
+          alert("اكتب رقم هاتف العميل");
+          customerPhone.focus();
+          return _context11.a(2);
+        case 4:
+          if (!gsUrl()) {
+            _context11.n = 10;
+            break;
+          }
+          _context11.p = 5;
+          _context11.n = 6;
+          return gsPost({
+            action: "createOrder",
+            name: customer.value.trim(),
+            phone: customerPhone.value.trim(),
+            area: area.value.trim(),
+            location: document.getElementById("location").value.trim(),
+            deliveryType: t.deliveryType,
+            subtotal: t.subtotal,
+            delivery: t.delivery,
+            discount: t.discount,
+            total: t.total,
+            items: arr.map(function (x) {
+              return {
+                productId: x.id,
+                name: x.name,
+                price: Number(x.price) || 0,
+                qty: Number(x.qty) || 0,
+                lineTotal: (Number(x.price) || 0) * Number(x.qty || 0)
+              };
+            })
+          });
+        case 6:
+          d = _context11.v;
+          if (d.ok) {
+            _context11.n = 7;
+            break;
+          }
+          throw new Error(d.error || "FAILED");
+        case 7:
+          orderNo = d.orderNo;
+          customerNo = d.customerNo;
+          record = {
+            orderNo: orderNo,
+            customerNo: customerNo,
+            dateText: d.dateText || (new Date()).toLocaleString("ar-AE"),
+            name: customer.value.trim(),
+            phone: customerPhone.value.trim(),
+            area: area.value.trim() || "-",
+            location: document.getElementById("location").value.trim() || "-"
+          };
+          _context11.n = 9;
+          break;
+        case 8:
+          _context11.p = 8;
+          _t10 = _context11.v;
+          alert("تعذر تسجيل الطلب في Google Sheets: " + _t10.message);
+          return _context11.a(2);
+        case 9:
+          _context11.n = 11;
+          break;
+        case 10:
+          orderNo = nextOrderNumber();
+          record = saveOrderRecord(arr, t, orderNo);
+          customerNo = record.customerNo;
+        case 11:
+          lines = ["\uD83D\uDED2 \u0637\u0644\u0628 \u062C\u062F\u064A\u062F \u0631\u0642\u0645 #".concat(orderNo, " \u0645\u0646 \u0645\u0646\u064A\u0648 \u063A\u0635\u0646 \u0627\u0644\u0632\u064A\u062A\u0648\u0646"), "", "\u0631\u0642\u0645 \u0627\u0644\u0639\u0645\u064A\u0644: ".concat(customerNo), "\u0627\u0644\u0627\u0633\u0645: ".concat(record.name), "\u0631\u0642\u0645 \u0627\u0644\u0647\u0627\u062A\u0641: ".concat(record.phone), "\u0627\u0644\u062A\u0627\u0631\u064A\u062E: ".concat(record.dateText), "\u0627\u0644\u0645\u0646\u0637\u0642\u0629: ".concat(record.area), "\u0637\u0631\u064A\u0642\u0629 \u0627\u0644\u0627\u0633\u062A\u0644\u0627\u0645: ".concat(t.deliveryType === "delivery" ? "توصيل" : "استلام من الفرع"), "\u0627\u0644\u0645\u0648\u0642\u0639: ".concat(record.location), "", "الطلبات:"];
+          arr.forEach(function (x, i) {
+            return lines.push("".concat(i + 1, "- ").concat(x.name, "\n   ").concat(x.price ? "".concat(money(x.price), " \xD7 ").concat(x.qty, " = ").concat(money(Number(x.price) * x.qty), " \u062F\u0631\u0647\u0645") : "\u0627\u0644\u0643\u0645\u064A\u0629: ".concat(x.qty)));
+          });
+          lines.push("", "\u0639\u062F\u062F \u0627\u0644\u0623\u0635\u0646\u0627\u0641: ".concat(t.itemCount), "\u0625\u062C\u0645\u0627\u0644\u064A \u0627\u0644\u0642\u0637\u0639: ".concat(t.qtyCount), "\u0627\u0644\u0625\u062C\u0645\u0627\u0644\u064A \u0642\u0628\u0644 \u0627\u0644\u062A\u0648\u0635\u064A\u0644: ".concat(money(t.subtotal), " \u062F\u0631\u0647\u0645"));
+          if (t.delivery) lines.push("\u0631\u0633\u0648\u0645 \u0627\u0644\u062A\u0648\u0635\u064A\u0644: ".concat(money(t.delivery), " \u062F\u0631\u0647\u0645"));
+          if (t.discount) lines.push("\u0627\u0644\u062E\u0635\u0645: -".concat(money(t.discount), " \u062F\u0631\u0647\u0645"));
+          lines.push("\u2705 \u0627\u0644\u0625\u062C\u0645\u0627\u0644\u064A \u0627\u0644\u0646\u0647\u0627\u0626\u064A: ".concat(money(t.total), " \u062F\u0631\u0647\u0645"));
+          window.open("https://wa.me/".concat(settings.phone, "?text=").concat(encodeURIComponent(lines.join("\n"))), "_blank");
+          alert("\u062A\u0645 \u062A\u0633\u062C\u064A\u0644 \u0627\u0644\u0637\u0644\u0628 \u0631\u0642\u0645 #".concat(orderNo));
+          cart = {};
+          saveCart();
+          renderCart();
+          closeCart();
+        case 12:
+          return _context11.a(2);
+      }
+    }, _callee11, null, [[5, 8]]);
+  }));
+  return _sendWA.apply(this, arguments);
+}
+function loadCloudOrders() {
+  return _loadCloudOrders.apply(this, arguments);
+}
+function _loadCloudOrders() {
+  _loadCloudOrders = _asyncToGenerator(_regenerator().m(function _callee12() {
+    var d, _t11;
+    return _regenerator().w(function (_context12) {
+      while (1) switch (_context12.p = _context12.n) {
+        case 0:
+          if (gsUrl()) {
+            _context12.n = 1;
+            break;
+          }
+          return _context12.a(2);
+        case 1:
+          _context12.p = 1;
+          _context12.n = 2;
+          return jsonp("orders", {
+            pin: settings.pin
+          });
+        case 2:
+          d = _context12.v;
+          orders = d.orders || [];
+          renderOrders();
+          _context12.n = 4;
+          break;
+        case 3:
+          _context12.p = 3;
+          _t11 = _context12.v;
+          console.warn(_t11);
+        case 4:
+          return _context12.a(2);
+      }
+    }, _callee12, null, [[1, 3]]);
+  }));
+  return _loadCloudOrders.apply(this, arguments);
+}
+var originalShowAdminTab = showAdminTab;
+showAdminTab = function showAdminTab(tab) {
+  originalShowAdminTab(tab);
+  if (tab === "orders" && gsUrl()) loadCloudOrders();
+};
+function updateOrderStatus(_x8, _x9) {
+  return _updateOrderStatus.apply(this, arguments);
+}
+function _updateOrderStatus() {
+  _updateOrderStatus = _asyncToGenerator(_regenerator().m(function _callee13(no, status) {
+    var d, o, _t12;
+    return _regenerator().w(function (_context13) {
+      while (1) switch (_context13.p = _context13.n) {
+        case 0:
+          if (!gsUrl()) {
+            _context13.n = 6;
+            break;
+          }
+          _context13.p = 1;
+          _context13.n = 2;
+          return gsPost({
+            action: "updateStatus",
+            pin: settings.pin,
+            orderNo: no,
+            status: status
+          });
+        case 2:
+          d = _context13.v;
+          if (d.ok) {
+            _context13.n = 3;
+            break;
+          }
+          throw new Error(d.error);
+        case 3:
+          _context13.n = 4;
+          return loadCloudOrders();
+        case 4:
+          return _context13.a(2);
+        case 5:
+          _context13.p = 5;
+          _t12 = _context13.v;
+          alert("تعذر تحديث الحالة: " + _t12.message);
+          return _context13.a(2);
+        case 6:
+          o = orders.find(function (x) {
+            return x.orderNo === no;
+          });
+          if (o) {
+            o.status = status;
+            localStorage.setItem(ORDERSKEY, JSON.stringify(orders));
+          }
+        case 7:
+          return _context13.a(2);
+      }
+    }, _callee13, null, [[1, 5]]);
+  }));
+  return _updateOrderStatus.apply(this, arguments);
+}
+function retryMenuProducts() {
+  productLoadAttempts += 1;
+  render();
+  var slowNotice = setTimeout(function () {
+    if (!products.length) {
+      productLoadAttempts = Math.max(productLoadAttempts, 4);
+      render();
+    }
+  }, 12e3);
+  Promise.all([
+    Promise.resolve(loadCloudCategories()).catch(function () {}),
+    Promise.resolve(loadCloudProducts()).catch(function () {})
+  ]).then(function () {
+    clearTimeout(slowNotice);
+    if (!products.length && productLoadAttempts < 4) {
+      setTimeout(retryMenuProducts, 2500);
+    } else {
+      render();
+    }
+  });
+}
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", retryMenuProducts);
+} else {
+  retryMenuProducts();
+}
+</script>
+<script>
+(function () {
+  var LANGUAGE_KEY = "oliveMenuLanguageV1";
+  var PAYMENT_METHOD_KEY = "oliveMenuPaymentMethodV1";
+  var DEFAULT_BANK_DETAILS = {
+    bankName: "بنك أبو ظبي التجاري",
+    iban: "AE100030011434864820002",
+    beneficiary: "OLIVE BRANCH TRADING L L C"
+  };
+  var menuLanguage = "ar";
+  var paymentMethod = "cash";
+  try {
+    menuLanguage = localStorage.getItem(LANGUAGE_KEY) === "en" ? "en" : "ar";
+    var savedPaymentMethod = localStorage.getItem(PAYMENT_METHOD_KEY);
+    if (["cash", "visa", "bank"].indexOf(savedPaymentMethod) !== -1) paymentMethod = savedPaymentMethod;
+  } catch (e) {}
+
+  var copy = {
+    ar: {
+      pageTitle: "منيو غصن الزيتون",
+      brandTitle: "منيو غصن الزيتون",
+      brandSub: "اختر المنتج وحدد الكمية ثم أرسل الطلب",
+      languageLabel: "اختيار اللغة",
+      search: "ابحث عن منتج...",
+      admin: "الإدارة",
+      cart: "السلة",
+      heroTitle: "منتجات فلسطينية مختارة بعناية",
+      heroSub: "اطلب مباشرة عبر واتساب مع تحديد موقعك GPS",
+      whatsapp: "واتساب",
+      choose: "اختر",
+      noResults: "لا توجد نتائج",
+      originalProduct: "منتج أصلي من منيو غصن الزيتون",
+      currency: "درهم",
+      byPackage: "حسب العبوة",
+      perUnit: "درهم للوحدة",
+      cartTitle: "سلة الطلب",
+      emptyCart: "السلة فارغة",
+      receiptMethod: "طريقة التوصيل",
+      pickup: "استلام من الفرع",
+      delivery: "توصيل",
+      deliveryFee: "رسوم التوصيل",
+      noDeliveryFee: "سيتم احتساب رسوم التوصيل حسب الإعدادات",
+      itemTypes: "عدد الأصناف",
+      totalPieces: "إجمالي القطع",
+      subtotal: "الإجمالي قبل التوصيل",
+      discount: "الخصم",
+      finalTotal: "الإجمالي النهائي",
+      paymentMethod: "طريقة الدفع",
+      cash: "كاش",
+      visa: "فيزا",
+      bankTransfer: "تحويل بنكي",
+      bankName: "اسم البنك",
+      iban: "رقم الآيبان IBAN",
+      beneficiary: "اسم المستفيد",
+      copyValue: "نسخ",
+      copied: "تم النسخ ✓",
+      copyFailed: "تعذر النسخ. اضغط مطولًا على البيانات لنسخها.",
+      minimumOrder: "الحد الأدنى للطلب",
+      remaining: "والمتبقي",
+      orderNotice: "سيتم إنشاء رقم طلب تلقائي يبدأ من 1000 عند الإرسال.",
+      customerName: "اسم العميل",
+      customerPhone: "رقم هاتف العميل",
+      area: "المنطقة / العنوان",
+      gps: "📍 تحديد موقعي GPS",
+      location: "رابط الموقع",
+      locating: "جاري تحديد موقعك...",
+      locationReady: "تم تحديد موقعك بنجاح",
+      openMap: "فتح الموقع على الخريطة",
+      send: "إرسال الطلب على واتساب",
+      preparingOrder: "جاري تجهيز الطلب...",
+      openWhatsApp: "اضغط هنا لفتح واتساب وإرسال الطلب",
+      adminLogin: "دخول لوحة التحكم",
+      password: "كلمة المرور",
+      login: "دخول",
+      gpsUnsupported: "GPS غير مدعوم",
+      gpsError: "تعذر تحديد الموقع. افتح الصفحة عبر HTTPS واسمح للموقع.",
+      chooseFirst: "اختر منتجًا أولًا",
+      enterName: "اكتب اسم العميل",
+      enterPhone: "اكتب رقم هاتف العميل",
+      sheetError: "تعذر تسجيل الطلب في Google Sheets: ",
+      newOrder: "طلب جديد رقم",
+      fromMenu: "من منيو غصن الزيتون",
+      customerNumber: "رقم العميل",
+      name: "الاسم",
+      phone: "رقم الهاتف",
+      date: "التاريخ",
+      orderArea: "المنطقة",
+      receipt: "طريقة الاستلام",
+      orderLocation: "الموقع",
+      orders: "الطلبات",
+      quantity: "الكمية",
+      orderSaved: "تم تسجيل الطلب رقم"
+    },
+    en: {
+      pageTitle: "Olive Branch Menu",
+      brandTitle: "Olive Branch Menu",
+      brandSub: "Choose products, set the quantity, then send your order",
+      languageLabel: "Choose language",
+      search: "Search for a product...",
+      admin: "Admin",
+      cart: "Cart",
+      heroTitle: "Carefully Selected Palestinian Products",
+      heroSub: "Order directly via WhatsApp and share your GPS location",
+      whatsapp: "WhatsApp",
+      choose: "Choose",
+      noResults: "No products found",
+      originalProduct: "An original Olive Branch product",
+      currency: "AED",
+      byPackage: "Price by package",
+      perUnit: "AED per unit",
+      cartTitle: "Your Cart",
+      emptyCart: "Your cart is empty",
+      receiptMethod: "Delivery method",
+      pickup: "Pickup from branch",
+      delivery: "Delivery",
+      deliveryFee: "Delivery fee",
+      noDeliveryFee: "No delivery fee for branch pickup",
+      itemTypes: "Product types",
+      totalPieces: "Total items",
+      subtotal: "Subtotal before delivery",
+      discount: "Discount",
+      finalTotal: "Final total",
+      paymentMethod: "Payment method",
+      cash: "Cash",
+      visa: "Visa",
+      bankTransfer: "Bank transfer",
+      bankName: "Bank name",
+      iban: "IBAN",
+      beneficiary: "Beneficiary name",
+      copyValue: "Copy",
+      copied: "Copied ✓",
+      copyFailed: "Copy failed. Press and hold the value to copy it.",
+      minimumOrder: "Minimum order",
+      remaining: "remaining",
+      orderNotice: "An order number starting from 1000 will be created automatically.",
+      customerName: "Customer name",
+      customerPhone: "Customer phone number",
+      area: "Area / address",
+      gps: "📍 Share my GPS location",
+      location: "Location link",
+      locating: "Getting your location...",
+      locationReady: "Your location was added successfully",
+      openMap: "Open location in Maps",
+      send: "Send order on WhatsApp",
+      preparingOrder: "Preparing your order...",
+      openWhatsApp: "Tap here to open WhatsApp and send the order",
+      adminLogin: "Admin Login",
+      password: "Password",
+      login: "Login",
+      gpsUnsupported: "GPS is not supported on this device",
+      gpsError: "We could not get your location. Allow location access and try again.",
+      chooseFirst: "Choose a product first",
+      enterName: "Enter the customer name",
+      enterPhone: "Enter the customer phone number",
+      sheetError: "Could not save the order to Google Sheets: ",
+      newOrder: "New order #",
+      fromMenu: "from Olive Branch Menu",
+      customerNumber: "Customer number",
+      name: "Name",
+      phone: "Phone",
+      date: "Date",
+      orderArea: "Area",
+      receipt: "Fulfilment method",
+      orderLocation: "Location",
+      orders: "Items",
+      quantity: "Quantity",
+      orderSaved: "Order saved #"
+    }
+  };
+
+  var categoryCopy = {
+    all: { ar: "الكل", en: "All" },
+    labneh: { ar: "اللبنة", en: "Labneh" },
+    jam: { ar: "المربى", en: "Jam" },
+    cheese: { ar: "الجبنة", en: "Cheese" },
+    ghee: { ar: "السمن", en: "Ghee" },
+    jameed: { ar: "الجميد", en: "Jameed" },
+    canned: { ar: "المعلبات", en: "Canned Food" },
+    hot: { ar: "المشروبات الساخنة", en: "Hot Drinks" },
+    cake: { ar: "الكعك", en: "Cakes" },
+    sweet: { ar: "الحلويات", en: "Sweets" },
+    drinks: { ar: "العصائر", en: "Drinks" },
+    gum: { ar: "العلكة", en: "Gum" },
+    soap: { ar: "الصابون", en: "Soap" },
+    attar: { ar: "العطار", en: "Herbs & Spices" },
+    zaatar: { ar: "الزعتر", en: "Zaatar" },
+    oliveoil: { ar: "زيت الزيتون", en: "Olive Oil" },
+    oil: { ar: "زيت الزيتون", en: "Olive Oil" },
+    pickles: { ar: "الزيتون والمخللات", en: "Olives & Pickles" },
+    pastries: { ar: "المعجنات", en: "Pastries" },
+    herbs: { ar: "الزهورات والأعشاب", en: "Herbal Drinks & Herbs" },
+    "الكل": { ar: "الكل", en: "All" },
+    "اللبنة": { ar: "اللبنة", en: "Labneh" },
+    "اللبنه": { ar: "اللبنة", en: "Labneh" },
+    "المربى": { ar: "المربى", en: "Jam" },
+    "الجبنة": { ar: "الجبنة", en: "Cheese" },
+    "الجبنه": { ar: "الجبنة", en: "Cheese" },
+    "السمن": { ar: "السمن", en: "Ghee" },
+    "الجميد": { ar: "الجميد", en: "Jameed" },
+    "المعلبات": { ar: "المعلبات", en: "Canned Food" },
+    "المشروبات الساخنة": { ar: "المشروبات الساخنة", en: "Hot Drinks" },
+    "الكعك": { ar: "الكعك", en: "Cakes" },
+    "الحلويات": { ar: "الحلويات", en: "Sweets" },
+    "العصائر": { ar: "العصائر", en: "Drinks" },
+    "العلكة": { ar: "العلكة", en: "Gum" },
+    "الصابون": { ar: "الصابون", en: "Soap" },
+    "العطار": { ar: "العطار", en: "Herbs & Spices" },
+    "الزعتر": { ar: "الزعتر", en: "Zaatar" },
+    "زيت الزيتون": { ar: "زيت الزيتون", en: "Olive Oil" },
+    "الزيتون والمخللات": { ar: "الزيتون والمخللات", en: "Olives & Pickles" },
+    "المعجنات": { ar: "المعجنات", en: "Pastries" },
+    "الزهورات والأعشاب": { ar: "الزهورات والأعشاب", en: "Herbal Drinks & Herbs" }
+  };
+
+  var productCopy = {
+    "1001": {
+      ar: { name: "لبنة خلطة فلسطينية", desc: "لبنة، مكدوس، سلطة، زيت زيتون" },
+      en: { name: "Palestinian Mix Labneh", desc: "Labneh, makdous, salad and olive oil" }
+    },
+    "1002": {
+      ar: { name: "لبنة خلطة بيتزا", desc: "لبنة، سلطة، زيت زيتون" },
+      en: { name: "Pizza Mix Labneh", desc: "Labneh, salad and olive oil" }
+    },
+    "1003": {
+      ar: { name: "لبنة مكدوس بارد", desc: "لبنة، مكدوس، زيت زيتون" },
+      en: { name: "Cold Makdous Labneh", desc: "Labneh, makdous and olive oil" }
+    },
+    "1005": {
+      ar: { name: "لبنة زعتر", desc: "لبنة، زعتر، زيت زيتون" },
+      en: { name: "Zaatar Labneh", desc: "Labneh, zaatar and olive oil" }
+    }
+  };
+
+  var productCopyByArabicName = {
+    "لبنه خلطه فلسطينيه": productCopy["1001"],
+    "لبنة خلطة فلسطينية": productCopy["1001"],
+    "لبنه خلطه بيتزا": productCopy["1002"],
+    "لبنة خلطة بيتزا": productCopy["1002"],
+    "لبنه مكدوس بارد": productCopy["1003"],
+    "لبنة مكدوس بارد": productCopy["1003"],
+    "لبنه زعتر": productCopy["1005"],
+    "لبنة زعتر": productCopy["1005"]
+  };
+
+  function tr(key) {
+    return copy[menuLanguage][key] || copy.ar[key] || key;
+  }
+
+  function bilingualValue(value) {
+    var text = String(value || "");
+    var parts = text.split(/\s*\|\|\s*|\s+\|\s+/);
+    if (parts.length > 1) return menuLanguage === "en" ? parts[1] : parts[0];
+    return text;
+  }
+
+  function categoryLabel(code, fallback) {
+    var codeKey = String(code || "").trim().toLowerCase();
+    var fallbackKey = String(fallback || "").trim().toLowerCase();
+    var item = categoryCopy[codeKey] || categoryCopy[fallbackKey];
+    return item ? item[menuLanguage] : bilingualValue(fallback || code);
+  }
+
+  function productView(product) {
+    var nameText = String(product.name || "");
+    var descText = String(product.desc || "");
+    var separatorPattern = /\s*\|\|\s*|\s+\|\s+/;
+    var hasCustomNameTranslation = separatorPattern.test(nameText);
+    var hasCustomDescTranslation = separatorPattern.test(descText);
+    var arabicName = nameText.split(separatorPattern)[0].trim();
+    var translated = productCopy[String(product.id)] || productCopyByArabicName[arabicName];
+    if (hasCustomNameTranslation || hasCustomDescTranslation) {
+      return {
+        name: hasCustomNameTranslation ? bilingualValue(nameText) : (translated ? translated[menuLanguage].name : nameText),
+        desc: hasCustomDescTranslation ? bilingualValue(descText) : (translated ? translated[menuLanguage].desc : descText)
+      };
+    }
+    if (translated) return translated[menuLanguage];
+    return {
+      name: bilingualValue(nameText),
+      desc: bilingualValue(descText)
+    };
+  }
+
+  function setText(selector, value) {
+    var element = document.querySelector(selector);
+    if (element) element.textContent = value;
+  }
+
+  function setPlaceholder(selector, value) {
+    var element = document.querySelector(selector);
+    if (element) element.setAttribute("placeholder", value);
+  }
+
+  function setButtonText(selector, value) {
+    var element = document.querySelector(selector);
+    if (!element) return;
+    var node = element.firstChild;
+    if (node && node.nodeType === 3) node.nodeValue = value + " ";
+  }
+
+  function setRadioLabel(value, text) {
+    var input = document.querySelector('input[name="deliveryType"][value="' + value + '"]');
+    if (!input || !input.parentNode) return;
+    var nodes = input.parentNode.childNodes;
+    var updated = false;
+    for (var i = 0; i < nodes.length; i++) {
+      if (nodes[i].nodeType === 3) {
+        nodes[i].nodeValue = " " + text;
+        updated = true;
+      }
+    }
+    if (!updated) input.parentNode.appendChild(document.createTextNode(" " + text));
+  }
+
+  function applyStaticLanguage() {
+    document.documentElement.lang = menuLanguage;
+    document.documentElement.dir = menuLanguage === "en" ? "ltr" : "rtl";
+    document.title = tr("pageTitle");
+    setText(".brand h1", tr("brandTitle"));
+    setText(".brand small", tr("brandSub"));
+    setPlaceholder("#search", tr("search"));
+    setText(".hero h2", tr("heroTitle"));
+    setText(".hero p", tr("heroSub"));
+    setButtonText(".adminBtn", "⚙️ " + tr("admin"));
+    setButtonText(".cartBtn", "🛒 " + tr("cart"));
+    setText("#drawer .panel h3", tr("cartTitle"));
+    setText(".orderOptions > b", tr("delivery"));
+    setRadioLabel("pickup", tr("pickup"));
+    setRadioLabel("delivery", tr("delivery"));
+    setText("#drawer .form .notice", tr("orderNotice"));
+    setPlaceholder("#customer", tr("customerName"));
+    setPlaceholder("#customerPhone", tr("customerPhone"));
+    setPlaceholder("#area", tr("area"));
+    setText("#drawer .gps", tr("gps"));
+    setText("#drawer .send", tr("send"));
+    setText("#loginModal h3", tr("adminLogin"));
+    setPlaceholder("#pinInput", tr("password"));
+    setText("#loginModal .primary", tr("login"));
+    var switcher = document.querySelector(".langSwitch");
+    if (switcher) switcher.setAttribute("aria-label", tr("languageLabel"));
+    var arButton = document.getElementById("langAr");
+    var enButton = document.getElementById("langEn");
+    if (arButton) arButton.className = menuLanguage === "ar" ? "active" : "";
+    if (enButton) enButton.className = menuLanguage === "en" ? "active" : "";
+    var savedLocation = document.getElementById("location");
+    if (savedLocation && savedLocation.value) showLocationSuccess(savedLocation.value);
+  }
+
+  window.setMenuLanguage = function (language) {
+    menuLanguage = language === "en" ? "en" : "ar";
+    try { localStorage.setItem(LANGUAGE_KEY, menuLanguage); } catch (e) {}
+    search.value = "";
+    applyStaticLanguage();
+    renderCats();
+    render();
+    renderCart();
+  };
+
+  renderCats = function () {
+    cats.innerHTML = Object.entries(categoryNames).map(function (entry) {
+      var key = entry[0];
+      var label = categoryLabel(key, entry[1]);
+      return '<button class="cat ' + (key === current ? "active" : "") + '" onclick="setCat(\'' + esc(key) + '\')">' + esc(label) + '</button>';
+    }).join("");
+  };
+
+  render = function () {
+    heroPhone.textContent = tr("whatsapp") + " " + formatPhone(settings.phone);
+    var query = search.value.trim().toLowerCase();
+    if (!products.length && !query) {
+      grid.innerHTML = productLoadingMarkup();
+      updateBadge();
+      return;
+    }
+    var list = products.filter(function (product) {
+      var shown = productView(product);
+      var searchable = (shown.name + " " + shown.desc + " " + product.name + " " + product.desc).toLowerCase();
+      return product.visible !== false && (current === "all" || product.cat === current) && (!query || searchable.indexOf(query) !== -1);
+    });
+    grid.innerHTML = list.map(function (product) {
+      var shown = productView(product);
+      var category = categoryLabel(product.cat, categoryNames[product.cat] || product.cat);
+      var price = product.price ? money(product.price) + " " + tr("currency") : tr("byPackage");
+      return '<article class="card"><div class="pic"><img loading="lazy" decoding="async" src="' + esc(product.image) + '" alt="' + esc(shown.name) + '" onerror="this.src=\'slides/slide-01.jpg\'"><span class="tag">' + esc(category) + '</span></div><div class="body"><div class="name">' + esc(shown.name) + '</div><div class="desc">' + esc(shown.desc || tr("originalProduct")) + '</div><div class="price">' + esc(price) + '</div><div class="actions"><button class="pick" onclick="add(' + product.id + ')">' + esc(tr("choose")) + '</button><div class="qty"><button aria-label="Decrease" onclick="change(' + product.id + ',-1)">−</button><span>' + qty(product.id) + '</span><button aria-label="Increase" onclick="change(' + product.id + ',1)">+</button></div></div></div></article>';
+    }).join("") || '<div class="empty">' + esc(tr("noResults")) + '</div>';
+    updateBadge();
+  };
+
+  function bankTransferDetails() {
+    var source = typeof window.getBankTransferDetails === "function" ? window.getBankTransferDetails() : DEFAULT_BANK_DETAILS;
+    source = source && typeof source === "object" ? source : DEFAULT_BANK_DETAILS;
+    return {
+      bankName: String(source.bankName || DEFAULT_BANK_DETAILS.bankName),
+      iban: String(source.iban || DEFAULT_BANK_DETAILS.iban).replace(/\s+/g, "").toUpperCase(),
+      beneficiary: String(source.beneficiary || DEFAULT_BANK_DETAILS.beneficiary)
+    };
+  }
+
+  function bankDetailMarkup(key, label, value, leftToRight) {
+    return '<div class="bankDetailCell"><span class="bankDetailLabel">' + esc(label) + '</span>' +
+      '<b class="bankDetailValue' + (leftToRight ? ' ltr' : '') + '">' + esc(value) + '</b>' +
+      '<button type="button" class="copyBankValue" onclick="copyBankDetail(this,\'' + key + '\')">' + tr("copyValue") + '</button></div>';
+  }
+
+  renderCart = function () {
+    var items = Object.values(cart);
+    document.getElementById("cart").innerHTML = items.length ? items.map(function (item) {
+      var shown = productView(item);
+      var line = (Number(item.price) || 0) * item.qty;
+      var unit = item.price ? money(item.price) + " " + tr("perUnit") : tr("byPackage");
+      var lineTotal = item.price ? '<div class="itemTotal">' + money(line) + " " + tr("currency") + '</div>' : "";
+      return '<div class="cartItem"><div><b>' + esc(shown.name) + '</b><br><small>' + esc(unit) + '</small>' + lineTotal + '</div><div class="qty"><button onclick="change(' + item.id + ',-1)">−</button><span>' + item.qty + '</span><button onclick="change(' + item.id + ',1)">+</button></div></div>';
+    }).join("") : '<div class="empty">' + esc(tr("emptyCart")) + '</div>';
+    var totals = getOrderTotals();
+    deliveryHint.textContent = totals.deliveryType === "delivery" ? tr("deliveryFee") + ": " + money(totals.delivery) + " " + tr("currency") : tr("deliveryFee");
+    var html = '<div class="sumRow"><span>' + tr("itemTypes") + '</span><b>' + totals.itemCount + '</b></div>';
+    html += '<div class="sumRow"><span>' + tr("totalPieces") + '</span><b>' + totals.qtyCount + '</b></div>';
+    html += '<div class="sumRow"><span>' + tr("subtotal") + '</span><b>' + money(totals.subtotal) + " " + tr("currency") + '</b></div>';
+    if (totals.delivery) html += '<div class="sumRow"><span>' + tr("deliveryFee") + '</span><b>' + money(totals.delivery) + " " + tr("currency") + '</b></div>';
+    if (totals.discount) html += '<div class="sumRow discountRow"><span>' + tr("discount") + ' (' + money(settings.discountPercent) + '%)</span><b>− ' + money(totals.discount) + " " + tr("currency") + '</b></div>';
+    html += '<div class="sumRow final"><span>' + tr("finalTotal") + '</span><span>' + money(totals.total) + " " + tr("currency") + '</span></div>';
+    html += '<div class="paymentSection"><b class="paymentTitle">' + tr("paymentMethod") + '</b><div class="paymentChoices">';
+    html += '<label class="paymentChoice"><input type="radio" name="paymentMethod" value="cash" ' + (paymentMethod === "cash" ? "checked" : "") + ' onchange="setPaymentMethod(this.value)"><span>' + tr("cash") + '</span></label>';
+    html += '<label class="paymentChoice"><input type="radio" name="paymentMethod" value="visa" ' + (paymentMethod === "visa" ? "checked" : "") + ' onchange="setPaymentMethod(this.value)"><span>' + tr("visa") + '</span></label>';
+    html += '<label class="paymentChoice"><input type="radio" name="paymentMethod" value="bank" ' + (paymentMethod === "bank" ? "checked" : "") + ' onchange="setPaymentMethod(this.value)"><span>' + tr("bankTransfer") + '</span></label></div>';
+    if (paymentMethod === "bank") {
+      var bankDetails = bankTransferDetails();
+      html += '<div class="bankDetails">' +
+        bankDetailMarkup("bankName", tr("bankName"), bankDetails.bankName, false) +
+        bankDetailMarkup("iban", tr("iban"), bankDetails.iban, true) +
+        bankDetailMarkup("beneficiary", tr("beneficiary"), bankDetails.beneficiary, true) +
+        '</div>';
+    }
+    html += '</div>';
+    if (settings.minOrder && totals.subtotal < settings.minOrder) html += '<div class="notice">' + tr("minimumOrder") + " " + money(settings.minOrder) + " " + tr("currency") + ", " + tr("remaining") + " " + money(settings.minOrder - totals.subtotal) + " " + tr("currency") + '.</div>';
+    summary.innerHTML = html;
+  };
+
+  function paymentMethodLabel() {
+    if (paymentMethod === "visa") return tr("visa");
+    if (paymentMethod === "bank") return tr("bankTransfer");
+    return tr("cash");
+  }
+
+  function paymentNotes() {
+    if (paymentMethod !== "bank") return "Payment: " + paymentMethod;
+    var bankDetails = bankTransferDetails();
+    return "Payment: bank | Bank: " + bankDetails.bankName + " | IBAN: " + bankDetails.iban + " | Beneficiary: " + bankDetails.beneficiary;
+  }
+
+  window.setPaymentMethod = function (method) {
+    paymentMethod = ["cash", "visa", "bank"].indexOf(method) !== -1 ? method : "cash";
+    try { localStorage.setItem(PAYMENT_METHOD_KEY, paymentMethod); } catch (e) {}
+    renderCart();
+  };
+
+  function fallbackCopyBankValue(value) {
+    var input = document.createElement("textarea");
+    input.value = value;
+    input.setAttribute("readonly", "");
+    input.style.position = "fixed";
+    input.style.opacity = "0";
+    document.body.appendChild(input);
+    input.focus();
+    input.select();
+    input.setSelectionRange(0, input.value.length);
+    var copied = false;
+    try { copied = document.execCommand("copy"); } catch (e) {}
+    document.body.removeChild(input);
+    return copied;
+  }
+
+  window.copyBankDetail = function (button, key) {
+    var details = bankTransferDetails();
+    var value = details[key] || "";
+    function done() {
+      if (!button) return;
+      button.textContent = tr("copied");
+      setTimeout(function () { if (button) button.textContent = tr("copyValue"); }, 1800);
+    }
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(value).then(done).catch(function () {
+        if (fallbackCopyBankValue(value)) done(); else alert(tr("copyFailed"));
+      });
+    } else if (fallbackCopyBankValue(value)) {
+      done();
+    } else {
+      alert(tr("copyFailed"));
+    }
+  };
+
+  function showLocationSuccess(url) {
+    var status = document.getElementById("locationStatus");
+    var statusText = document.getElementById("locationStatusText");
+    var mapLink = document.getElementById("locationMapLink");
+    if (!status || !statusText || !mapLink) return;
+    status.hidden = false;
+    status.className = "locationStatus";
+    statusText.textContent = "✓ " + tr("locationReady");
+    mapLink.href = url;
+    mapLink.textContent = tr("openMap");
+    mapLink.hidden = false;
+  }
+
+  function showLocationMessage(message, type) {
+    var status = document.getElementById("locationStatus");
+    var statusText = document.getElementById("locationStatusText");
+    var mapLink = document.getElementById("locationMapLink");
+    if (!status || !statusText || !mapLink) return;
+    status.hidden = false;
+    status.className = "locationStatus " + type;
+    statusText.textContent = message;
+    mapLink.hidden = true;
+  }
+
+  getGPS = function () {
+    var gpsButton = document.getElementById("gpsButton");
+    var locationInput = document.getElementById("location");
+    if (!navigator.geolocation) {
+      showLocationMessage(tr("gpsUnsupported"), "error");
+      return;
+    }
+    if (gpsButton) gpsButton.disabled = true;
+    showLocationMessage(tr("locating"), "loading");
+    navigator.geolocation.getCurrentPosition(function (position) {
+      var url = "https://maps.google.com/?q=" + position.coords.latitude + "," + position.coords.longitude;
+      if (locationInput) locationInput.value = url;
+      if (gpsButton) gpsButton.disabled = false;
+      showLocationSuccess(url);
+    }, function () {
+      if (gpsButton) gpsButton.disabled = false;
+      showLocationMessage(tr("gpsError"), "error");
+    }, { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 });
+  };
+
+  function finishLocalizedOrder(items, totals, orderNo, customerNo, record) {
+    var lines;
+    if (menuLanguage === "en") {
+      lines = ["🛒 " + tr("newOrder") + orderNo + " " + tr("fromMenu"), "", tr("customerNumber") + ": " + customerNo, tr("name") + ": " + record.name, tr("phone") + ": " + record.phone, tr("date") + ": " + record.dateText, tr("orderArea") + ": " + record.area, tr("receipt") + ": " + tr("delivery"), tr("orderLocation") + ": " + record.location, "", tr("orders") + ":"];
+    } else {
+      lines = ["🛒 " + tr("newOrder") + " #" + orderNo + " " + tr("fromMenu"), "", tr("customerNumber") + ": " + customerNo, tr("name") + ": " + record.name, tr("phone") + ": " + record.phone, tr("date") + ": " + record.dateText, tr("orderArea") + ": " + record.area, tr("receipt") + ": " + tr("delivery"), tr("orderLocation") + ": " + record.location, "", tr("orders") + ":"];
+    }
+    items.forEach(function (item, index) {
+      var shown = productView(item);
+      var details = item.price ? money(item.price) + " × " + item.qty + " = " + money(Number(item.price) * item.qty) + " " + tr("currency") : tr("quantity") + ": " + item.qty;
+      lines.push((index + 1) + "- " + shown.name + "\n   " + details);
+    });
+    lines.push("", tr("itemTypes") + ": " + totals.itemCount, tr("totalPieces") + ": " + totals.qtyCount, tr("subtotal") + ": " + money(totals.subtotal) + " " + tr("currency"));
+    if (totals.delivery) lines.push(tr("deliveryFee") + ": " + money(totals.delivery) + " " + tr("currency"));
+    if (totals.discount) lines.push(tr("discount") + ": -" + money(totals.discount) + " " + tr("currency"));
+    lines.push("✅ " + tr("finalTotal") + ": " + money(totals.total) + " " + tr("currency"));
+    lines.push(tr("paymentMethod") + ": " + paymentMethodLabel());
+    if (paymentMethod === "bank") {
+      var bankDetails = bankTransferDetails();
+      lines.push(tr("bankName") + ": " + bankDetails.bankName);
+      lines.push(tr("iban") + ": " + bankDetails.iban);
+      lines.push(tr("beneficiary") + ": " + bankDetails.beneficiary);
+    }
+    var whatsappUrl = "https://wa.me/" + settings.phone + "?text=" + encodeURIComponent(lines.join("\n"));
+    var receiptHandled = false;
+    if (window.completeCustomerOrderReceiptFlow) {
+      receiptHandled = window.completeCustomerOrderReceiptFlow({
+        items: items.map(function (item) { return Object.assign({}, item); }),
+        totals: Object.assign({}, totals),
+        orderNo: orderNo,
+        customerNo: customerNo,
+        record: Object.assign({}, record),
+        paymentMethod: paymentMethod,
+        whatsappUrl: whatsappUrl
+      }) === true;
+    }
+    var sendButton = document.querySelector("#drawer button.send");
+    var fallback = document.getElementById("whatsappFallback");
+    if (sendButton) {
+      sendButton.disabled = false;
+      sendButton.textContent = tr("send");
+    }
+    if (fallback) {
+      if (receiptHandled) {
+        fallback.hidden = true;
+      } else {
+        fallback.href = whatsappUrl;
+        fallback.textContent = tr("openWhatsApp");
+        fallback.hidden = false;
+      }
+    }
+    cart = {};
+    saveCart();
+    renderCart();
+    if (receiptHandled) {
+      closeCart();
+      return;
+    }
+    if (fallback) {
+      setTimeout(function () { fallback.click(); }, 50);
+    } else {
+      window.location.assign(whatsappUrl);
+    }
+  }
+
+  sendWA = function () {
+    var items = Object.values(cart);
+    if (!items.length) {
+      alert(tr("chooseFirst"));
+      return;
+    }
+    var totals = getOrderTotals();
+    if (Number(settings.minOrder || 0) > 0 && totals.subtotal < Number(settings.minOrder)) {
+      alert(tr("minimumOrder") + " " + money(settings.minOrder) + " " + tr("currency"));
+      return;
+    }
+    if (!customer.value.trim()) {
+      alert(tr("enterName"));
+      customer.focus();
+      return;
+    }
+    if (!customerPhone.value.trim()) {
+      alert(tr("enterPhone"));
+      customerPhone.focus();
+      return;
+    }
+    if (window.beginCustomerOrderReceiptFlow) {
+      window.beginCustomerOrderReceiptFlow();
+    }
+    var sendButton = document.querySelector("#drawer button.send");
+    var fallback = document.getElementById("whatsappFallback");
+    if (fallback) fallback.hidden = true;
+    if (sendButton) {
+      sendButton.disabled = true;
+      sendButton.textContent = tr("preparingOrder");
+    }
+    if (gsUrl()) {
+      gsPost({
+        action: "createOrder",
+        name: customer.value.trim(),
+        phone: customerPhone.value.trim(),
+        area: area.value.trim(),
+        location: document.getElementById("location").value.trim(),
+        deliveryType: totals.deliveryType,
+        subtotal: totals.subtotal,
+        delivery: totals.delivery,
+        discount: totals.discount,
+        total: totals.total,
+        paymentMethod: paymentMethod,
+        notes: paymentNotes(),
+        items: items.map(function (item) {
+          return { productId: item.productId || item.id, name: item.name, price: Number(item.price) || 0, qty: Number(item.qty) || 0, lineTotal: (Number(item.price) || 0) * Number(item.qty || 0) };
+        })
+      }).then(function (data) {
+        if (!data.ok) throw new Error(data.error || "FAILED");
+        var record = { name: customer.value.trim(), phone: customerPhone.value.trim(), dateText: data.dateText || (new Date()).toLocaleString(menuLanguage === "en" ? "en-AE" : "ar-AE"), area: area.value.trim() || "-", location: document.getElementById("location").value.trim() || "-" };
+        finishLocalizedOrder(items, totals, data.orderNo, data.customerNo, record);
+      }).catch(function (error) {
+        if (window.cancelCustomerOrderReceiptFlow) {
+          window.cancelCustomerOrderReceiptFlow();
+        }
+        if (sendButton) {
+          sendButton.disabled = false;
+          sendButton.textContent = tr("send");
+        }
+        alert(tr("sheetError") + error.message);
+      });
+      return;
+    }
+    var orderNo = nextOrderNumber();
+    var localRecord = saveOrderRecord(items, totals, orderNo);
+    finishLocalizedOrder(items, totals, orderNo, localRecord.customerNo, localRecord);
+  };
+
+  var CLOUD_WHATSAPP_MARKER = "__MENU_WHATSAPP__";
+  var CLOUD_PUBLIC_SETTINGS_MARKER = "__MENU_PUBLIC_SETTINGS__";
+  var cloudWhatsAppRecordId = 0;
+  var cloudPublicSettingsRecordId = 0;
+  var baseCloudProductsLoader = loadCloudProducts;
+
+  function publicSettingNumber(value, fallback, maximum) {
+    var number = Number(value);
+    if (!isFinite(number) || number < 0) return Number(fallback || 0);
+    if (maximum != null) return Math.min(maximum, number);
+    return number;
+  }
+
+  loadCloudProducts = function () {
+    var pending = baseCloudProductsLoader();
+    if (!pending || typeof pending.then !== "function") return pending;
+    return pending.then(function () {
+      var marker = null;
+      var publicSettingsMarker = null;
+      products.forEach(function (product) {
+        if (String(product.name || "").trim() === CLOUD_WHATSAPP_MARKER && !marker) marker = product;
+        if (String(product.name || "").trim() === CLOUD_PUBLIC_SETTINGS_MARKER && !publicSettingsMarker) publicSettingsMarker = product;
+      });
+      products = products.filter(function (product) {
+        var name = String(product.name || "").trim();
+        return name !== CLOUD_WHATSAPP_MARKER && name !== CLOUD_PUBLIC_SETTINGS_MARKER;
+      });
+      if (marker) {
+        cloudWhatsAppRecordId = Number(marker.id || 0);
+        var cloudPhone = String(marker.desc || "").replace(/\D/g, "");
+        if (cloudPhone.length >= 10) {
+          settings.phone = cloudPhone;
+          settings.webAppUrl = CURRENT_WEB_APP_URL;
+          localStorage.setItem(SETKEY, JSON.stringify(settings));
+          if (document.getElementById("settingPhone") && adminModal.classList.contains("open")) {
+            settingPhone.value = cloudPhone;
+          }
+        }
+      }
+      if (publicSettingsMarker) {
+        cloudPublicSettingsRecordId = Number(publicSettingsMarker.id || 0);
+        try {
+          var cloudSettings = JSON.parse(String(publicSettingsMarker.desc || "{}"));
+          var sharedPhone = String(cloudSettings.phone || "").replace(/\D/g, "");
+          if (sharedPhone.length >= 10) settings.phone = sharedPhone;
+          settings.deliveryFee = publicSettingNumber(cloudSettings.deliveryFee, settings.deliveryFee);
+          settings.minOrder = publicSettingNumber(cloudSettings.minOrder, settings.minOrder);
+          settings.discountThreshold = publicSettingNumber(cloudSettings.discountThreshold, settings.discountThreshold);
+          settings.discountPercent = publicSettingNumber(cloudSettings.discountPercent, settings.discountPercent, 100);
+          settings.webAppUrl = CURRENT_WEB_APP_URL;
+          localStorage.setItem(SETKEY, JSON.stringify(settings));
+          if (document.getElementById("settingPhone") && adminModal.classList.contains("open")) {
+            settingPhone.value = settings.phone;
+            settingDelivery.value = settings.deliveryFee;
+            settingMinOrder.value = settings.minOrder;
+            settingDiscountThreshold.value = settings.discountThreshold;
+            settingDiscountPercent.value = settings.discountPercent;
+          }
+        } catch (error) {
+          console.warn("Ignored invalid shared menu settings", error);
+        }
+      }
+      render();
+      renderAdmin();
+      renderCart();
+    });
+  };
+
+  saveSettings = function () {
+    var phone = String(settingPhone.value || "").replace(/\D/g, "");
+    var pin = String(settingPin.value || "").trim();
+    if (phone.length < 10 || pin.length < 4) {
+      alert("راجع رقم واتساب وكلمة المرور");
+      return;
+    }
+    var previousPin = settings.pin;
+    settings = {
+      phone: phone,
+      pin: pin,
+      deliveryFee: Number(settingDelivery.value || 0),
+      minOrder: Number(settingMinOrder.value || 0),
+      discountThreshold: Number(settingDiscountThreshold.value || 0),
+      discountPercent: Number(settingDiscountPercent.value || 0),
+      webAppUrl: CURRENT_WEB_APP_URL
+    };
+    localStorage.setItem(SETKEY, JSON.stringify(settings));
+    render();
+    renderCart();
+    var saveButton = document.querySelector('button[onclick="saveSettings()"]');
+    var oldText = saveButton ? saveButton.textContent : "";
+    if (saveButton) {
+      saveButton.disabled = true;
+      saveButton.textContent = "جاري الحفظ للجميع...";
+    }
+    var publicSettingsValue = JSON.stringify({
+      version: 2,
+      phone: phone,
+      deliveryFee: settings.deliveryFee,
+      minOrder: settings.minOrder,
+      discountThreshold: settings.discountThreshold,
+      discountPercent: settings.discountPercent
+    });
+    var savePhone = gsPost({
+      action: "saveProduct",
+      pin: previousPin,
+      id: cloudWhatsAppRecordId || 0,
+      name: CLOUD_WHATSAPP_MARKER,
+      desc: phone,
+      price: "",
+      cat: "labneh",
+      visible: false,
+      imageData: "",
+      existingImage: ""
+    });
+    var publicSettingsPayload = {
+      action: "saveProduct",
+      pin: previousPin,
+      id: cloudPublicSettingsRecordId || 0,
+      name: CLOUD_PUBLIC_SETTINGS_MARKER,
+      desc: publicSettingsValue,
+      price: "",
+      cat: "labneh",
+      visible: false,
+      imageData: "",
+      existingImage: ""
+    };
+    savePhone.then(function (phoneResult) {
+      if (!phoneResult.ok) throw new Error(phoneResult.error || "FAILED_PHONE");
+      return gsPost(publicSettingsPayload);
+    }).then(function (settingsResult) {
+      if (!settingsResult.ok) throw new Error(settingsResult.error || "FAILED_SETTINGS");
+      return loadCloudProducts();
+    }).then(function () {
+      if (saveButton) {
+        saveButton.disabled = false;
+        saveButton.textContent = oldText || "حفظ الإعدادات";
+      }
+      alert("تم حفظ رقم واتساب والرسوم والحد الأدنى والخصم للجميع. ستظهر التغييرات خلال دقيقة.");
+    }).catch(function (error) {
+      if (saveButton) {
+        saveButton.disabled = false;
+        saveButton.textContent = oldText || "حفظ الإعدادات";
+      }
+      alert("تعذر حفظ الإعدادات للجميع: " + error.message);
+    });
+  };
+
+  var AUTO_REFRESH_MS = 60000;
+  var lastAutoRefresh = Date.now();
+
+  function syncOpenCartWithCloudProducts() {
+    var changed = false;
+    Object.keys(cart).forEach(function (id) {
+      var savedItem = cart[id] || {};
+      var sourceId = savedItem.productId || id;
+      var fresh = products.find(function (product) {
+        return String(product.id) === String(sourceId);
+      });
+      if (!fresh || fresh.visible === false || fresh.available === false) {
+        delete cart[id];
+        changed = true;
+        return;
+      }
+      var savedQty = Number(savedItem.qty || 0);
+      cart[id] = savedItem.selectedSizeKey ? Object.assign({}, fresh, savedItem, { qty: savedQty }) : Object.assign({}, fresh, { qty: savedQty });
+      changed = true;
+    });
+    if (changed) saveCart();
+    renderCart();
+  }
+
+  function refreshCloudMenuSilently() {
+    if (document.visibilityState && document.visibilityState !== "visible") return;
+    if (!gsUrl()) return;
+    lastAutoRefresh = Date.now();
+    var pending = loadCloudProducts();
+    if (pending && typeof pending.then === "function") {
+      pending.then(syncOpenCartWithCloudProducts);
+    }
+  }
+
+  setInterval(refreshCloudMenuSilently, AUTO_REFRESH_MS);
+  document.addEventListener("visibilitychange", function () {
+    if ((!document.visibilityState || document.visibilityState === "visible") && Date.now() - lastAutoRefresh >= AUTO_REFRESH_MS) {
+      refreshCloudMenuSilently();
+    }
+  });
+
+  applyStaticLanguage();
+  renderCats();
+  render();
+  renderCart();
+})();
+</script>
+<script>
+(function () {
+  var OLIVE_SIZE_MARKER = /\s*\[\[OLIVE_SIZES:([A-Za-z0-9+/=]+)\]\]\s*$/;
+  var OLIVE_SIZE_CATEGORIES = ["zaatar", "pickles", "herbs"];
+  var OLIVE_SIZE_CATALOG = [
+    { key: "quarter_kg", ar: "ربع كيلو", en: "Quarter kg" },
+    { key: "half_kg", ar: "نصف كيلو", en: "Half kg" },
+    { key: "one_kg", ar: "1 كيلو", en: "1 kg" },
+    { key: "pack_500_ml", ar: "عبوة 500 مل", en: "500 ml pack" },
+    { key: "pack_1000_ml", ar: "عبوة 1000 مل", en: "1000 ml pack" },
+    { key: "pack_1500_ml", ar: "عبوة 1500 مل", en: "1500 ml pack" },
+    { key: "pack_2000_ml", ar: "عبوة 2000 مل", en: "2000 ml pack" },
+    { key: "pack_3000_ml", ar: "عبوة 3000 مل", en: "3000 ml pack" },
+    { key: "pack_4000_ml", ar: "عبوة 4000 مل", en: "4000 ml pack" },
+    { key: "pack_5000_ml", ar: "عبوة 5000 مل", en: "5000 ml pack" }
+  ];
+
+  function oliveLanguage() {
+    return document.documentElement.lang === "en" ? "en" : "ar";
+  }
+
+  function oliveSizeDefinition(key) {
+    return OLIVE_SIZE_CATALOG.find(function (item) { return item.key === key; });
+  }
+
+  function oliveBilingualParts(value) {
+    var parts = String(value || "").split(/\s*\|\|\s*|\s+\|\s+/);
+    return {
+      ar: (parts[0] || "").trim(),
+      en: (parts[1] || parts[0] || "").trim()
+    };
+  }
+
+  function oliveVisibleProductName(product) {
+    var parts = oliveBilingualParts(product && product.name);
+    return oliveLanguage() === "en" ? parts.en : parts.ar;
+  }
+
+  function oliveIsSizeCategory(value) {
+    var code = typeof value === "object" && value ? String(value.cat || "") : String(value || "");
+    var normalizedCode = code.trim().toLowerCase();
+    if (OLIVE_SIZE_CATEGORIES.indexOf(normalizedCode) !== -1) return true;
+    var categoryName = String((typeof categoryNames !== "undefined" && categoryNames[code]) || code).replace(/\s+/g, " ").trim();
+    return categoryName === "الزعتر" || categoryName === "الزيتون والمخللات" || categoryName === "الزهورات والأعشاب";
+  }
+
+  function oliveParseSizeDescription(value) {
+    var text = String(value || "");
+    var match = text.match(OLIVE_SIZE_MARKER);
+    var parsedSizes = [];
+    var available = true;
+    if (match) {
+      try {
+        var decoded = JSON.parse(atob(match[1]));
+        var sizeSource = Array.isArray(decoded) ? decoded : (decoded && Array.isArray(decoded.sizes) ? decoded.sizes : []);
+        if (decoded && !Array.isArray(decoded)) available = decoded.available !== false;
+        if (sizeSource.length) {
+          parsedSizes = sizeSource.filter(function (item) {
+            return item && oliveSizeDefinition(String(item.key || "")) && Number(item.price) > 0;
+          }).map(function (item) {
+            return { key: String(item.key), price: Number(item.price) };
+          });
+        }
+      } catch (error) {
+        console.warn("Ignored invalid product size data", error);
+      }
+    }
+    return {
+      description: text.replace(OLIVE_SIZE_MARKER, "").trim(),
+      sizes: parsedSizes,
+      available: available,
+      hasMarker: Boolean(match)
+    };
+  }
+
+  function oliveEncodeSizeDescription(description, sizes, available) {
+    var clean = oliveParseSizeDescription(description).description;
+    var compactSizes = (sizes || []).map(function (item) {
+      return { key: item.key, price: Number(item.price) };
+    });
+    if (!compactSizes.length && available !== false) return clean;
+    var compact = { sizes: compactSizes, available: available !== false };
+    return clean + (clean ? "\n" : "") + "[[OLIVE_SIZES:" + btoa(JSON.stringify(compact)) + "]]";
+  }
+
+  function oliveNormalizeProduct(product) {
+    if (!product) return product;
+    var parsed = oliveParseSizeDescription(product.desc);
+    product.desc = parsed.description;
+    if (parsed.hasMarker) {
+      product.sizes = parsed.sizes;
+      product.available = parsed.available;
+    } else {
+      if (!Array.isArray(product.sizes)) product.sizes = [];
+      if (typeof product.available !== "boolean") product.available = true;
+    }
+    return product;
+  }
+
+  function oliveNormalizeAllProducts() {
+    if (!Array.isArray(products)) return;
+    products.forEach(oliveNormalizeProduct);
+  }
+
+  function oliveRenderAdminSizePrices(selectedSizes) {
+    var box = document.getElementById("productSizesBox");
+    var gridBox = document.getElementById("productSizePrices");
+    var categoryInput = document.getElementById("pCat");
+    if (!box || !gridBox || !categoryInput) return;
+    var active = oliveIsSizeCategory(categoryInput.value);
+    box.hidden = !active;
+    if (!active) return;
+    var priceMap = {};
+    (selectedSizes || []).forEach(function (item) {
+      priceMap[item.key] = Number(item.price) || "";
+    });
+    gridBox.innerHTML = OLIVE_SIZE_CATALOG.map(function (item) {
+      var value = priceMap[item.key] || "";
+      return '<div class="sizePriceRow"><label for="sizePrice_' + item.key + '">' + esc(item.ar) + '<br><span class="muted">' + esc(item.en) + '</span></label><input id="sizePrice_' + item.key + '" type="number" min="0" step="0.01" inputmode="decimal" placeholder="السعر" value="' + esc(value) + '"></div>';
+    }).join("");
+  }
+
+  function oliveCollectAdminSizes() {
+    return OLIVE_SIZE_CATALOG.map(function (item) {
+      var input = document.getElementById("sizePrice_" + item.key);
+      var price = input ? Number(input.value) : 0;
+      return price > 0 ? { key: item.key, price: price } : null;
+    }).filter(Boolean);
+  }
+
+  function oliveVariantName(product, sizeDefinition) {
+    var names = oliveBilingualParts(product.name);
+    return names.ar + " - " + sizeDefinition.ar + " || " + names.en + " - " + sizeDefinition.en;
+  }
+
+  function oliveVariantId(productId, sizeKey) {
+    var index = OLIVE_SIZE_CATALOG.findIndex(function (item) { return item.key === sizeKey; });
+    return 850000000 + Number(productId || 0) * 100 + Math.max(1, index + 1);
+  }
+
+  window.closeSizeModal = function () {
+    var modal = document.getElementById("sizeModal");
+    if (modal) modal.classList.remove("open");
+  };
+
+  window.openSizeModal = function (productId) {
+    oliveNormalizeAllProducts();
+    var product = products.find(function (item) { return Number(item.id) === Number(productId); });
+    if (!product || product.available === false) return;
+    var language = oliveLanguage();
+    var modal = document.getElementById("sizeModal");
+    var title = document.getElementById("sizeProductName");
+    var hint = document.getElementById("sizeProductHint");
+    var options = document.getElementById("sizeOptions");
+    if (!modal || !title || !hint || !options) return;
+    title.textContent = (language === "en" ? "Choose size: " : "اختر الحجم: ") + oliveVisibleProductName(product);
+    hint.textContent = language === "en" ? "Choose the required size to add it to your cart." : "حدد الحجم المطلوب لإضافته إلى السلة.";
+    var available = {};
+    (product.sizes || []).forEach(function (item) { available[item.key] = item; });
+    var hasAvailable = Object.keys(available).length > 0;
+    options.innerHTML = (hasAvailable ? "" : '<div class="sizeEmptyNotice">' + (language === "en" ? "Prices have not been set yet. Please contact the store." : "لم يتم تحديد أسعار الأحجام بعد. تواصل مع المتجر.") + '</div>') + OLIVE_SIZE_CATALOG.map(function (item) {
+      var selected = available[item.key];
+      var label = language === "en" ? item.en : item.ar;
+      var price = selected ? money(selected.price) + " " + (language === "en" ? "AED" : "درهم") : (language === "en" ? "Not available" : "غير متاح");
+      return '<button type="button" class="sizeOption" ' + (selected ? 'onclick="addSizedProduct(' + Number(product.id) + ',\'' + item.key + '\')"' : "disabled") + '><span>' + esc(label) + '</span><span class="sizeOptionPrice">' + esc(price) + '</span></button>';
+    }).join("");
+    modal.classList.add("open");
+  };
+
+  window.addSizedProduct = function (productId, sizeKey) {
+    var product = products.find(function (item) { return Number(item.id) === Number(productId); });
+    var definition = oliveSizeDefinition(sizeKey);
+    if (!product || !definition) return;
+    oliveNormalizeProduct(product);
+    if (product.available === false) return;
+    var selected = (product.sizes || []).find(function (item) { return item.key === sizeKey; });
+    if (!selected || Number(selected.price) <= 0) return;
+    var variantId = oliveVariantId(product.id, sizeKey);
+    var existingQty = cart[variantId] ? Number(cart[variantId].qty || 0) : 0;
+    cart[variantId] = Object.assign({}, product, {
+      id: variantId,
+      productId: product.id,
+      selectedSizeKey: sizeKey,
+      selectedSizeAr: definition.ar,
+      selectedSizeEn: definition.en,
+      name: oliveVariantName(product, definition),
+      price: Number(selected.price),
+      qty: existingQty + 1
+    });
+    saveCart();
+    render();
+    renderCart();
+    closeSizeModal();
+  };
+
+  var oliveBaseLoadCloudProducts = loadCloudProducts;
+  loadCloudProducts = function () {
+    var result = oliveBaseLoadCloudProducts.apply(this, arguments);
+    if (result && typeof result.then === "function") {
+      return result.then(function (value) {
+        oliveNormalizeAllProducts();
+        render();
+        renderAdmin();
+        return value;
+      });
+    }
+    oliveNormalizeAllProducts();
+    return result;
+  };
+
+  var oliveBaseRender = render;
+  render = function () {
+    oliveNormalizeAllProducts();
+    oliveBaseRender();
+    var language = oliveLanguage();
+    var cards = document.querySelectorAll("#grid .card");
+    cards.forEach(function (card) {
+      var button = card.querySelector(".pick");
+      if (!button) return;
+      var match = String(button.getAttribute("onclick") || "").match(/add\((\d+)\)/);
+      if (!match) return;
+      var product = products.find(function (item) { return Number(item.id) === Number(match[1]); });
+      if (!product) return;
+      var quantity = card.querySelector(".qty");
+      var priceBox = card.querySelector(".price");
+      if (product.available === false) {
+        card.classList.add("unavailable");
+        if (quantity) quantity.style.display = "none";
+        button.textContent = language === "en" ? "Unavailable" : "غير متوفر";
+        button.disabled = true;
+        button.onclick = null;
+        button.removeAttribute("onclick");
+        var picture = card.querySelector(".pic");
+        if (picture && !picture.querySelector(".availabilityBadge")) {
+          var unavailableBadge = document.createElement("span");
+          unavailableBadge.className = "availabilityBadge";
+          unavailableBadge.textContent = language === "en" ? "Unavailable" : "غير متوفر";
+          picture.appendChild(unavailableBadge);
+        }
+        return;
+      }
+      if (!oliveIsSizeCategory(product)) return;
+      var configured = (product.sizes || []).filter(function (item) { return Number(item.price) > 0; });
+      if (quantity) quantity.style.display = "none";
+      button.textContent = language === "en" ? "Choose size" : "اختر الحجم";
+      button.onclick = function () { openSizeModal(product.id); };
+      if (priceBox) {
+        if (configured.length) {
+          var minimum = Math.min.apply(null, configured.map(function (item) { return Number(item.price); }));
+          priceBox.textContent = (language === "en" ? "From " : "يبدأ من ") + money(minimum) + " " + (language === "en" ? "AED" : "درهم");
+        } else {
+          priceBox.textContent = language === "en" ? "Choose size" : "السعر حسب الحجم";
+        }
+      }
+    });
+  };
+
+  var oliveBaseAdd = add;
+  add = function (id) {
+    var product = products.find(function (item) { return Number(item.id) === Number(id); });
+    if (product && product.available === false) return;
+    if (product && oliveIsSizeCategory(product)) {
+      openSizeModal(id);
+      return;
+    }
+    oliveBaseAdd(id);
+  };
+
+  var oliveBaseChange = change;
+  change = function (id, difference) {
+    var key = String(id);
+    if (Object.prototype.hasOwnProperty.call(cart, key) && cart[key] && cart[key].selectedSizeKey) {
+      var nextQuantity = Math.max(0, Number(cart[key].qty || 0) + Number(difference || 0));
+      if (nextQuantity) cart[key].qty = nextQuantity;
+      else delete cart[key];
+      saveCart();
+      render();
+      renderCart();
+      return;
+    }
+    oliveBaseChange(id, difference);
+  };
+
+  var oliveBaseEditProduct = editProduct;
+  editProduct = function (id) {
+    var product = products.find(function (item) { return Number(item.id) === Number(id); });
+    oliveNormalizeProduct(product);
+    oliveBaseEditProduct(id);
+    if (product) {
+      document.getElementById("pDesc").value = product.desc || "";
+      document.getElementById("pAvailable").checked = product.available !== false;
+      oliveRenderAdminSizePrices(product.sizes || []);
+    }
+  };
+
+  var oliveBaseClearForm = clearForm;
+  clearForm = function () {
+    oliveBaseClearForm();
+    document.getElementById("pAvailable").checked = true;
+    oliveRenderAdminSizePrices([]);
+  };
+
+  var oliveBaseRenderAdmin = renderAdmin;
+  renderAdmin = function () {
+    oliveNormalizeAllProducts();
+    oliveBaseRenderAdmin();
+    document.querySelectorAll("#adminProducts .adminItem").forEach(function (itemBox) {
+      var editButton = itemBox.querySelector('button[onclick^="editProduct("]');
+      if (!editButton) return;
+      var match = String(editButton.getAttribute("onclick") || "").match(/editProduct\((\d+)\)/);
+      if (!match) return;
+      var product = products.find(function (item) { return Number(item.id) === Number(match[1]); });
+      if (!product || product.available !== false) return;
+      itemBox.classList.add("outOfStockAdmin");
+      var info = itemBox.querySelector(".muted");
+      if (info) {
+        var state = document.createElement("span");
+        state.className = "stockState";
+        state.textContent = " • غير متوفر";
+        info.appendChild(state);
+      }
+    });
+  };
+
+  var oliveBaseOpenAdmin = openAdmin;
+  openAdmin = function () {
+    oliveBaseOpenAdmin();
+    var editedId = Number(document.getElementById("editId").value || 0);
+    var editedProduct = products.find(function (item) { return Number(item.id) === editedId; });
+    oliveRenderAdminSizePrices(editedProduct ? editedProduct.sizes : []);
+  };
+
+  saveProduct = function () {
+    var name = String(document.getElementById("pName").value || "").trim();
+    if (!name) {
+      alert("اكتب اسم المنتج");
+      return;
+    }
+    if (!gsUrl()) {
+      alert("رابط Google Apps Script غير موجود");
+      return;
+    }
+    var category = String(document.getElementById("pCat").value || "").trim();
+    var usesSizes = oliveIsSizeCategory(category);
+    var sizes = usesSizes ? oliveCollectAdminSizes() : [];
+    var isAvailable = document.getElementById("pAvailable").checked;
+    if (usesSizes && isAvailable && !sizes.length) {
+      alert("حدد سعر حجم واحد على الأقل لهذا المنتج");
+      return;
+    }
+    var priceValue = document.getElementById("pPrice").value;
+    var basePrice = sizes.length ? Math.min.apply(null, sizes.map(function (item) { return Number(item.price); })) : (priceValue === "" ? "" : Number(priceValue));
+    var payload = {
+      action: "saveProduct",
+      pin: settings.pin,
+      id: Number(document.getElementById("editId").value || 0),
+      name: name,
+      desc: oliveEncodeSizeDescription(document.getElementById("pDesc").value, sizes, isAvailable),
+      price: basePrice,
+      cat: category,
+      visible: document.getElementById("pVisible").checked,
+      imageData: pendingImage && pendingImage.startsWith("data:") ? pendingImage : "",
+      existingImage: pendingImage && !pendingImage.startsWith("data:") ? pendingImage : ""
+    };
+    var saveButton = document.querySelector('button[onclick="saveProduct()"]');
+    var oldButtonText = saveButton ? saveButton.textContent : "";
+    if (saveButton) {
+      saveButton.disabled = true;
+      saveButton.textContent = "جاري الحفظ...";
+    }
+    gsPost(payload).then(function (result) {
+      if (!result.ok) throw new Error(result.error || "FAILED");
+      return loadCloudProducts();
+    }).then(function () {
+      clearForm();
+      alert(payload.id ? "تم تعديل المنتج والأحجام في Google Sheets" : "تمت إضافة المنتج والأحجام إلى Google Sheets");
+    }).catch(function (error) {
+      alert("تعذر حفظ المنتج: " + error.message);
+    }).then(function () {
+      if (saveButton) {
+        saveButton.disabled = false;
+        saveButton.textContent = oldButtonText || "حفظ المنتج";
+      }
+    });
+  };
+
+  var categoryInput = document.getElementById("pCat");
+  if (categoryInput) {
+    categoryInput.addEventListener("change", function () {
+      var editedId = Number(document.getElementById("editId").value || 0);
+      var editedProduct = products.find(function (item) { return Number(item.id) === editedId; });
+      oliveRenderAdminSizePrices(editedProduct && oliveIsSizeCategory(editedProduct) ? editedProduct.sizes : []);
+    });
+  }
+
+  oliveNormalizeAllProducts();
+  oliveRenderAdminSizePrices([]);
+  render();
+  renderCart();
+})();
+</script>
+<script>
+(function () {
+  var OWNER_SESSION_KEY = "oliveMenuOwnerModeV2";
+  var ADMIN_SESSION_KEY = "oliveMenuAdminSessionV2";
+  var OWNER_ACCESS_PARAMETER = "owner_access";
+  var ADMIN_ACTIONS = {
+    orders: true,
+    updateStatus: true,
+    saveCategory: true,
+    deleteCategory: true,
+    saveProduct: true,
+    toggleProduct: true,
+    deleteProduct: true,
+    changeAdminPassword: true,
+    adminLogout: true
+  };
+
+  function sessionGet(key) {
+    try {
+      return sessionStorage.getItem(key) || "";
+    } catch (error) {
+      return "";
+    }
+  }
+
+  function sessionSet(key, value) {
+    try {
+      if (value) sessionStorage.setItem(key, value);
+      else sessionStorage.removeItem(key);
+    } catch (error) {}
+  }
+
+  function hasOwnerMode() {
+    return sessionGet(OWNER_SESSION_KEY) === "1";
+  }
+
+  function adminSession() {
+    return sessionGet(ADMIN_SESSION_KEY);
+  }
+
+  function clearAdminSession() {
+    sessionSet(ADMIN_SESSION_KEY, "");
+  }
+
+  try {
+    var parameters = new URLSearchParams(location.search);
+    var viewVersion = String(parameters.get("v") || "");
+    if (parameters.has(OWNER_ACCESS_PARAMETER)) {
+      sessionSet(OWNER_SESSION_KEY, "1");
+    } else if (viewVersion.indexOf("customer") !== -1) {
+      sessionSet(OWNER_SESSION_KEY, "");
+      clearAdminSession();
+    }
+    try { localStorage.removeItem("oliveMenuOwnerAccessV1"); } catch (error) {}
+  } catch (error) {
+    console.warn("Owner access setup failed", error);
+  }
+
+  var secureBaseGsPost = gsPost;
+  gsPost = function (payload) {
+    var securePayload = Object.assign({}, payload || {});
+    var action = String(securePayload.action || "");
+    delete securePayload.pin;
+    if (ADMIN_ACTIONS[action]) {
+      securePayload.session = adminSession();
+    }
+    return secureBaseGsPost(securePayload).then(function (result) {
+      if (result && result.ok === false &&
+          String(result.error || "").indexOf("ADMIN_SESSION_EXPIRED") !== -1) {
+        clearAdminSession();
+      }
+      return result;
+    });
+  };
+
+  var secureBaseJsonp = jsonp;
+  jsonp = function (action, params) {
+    if (ADMIN_ACTIONS[action]) {
+      return gsPost(Object.assign({action:action}, params || {})).then(function (result) {
+        if (!result || !result.ok) {
+          throw new Error((result && result.error) || "تعذر تنفيذ العملية");
+        }
+        return result;
+      });
+    }
+    var publicParams = Object.assign({}, params || {});
+    delete publicParams.pin;
+    return secureBaseJsonp(action, publicParams);
+  };
+
+  loginAdmin = function () {
+    var password = String(pinInput.value || "");
+    if (!password) {
+      alert("اكتب كلمة مرور الإدارة");
+      return;
+    }
+    var button = loginModal.querySelector(".primary");
+    var oldText = button ? button.textContent : "";
+    if (button) {
+      button.disabled = true;
+      button.textContent = "جارٍ التحقق...";
+    }
+    secureBaseGsPost({
+      action:"adminLogin",
+      password:password
+    }).then(function (result) {
+      if (!result || !result.ok || !result.session) {
+        throw new Error((result && result.error) || "تعذر تسجيل الدخول");
+      }
+      sessionSet(ADMIN_SESSION_KEY, result.session);
+      pinInput.value = "";
+      closeLogin();
+      openAdmin();
+    }).catch(function (error) {
+      clearAdminSession();
+      alert(error.message === "SECURITY_NOT_CONFIGURED"
+        ? "يجب تشغيل setupAdminSecurity من Google Apps Script أولًا."
+        : "كلمة المرور غير صحيحة أو تعذر الاتصال بالخادم.");
+    }).then(function () {
+      if (button) {
+        button.disabled = false;
+        button.textContent = oldText || "دخول آمن";
+      }
+    });
+  };
+
+  window.refreshOwnerAdminAccess = function () {
+    var button = document.querySelector(".adminBtn");
+    if (!button) return;
+    button.classList.toggle("ownerOnlyVisible", hasOwnerMode());
+  };
+
+  var ownerBaseRequestAdmin = requestAdmin;
+  requestAdmin = function () {
+    if (!hasOwnerMode()) return;
+    if (adminSession()) openAdmin();
+    else ownerBaseRequestAdmin();
+  };
+
+  var ownerBaseOpenAdmin = openAdmin;
+  openAdmin = function () {
+    if (!hasOwnerMode() || !adminSession()) return;
+    ownerBaseOpenAdmin();
+    var passwordInput = document.getElementById("settingPin");
+    if (passwordInput) {
+      passwordInput.value = "secure-session";
+      var passwordField = passwordInput.closest(".field");
+      if (passwordField) passwordField.style.display = "none";
+    }
+  };
+
+  refreshOwnerAdminAccess();
+})();
+</script>
+<script src="order-receipt.js?v=7-performance-fix"></script>
+<script src="leaflet.js?v=1.9.4"></script>
+<script src="menu-enhancements.js?v=15-mobile-refresh"></script>
+</body></html>
