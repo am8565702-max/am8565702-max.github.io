@@ -93,7 +93,7 @@ html[dir="ltr"] .availabilityBadge{right:auto;left:10px}
 <section class="hero"><div><h2>منتجات فلسطينية مختارة بعناية</h2><p>اطلب مباشرة عبر واتساب مع تحديد موقعك GPS</p></div><div id="heroPhone" class="wa">واتساب 0505660791</div></section>
 <div id="cats" class="categories"></div><main><div id="pageError" style="display:none;margin:12px auto;max-width:900px;padding:12px;border-radius:12px;background:#fee4e2;color:#9b1c15;text-align:center"></div>
 <div id="grid" class="grid"></div></main>
-<div id="drawer" class="drawer"><div class="shade" onclick="closeCart()"></div><aside class="panel"><button class="close" onclick="closeCart()">✕</button><h3>سلة الطلب</h3><div id="cart"></div><div class="orderOptions"><b>طريقة الاستلام</b><label><input type="radio" name="deliveryType" value="pickup" checked onchange="renderCart()"> استلام من الفرع</label><label><input type="radio" name="deliveryType" value="delivery" onchange="renderCart()"> توصيل</label><div class="miniNote" id="deliveryHint"></div></div><div id="summary" class="summary"></div><div class="form"><div class="notice">سيتم إنشاء رقم طلب تلقائي يبدأ من 1000 عند الإرسال.</div><input id="customer" placeholder="اسم العميل"><input id="customerPhone" placeholder="رقم هاتف العميل"><input id="area" placeholder="المنطقة / العنوان"><button id="gpsButton" class="gps" type="button" onclick="getGPS()">📍 تحديد موقعي GPS</button><div id="locationStatus" class="locationStatus" role="status" aria-live="polite" hidden><span id="locationStatusText"></span><br><a id="locationMapLink" href="#" target="_blank" rel="noopener noreferrer" hidden>فتح الموقع على الخريطة</a></div><input id="location" type="hidden"><button class="send" onclick="sendWA()">إرسال الطلب على واتساب</button><a id="whatsappFallback" class="send whatsappFallback" href="#" target="_self" hidden>فتح واتساب لإرسال الطلب</a></div></aside></div>
+<div id="drawer" class="drawer"><div class="shade" onclick="closeCart()"></div><aside class="panel"><button class="close" onclick="closeCart()">✕</button><h3>سلة الطلب</h3><div id="cart"></div><div class="orderOptions"><b>طريقة التوصيل</b><label><input type="radio" name="deliveryType" value="delivery" checked onchange="renderCart()"> توصيل</label><div class="miniNote" id="deliveryHint"></div></div><div id="summary" class="summary"></div><div class="form"><div class="notice">سيتم إنشاء رقم طلب تلقائي يبدأ من 1000 عند الإرسال.</div><input id="customer" placeholder="اسم العميل"><input id="customerPhone" placeholder="رقم هاتف العميل"><input id="area" placeholder="المنطقة / العنوان"><button id="gpsButton" class="gps" type="button" onclick="getGPS()">📍 تحديد موقعي GPS</button><div id="locationStatus" class="locationStatus" role="status" aria-live="polite" hidden><span id="locationStatusText"></span><br><a id="locationMapLink" href="#" target="_blank" rel="noopener noreferrer" hidden>فتح الموقع على الخريطة</a></div><input id="location" type="hidden"><button class="send" onclick="sendWA()">إرسال الطلب على واتساب</button><a id="whatsappFallback" class="send whatsappFallback" href="#" target="_self" hidden>فتح واتساب لإرسال الطلب</a></div></aside></div>
 <div id="thankYouModal" class="modal orderThanksModal" role="dialog" aria-modal="true" aria-labelledby="thankYouTitle"><div class="shade" onclick="closeThankYouModal()"></div><div class="thankYouDialog"><img class="thankYouLogo" src="icon-512.png" alt="شعار غصن الزيتون"><h2 id="thankYouTitle">شكرًا على طلبكم من غصن الزيتون للتجارة</h2><p id="thankYouSubtitle">تم تسجيل طلبكم بنجاح، ونعمل على تجهيز فاتورة الطلب.</p><div id="thankYouOrderNo" class="thankYouOrderNo"></div><div id="receiptStatus" class="receiptStatus" role="status" aria-live="polite"></div><div class="receiptActions"><button id="receiptDownloadButton" class="primary" type="button" onclick="downloadLastOrderPdf()" disabled>تنزيل فاتورة PDF</button><button id="receiptShareButton" class="secondary" type="button" onclick="shareLastOrderPdf()" disabled>مشاركة فاتورة PDF</button><button id="receiptWhatsappButton" class="primary receiptWhatsApp full" type="button" onclick="openLastOrderWhatsApp()">فتح واتساب لإرسال الطلب</button></div><button id="receiptCloseButton" class="secondary receiptClose" type="button" onclick="closeThankYouModal()">العودة إلى المنيو</button></div></div>
 <div id="loginModal" class="modal"><div class="shade" onclick="closeLogin()"></div><div class="loginBox"><button class="close" onclick="closeLogin()">✕</button><h3>دخول لوحة التحكم</h3><input id="pinInput" type="password" autocomplete="current-password" placeholder="كلمة المرور"><button class="primary" style="width:100%" onclick="loginAdmin()">دخول آمن</button><div class="notice">يتم التحقق من كلمة المرور داخل الخادم، وتنتهي جلسة الإدارة تلقائيًا.</div></div></div>
 <div id="sizeModal" class="modal"><div class="shade" onclick="closeSizeModal()"></div><div class="sizeDialog" role="dialog" aria-modal="true" aria-labelledby="sizeProductName"><button class="close" onclick="closeSizeModal()">✕</button><h3 id="sizeProductName">اختر الحجم</h3><p id="sizeProductHint">حدد الحجم المطلوب لإضافته إلى السلة</p><div id="sizeOptions" class="sizeOptions"></div></div></div>
@@ -464,7 +464,7 @@ function getOrderTotals() {
   var subtotal = arr.reduce(function (s, x) {
     return s + (Number(x.price) || 0) * Number(x.qty || 0);
   }, 0);
-  var deliveryType = ((_a = document.querySelector('input[name="deliveryType"]:checked')) == null ? void 0 : _a.value) || "pickup";
+  var deliveryType = ((_a = document.querySelector('input[name="deliveryType"]:checked')) == null ? void 0 : _a.value) || "delivery";
   var delivery = deliveryType === "delivery" ? Number(settings.deliveryFee || 0) : 0;
   var discount = subtotal >= Number(settings.discountThreshold || 0) && Number(settings.discountThreshold || 0) > 0 ? subtotal * (Number(settings.discountPercent || 0) / 100) : 0;
   var total = Math.max(0, subtotal + delivery - discount);
@@ -485,7 +485,7 @@ function renderCart() {
     return "<div class=\"cartItem\"><div><b>".concat(esc(x.name), "</b><br><small>").concat(x.price ? money(x.price) + " درهم للوحدة" : "حسب العبوة", "</small>").concat(x.price ? "<div class=\"itemTotal\">".concat(money(line), " \u062F\u0631\u0647\u0645</div>") : "", "</div><div class=\"qty\"><button onclick=\"change(").concat(x.id, ",-1)\">\u2212</button><span>").concat(x.qty, "</span><button onclick=\"change(").concat(x.id, ",1)\">+</button></div></div>");
   }).join("") : '<div class="empty">السلة فارغة</div>';
   var t = getOrderTotals();
-  deliveryHint.textContent = t.deliveryType === "delivery" ? "\u0631\u0633\u0648\u0645 \u0627\u0644\u062A\u0648\u0635\u064A\u0644: ".concat(money(t.delivery), " \u062F\u0631\u0647\u0645") : "لا توجد رسوم توصيل عند الاستلام من الفرع";
+  deliveryHint.textContent = t.deliveryType === "delivery" ? "\u0631\u0633\u0648\u0645 \u0627\u0644\u062A\u0648\u0635\u064A\u0644: ".concat(money(t.delivery), " \u062F\u0631\u0647\u0645") : "سيتم احتساب رسوم التوصيل حسب الإعدادات";
   summary.innerHTML = "<div class=\"sumRow\"><span>\u0639\u062F\u062F \u0627\u0644\u0623\u0635\u0646\u0627\u0641</span><b>".concat(t.itemCount, "</b></div><div class=\"sumRow\"><span>\u0625\u062C\u0645\u0627\u0644\u064A \u0627\u0644\u0642\u0637\u0639</span><b>").concat(t.qtyCount, "</b></div><div class=\"sumRow\"><span>\u0627\u0644\u0625\u062C\u0645\u0627\u0644\u064A \u0642\u0628\u0644 \u0627\u0644\u062A\u0648\u0635\u064A\u0644</span><b>").concat(money(t.subtotal), " \u062F\u0631\u0647\u0645</b></div>").concat(t.delivery ? "<div class=\"sumRow\"><span>\u0631\u0633\u0648\u0645 \u0627\u0644\u062A\u0648\u0635\u064A\u0644</span><b>".concat(money(t.delivery), " \u062F\u0631\u0647\u0645</b></div>") : "").concat(t.discount ? "<div class=\"sumRow discountRow\"><span>\u0627\u0644\u062E\u0635\u0645 (".concat(money(settings.discountPercent), "%)</span><b>\u2212 ").concat(money(t.discount), " \u062F\u0631\u0647\u0645</b></div>") : "", "<div class=\"sumRow final\"><span>\u0627\u0644\u0625\u062C\u0645\u0627\u0644\u064A \u0627\u0644\u0646\u0647\u0627\u0626\u064A</span><span>").concat(money(t.total), " \u062F\u0631\u0647\u0645</span></div>").concat(settings.minOrder && t.subtotal < settings.minOrder ? "<div class=\"notice\">\u0627\u0644\u062D\u062F \u0627\u0644\u0623\u062F\u0646\u0649 \u0644\u0644\u0637\u0644\u0628 ".concat(money(settings.minOrder), " \u062F\u0631\u0647\u0645\u060C \u0648\u0627\u0644\u0645\u062A\u0628\u0642\u064A ").concat(money(settings.minOrder - t.subtotal), " \u062F\u0631\u0647\u0645.</div>") : "");
 }
 function getGPS() {
@@ -1931,11 +1931,11 @@ if (document.readyState === "loading") {
       perUnit: "درهم للوحدة",
       cartTitle: "سلة الطلب",
       emptyCart: "السلة فارغة",
-      receiptMethod: "طريقة الاستلام",
+      receiptMethod: "طريقة التوصيل",
       pickup: "استلام من الفرع",
       delivery: "توصيل",
       deliveryFee: "رسوم التوصيل",
-      noDeliveryFee: "لا توجد رسوم توصيل عند الاستلام من الفرع",
+      noDeliveryFee: "سيتم احتساب رسوم التوصيل حسب الإعدادات",
       itemTypes: "عدد الأصناف",
       totalPieces: "إجمالي القطع",
       subtotal: "الإجمالي قبل التوصيل",
@@ -2006,7 +2006,7 @@ if (document.readyState === "loading") {
       perUnit: "AED per unit",
       cartTitle: "Your Cart",
       emptyCart: "Your cart is empty",
-      receiptMethod: "Fulfilment method",
+      receiptMethod: "Delivery method",
       pickup: "Pickup from branch",
       delivery: "Delivery",
       deliveryFee: "Delivery fee",
@@ -2220,7 +2220,7 @@ if (document.readyState === "loading") {
     setButtonText(".adminBtn", "⚙️ " + tr("admin"));
     setButtonText(".cartBtn", "🛒 " + tr("cart"));
     setText("#drawer .panel h3", tr("cartTitle"));
-    setText(".orderOptions > b", tr("receiptMethod"));
+    setText(".orderOptions > b", tr("delivery"));
     setRadioLabel("pickup", tr("pickup"));
     setRadioLabel("delivery", tr("delivery"));
     setText("#drawer .form .notice", tr("orderNotice"));
@@ -2308,7 +2308,7 @@ if (document.readyState === "loading") {
       return '<div class="cartItem"><div><b>' + esc(shown.name) + '</b><br><small>' + esc(unit) + '</small>' + lineTotal + '</div><div class="qty"><button onclick="change(' + item.id + ',-1)">−</button><span>' + item.qty + '</span><button onclick="change(' + item.id + ',1)">+</button></div></div>';
     }).join("") : '<div class="empty">' + esc(tr("emptyCart")) + '</div>';
     var totals = getOrderTotals();
-    deliveryHint.textContent = totals.deliveryType === "delivery" ? tr("deliveryFee") + ": " + money(totals.delivery) + " " + tr("currency") : tr("noDeliveryFee");
+    deliveryHint.textContent = totals.deliveryType === "delivery" ? tr("deliveryFee") + ": " + money(totals.delivery) + " " + tr("currency") : tr("deliveryFee");
     var html = '<div class="sumRow"><span>' + tr("itemTypes") + '</span><b>' + totals.itemCount + '</b></div>';
     html += '<div class="sumRow"><span>' + tr("totalPieces") + '</span><b>' + totals.qtyCount + '</b></div>';
     html += '<div class="sumRow"><span>' + tr("subtotal") + '</span><b>' + money(totals.subtotal) + " " + tr("currency") + '</b></div>';
@@ -2432,9 +2432,9 @@ if (document.readyState === "loading") {
   function finishLocalizedOrder(items, totals, orderNo, customerNo, record) {
     var lines;
     if (menuLanguage === "en") {
-      lines = ["🛒 " + tr("newOrder") + orderNo + " " + tr("fromMenu"), "", tr("customerNumber") + ": " + customerNo, tr("name") + ": " + record.name, tr("phone") + ": " + record.phone, tr("date") + ": " + record.dateText, tr("orderArea") + ": " + record.area, tr("receipt") + ": " + (totals.deliveryType === "delivery" ? tr("delivery") : tr("pickup")), tr("orderLocation") + ": " + record.location, "", tr("orders") + ":"];
+      lines = ["🛒 " + tr("newOrder") + orderNo + " " + tr("fromMenu"), "", tr("customerNumber") + ": " + customerNo, tr("name") + ": " + record.name, tr("phone") + ": " + record.phone, tr("date") + ": " + record.dateText, tr("orderArea") + ": " + record.area, tr("receipt") + ": " + tr("delivery"), tr("orderLocation") + ": " + record.location, "", tr("orders") + ":"];
     } else {
-      lines = ["🛒 " + tr("newOrder") + " #" + orderNo + " " + tr("fromMenu"), "", tr("customerNumber") + ": " + customerNo, tr("name") + ": " + record.name, tr("phone") + ": " + record.phone, tr("date") + ": " + record.dateText, tr("orderArea") + ": " + record.area, tr("receipt") + ": " + (totals.deliveryType === "delivery" ? tr("delivery") : tr("pickup")), tr("orderLocation") + ": " + record.location, "", tr("orders") + ":"];
+      lines = ["🛒 " + tr("newOrder") + " #" + orderNo + " " + tr("fromMenu"), "", tr("customerNumber") + ": " + customerNo, tr("name") + ": " + record.name, tr("phone") + ": " + record.phone, tr("date") + ": " + record.dateText, tr("orderArea") + ": " + record.area, tr("receipt") + ": " + tr("delivery"), tr("orderLocation") + ": " + record.location, "", tr("orders") + ":"];
     }
     items.forEach(function (item, index) {
       var shown = productView(item);
